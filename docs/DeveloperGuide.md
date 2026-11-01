@@ -71,7 +71,7 @@ The bulk of the app's work is done by the following four components:
 **How the architecture components interact with each other**
 
 The *Sequence Diagram* below shows how the components interact with each other for the scenario where the user issues
-the command `delete 1`.
+the command `delete S1234567A`.
 
 <img src="images/ArchitectureSequenceDiagram.png" width="574" />
 
@@ -344,7 +344,7 @@ The `Model` component,
 * keeps a list of every appointment of every patient, each as a `PatientAppointment`, in time order. It rebuilds the
   list whenever a patient is added, edited or deleted, and exposes it as an unmodifiable
   `ObservableList<PatientAppointment>` for the appointment view. The filter on the patient list does not change it.
-* stores a `UserPrefs` object that represents the user’s preferences (currently, just the GUI settings). This is exposed
+* stores a `UserPrefs` object that represents the user’s preferences (the GUI settings and the settings changed with `set`). This is exposed
   to the outside as a `ReadOnlyUserPrefs` object.
 * does not depend on any of the other three components (as the `Model` represents data entities of the domain, they
   should make sense on their own without depending on other components)
