@@ -10,15 +10,6 @@ participant "command:AddAppointmentCommand" as AddAppointmentCommand LOGIC_COLOR
 participant "Messages" as Messages <<utility>> LOGIC_COLOR
 end box
 
-box Model MODEL_COLOR_T1
-participant "toAdd:Appointment" as Appointment MODEL_COLOR
-participant "model:ModelManager" as Model MODEL_COLOR
-participant "patient:Patient" as Patient MODEL_COLOR
-participant "schedule:AppointmentSchedule" as Schedule MODEL_COLOR
-participant "editedSchedule:AppointmentSchedule" as EditedSchedule MODEL_COLOR
-participant "created:PatientAppointment" as PatientAppointment MODEL_COLOR
-end box
-
 [-> LogicManager : execute(\n"addappt S1234567A ~--date 2026-12-01 10:00")
 activate LogicManager
 
@@ -34,13 +25,6 @@ deactivate AddAppointmentCommandParser
 
 LaiNurseParser -> AddAppointmentCommandParser : parse(\n" S1234567A ~--date 2026-12-01 10:00")
 activate AddAppointmentCommandParser
-
-create Appointment
-AddAppointmentCommandParser -> Appointment : Appointment("2026-12-01 10:00",\nOptional.empty())
-activate Appointment
-
-Appointment --> AddAppointmentCommandParser
-deactivate Appointment
 
 create AddAppointmentCommand
 AddAppointmentCommandParser -> AddAppointmentCommand : AddAppointmentCommand(id, toAdd)
@@ -58,69 +42,13 @@ deactivate LaiNurseParser
 LogicManager -> AddAppointmentCommand : execute(model)
 activate AddAppointmentCommand
 
-AddAppointmentCommand -> Model : findPatientById(targetId)
-activate Model
-
-Model --> AddAppointmentCommand : Optional.of(patient)
-deactivate Model
-
-AddAppointmentCommand -> Patient : getSchedule()
-activate Patient
-
-Patient --> AddAppointmentCommand : schedule
-deactivate Patient
-
-AddAppointmentCommand -> Schedule : add(toAdd)
-activate Schedule
-
-create EditedSchedule
-Schedule -> EditedSchedule : AppointmentSchedule(updated)
-activate EditedSchedule
-
-EditedSchedule --> Schedule
-deactivate EditedSchedule
-
-Schedule --> AddAppointmentCommand : editedSchedule
-deactivate Schedule
-
-AddAppointmentCommand -> EditedSchedule : getLastAt(toAdd)
-activate EditedSchedule
-
-EditedSchedule --> AddAppointmentCommand : numbered
-deactivate EditedSchedule
-
-AddAppointmentCommand -> Patient : withSchedule(editedSchedule)
-activate Patient
-
-Patient --> AddAppointmentCommand : editedPatient
-deactivate Patient
-
-AddAppointmentCommand -> Model : setPatient(patient, editedPatient)
-activate Model
-
-Model --> AddAppointmentCommand
-deactivate Model
-
-create PatientAppointment
-AddAppointmentCommand -> PatientAppointment : PatientAppointment(editedPatient, numbered)
-activate PatientAppointment
-
-PatientAppointment --> AddAppointmentCommand
-deactivate PatientAppointment
-
 AddAppointmentCommand -> Messages : formatClashWarning(model, created)
 activate Messages
 
 Messages --> AddAppointmentCommand : warning
 deactivate Messages
 
-AddAppointmentCommand -> Model : getSettings()
-activate Model
-
-Model --> AddAppointmentCommand : settingsProperty
-deactivate Model
-
-AddAppointmentCommand -> Messages : formatArchivedNote(editedPatient,\nsettingsProperty.getValue())
+AddAppointmentCommand -> Messages : formatArchivedNote(editedPatient, settings)
 activate Messages
 
 Messages --> AddAppointmentCommand : archivedNote

@@ -10,12 +10,6 @@ participant "command:DeleteAppointmentCommand" as DeleteAppointmentCommand LOGIC
 participant "AppointmentLookup" as AppointmentLookup <<utility>> LOGIC_COLOR
 end box
 
-box Model MODEL_COLOR_T1
-participant "model:ModelManager" as Model MODEL_COLOR
-participant "patient:Patient" as Patient MODEL_COLOR
-participant "schedule:AppointmentSchedule" as Schedule MODEL_COLOR
-end box
-
 [-> LogicManager : execute("deleteappt S1234567A 1")
 activate LogicManager
 
@@ -48,47 +42,11 @@ deactivate LaiNurseParser
 LogicManager -> DeleteAppointmentCommand : execute(model)
 activate DeleteAppointmentCommand
 
-DeleteAppointmentCommand -> Model : findPatientById(targetId)
-activate Model
-
-Model --> DeleteAppointmentCommand : Optional.of(patient)
-deactivate Model
-
-DeleteAppointmentCommand -> Patient : getSchedule()
-activate Patient
-
-Patient --> DeleteAppointmentCommand : schedule
-deactivate Patient
-
 DeleteAppointmentCommand -> AppointmentLookup : find(targetId, schedule,\ntargetAppointment, COMMAND_WORD)
 activate AppointmentLookup
 
 AppointmentLookup --> DeleteAppointmentCommand : foundAppointment
 deactivate AppointmentLookup
-
-DeleteAppointmentCommand -> Patient : getSchedule()
-activate Patient
-
-Patient --> DeleteAppointmentCommand : schedule
-deactivate Patient
-
-DeleteAppointmentCommand -> Schedule : remove(foundAppointment)
-activate Schedule
-
-Schedule --> DeleteAppointmentCommand : editedSchedule
-deactivate Schedule
-
-DeleteAppointmentCommand -> Patient : withSchedule(editedSchedule)
-activate Patient
-
-Patient --> DeleteAppointmentCommand : editedPatient
-deactivate Patient
-
-DeleteAppointmentCommand -> Model : setPatient(patient, editedPatient)
-activate Model
-
-Model --> DeleteAppointmentCommand
-deactivate Model
 
 DeleteAppointmentCommand --> LogicManager : new CommandResult(message)\n.withSelectionCleared()
 deactivate DeleteAppointmentCommand
