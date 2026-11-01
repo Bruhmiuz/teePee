@@ -494,7 +494,8 @@ an `IllegalValueException`, without coercion. Both statuses persist across resta
 
 An appointment date is written `yyyy-MM-dd`, optionally followed by a time in `HH:mm`, with the year exactly
 four digits and no sign. A data file without the `patients` key, such as one from v1.3 that saved them under
-`persons`, fails to load, and LaiNurse starts with an empty list. A data file from an earlier version with a
+`persons`, fails to load, so LaiNurse starts with the data in its backup, or with no data if there is no usable
+backup (see [Backing up the data file](#backing-up-the-data-file)). A data file from an earlier version with a
 signed or wider year, such as `+12345-01-01` or `-2026-10-05`, also fails to load.
 
 **Clashes.** `AppointmentClashes.find` compares exact date and time over the unfiltered appointment list, excluding
