@@ -1664,7 +1664,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 5. Should respond to any command within 100 milliseconds under typical workloads.
 6. Should be packaged as a single portable JAR file and run directly without requiring an installer.
 7. Should store all data locally in a human-editable, plain-text format (e.g., JSON) that can be inspected and backed up manually.
-8. Should start with an empty patient list instead of crashing if the data file is invalid.
+8. Should not crash if the data file is invalid.
 9. Should not depend on any proprietary third-party software, commercial libraries, or paid external APIs.
 10. A new home nurse familiar with standard CLI operations should be able to learn the basic command set within 1 hour by reading the User Guide.
 11. Should launch and present the user interface ready for input within 2 seconds on standard desktop hardware.
