@@ -202,6 +202,35 @@ public class MarkdownRendererTest {
     }
 
     @Test
+    public void render_boldWrappedInfoCallout_rendersBlueBadge() {
+        VBox rendered = MarkdownRenderer.render(
+                "**:information_source: Notes about the command format:** Body text.");
+
+        String visible = visibleText(rendered);
+        assertTrue(visible.contains("ℹ Note: "));
+        assertTrue(visible.contains("Notes about the command format:"));
+        assertTrue(visible.contains("Body text."));
+        // the badge prefix keeps its info-blue styling even inside the bold match
+        assertTrue(containsTextStyle(rendered, "-fx-fill: #58a6ff"));
+    }
+
+    @Test
+    public void render_boldWrappedCautionCallout_rendersOrangeBadge() {
+        VBox rendered = MarkdownRenderer.render("**:exclamation: Caution:** Data may be lost.");
+
+        String visible = visibleText(rendered);
+        assertTrue(visible.contains("⚠ Caution: "));
+        assertTrue(visible.contains("Data may be lost."));
+        // the badge prefix keeps the caution-orange styling inside the bold match
+        assertTrue(containsTextStyle(rendered, "-fx-fill: #ef7c00"));
+    }
+
+    private static boolean containsTextStyle(Parent root, String styleFragment) {
+        return descendants(root).stream().anyMatch(n -> n instanceof Text t
+                && t.getStyle().contains(styleFragment));
+    }
+
+    @Test
     public void render_table_rendersAsGridPaneWithAllCells() {
         VBox rendered = MarkdownRenderer.render(String.join("\n",
                 "Action | Format",

@@ -391,9 +391,27 @@ public class MarkdownRenderer {
                 kbd.setStyle("-fx-fill: #79c0ff; -fx-font-family: monospace; -fx-font-size: 12px;");
                 flow.getChildren().add(kbd);
             } else if (match.startsWith("**") && match.endsWith("**")) {
-                Text bold = new Text(match.substring(2, match.length() - 2));
-                bold.setStyle("-fx-fill: #ffffff; -fx-font-weight: bold; -fx-font-size: 13px;");
-                flow.getChildren().add(bold);
+                String inner = match.substring(2, match.length() - 2);
+                String badgePrefix = inner.startsWith("⚠ Caution: ") ? "⚠ Caution: "
+                        : inner.startsWith("ℹ Note: ") ? "ℹ Note: " : null;
+                if (badgePrefix == null) {
+                    Text bold = new Text(inner);
+                    bold.setStyle("-fx-fill: #ffffff; -fx-font-weight: bold; -fx-font-size: 13px;");
+                    flow.getChildren().add(bold);
+                } else {
+                    // The collapsed callout kept its bold wrapper, so the badge prefix lands inside
+                    // a bold match: style the prefix as the badge, and the rest of the text as bold.
+                    Text badge = new Text(badgePrefix);
+                    badge.setStyle("-fx-fill: " + (badgePrefix.startsWith("⚠") ? NUS_ORANGE : "#58a6ff")
+                            + "; -fx-font-weight: bold; -fx-font-size: 13px;");
+                    flow.getChildren().add(badge);
+                    String rest = inner.substring(badgePrefix.length());
+                    if (!rest.isEmpty()) {
+                        Text bold = new Text(rest);
+                        bold.setStyle("-fx-fill: #ffffff; -fx-font-weight: bold; -fx-font-size: 13px;");
+                        flow.getChildren().add(bold);
+                    }
+                }
             } else if (match.startsWith("`") && match.endsWith("`")) {
                 Text code = new Text(" " + match.substring(1, match.length() - 1) + " ");
                 code.setStyle("-fx-fill: " + NUS_ORANGE + "; -fx-font-family: monospace; "
