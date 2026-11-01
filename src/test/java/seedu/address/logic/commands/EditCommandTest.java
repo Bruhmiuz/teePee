@@ -205,12 +205,60 @@ public class EditCommandTest {
         firstPatient.getMedicalHistory().ifPresent(history -> editedPatientBuilder.withMedicalHistory(history.value));
         Patient editedPatient = editedPatientBuilder.build();
         String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PATIENT_SUCCESS,
-                Messages.format(editedPatient));
+                Messages.format(editedPatient)) + "\nWarning: this name is also used by " + firstPatient.getName()
+                + " (" + firstPatient.getId() + "). Check the patient IDs.";
 
         Model expectedModel = new ModelManager(new LaiNurse(model.getLaiNurse()), new UserPrefs());
         expectedModel.setPatient(secondPatient, editedPatient);
 
         assertCommandSuccess(editCommand, model, editResult(expectedMessage, secondPatient.getId()), expectedModel);
+    }
+
+    @Test
+    public void execute_sharedNameWithoutNameChange_warns() {
+        Patient other = new PatientBuilder(BENSON).withId("SHARED1").build();
+        model.addPatient(other);
+        Patient editedPatient = new PatientBuilder(BENSON).withPhone(VALID_PHONE_BOB).build();
+        EditPatientDescriptor descriptor = new EditPatientDescriptorBuilder().withPhone(VALID_PHONE_BOB).build();
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PATIENT_SUCCESS, Messages.format(editedPatient))
+                + "\nWarning: this name is also used by BENSON MEIER (SHARED1). Check the patient IDs.";
+
+        Model expectedModel = new ModelManager(model.getLaiNurse(), new UserPrefs());
+        expectedModel.setPatient(BENSON, editedPatient);
+        assertCommandSuccess(new EditCommand(BENSON.getId(), descriptor), model,
+                editResult(expectedMessage, BENSON.getId()), expectedModel);
+
+        // Explicitly giving the same normalized name still warns, even though the edit changes no details.
+        EditPatientDescriptor sameName = new EditPatientDescriptorBuilder().withName("  benson   meier  ").build();
+        assertCommandSuccess(new EditCommand(BENSON.getId(), sameName), model,
+                editResult(expectedMessage, BENSON.getId()), expectedModel);
+    }
+
+    @Test
+    public void execute_renameAwayFromSharedName_successWithoutWarning() {
+        model.addPatient(new PatientBuilder(BENSON).withId("SHARED1").build());
+        EditPatientDescriptor descriptor = new EditPatientDescriptorBuilder().withName("Unique Name").build();
+        Patient editedPatient = new PatientBuilder(BENSON).withName("Unique Name").build();
+
+        assertEditSuccess(BENSON, descriptor, editedPatient);
+    }
+
+    @Test
+    public void execute_archivedPatientWithSharedName_warnsAndStaysArchived() {
+        Patient archivedBenson = BENSON.withArchived(true);
+        model.setPatient(BENSON, archivedBenson);
+        model.addPatient(new PatientBuilder(BENSON).withId("SHARED1").build());
+        Patient editedPatient = new PatientBuilder(archivedBenson).withPhone(VALID_PHONE_BOB).build();
+        EditPatientDescriptor descriptor = new EditPatientDescriptorBuilder().withPhone(VALID_PHONE_BOB).build();
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PATIENT_SUCCESS, Messages.format(editedPatient))
+                + "\nWarning: this name is also used by BENSON MEIER (SHARED1). Check the patient IDs.";
+
+        Model expectedModel = new ModelManager(model.getLaiNurse(), new UserPrefs());
+        expectedModel.setPatient(archivedBenson, editedPatient);
+        expectedModel.setPatientListScope(PatientScope.ALL);
+
+        assertCommandSuccess(new EditCommand(BENSON.getId(), descriptor), model,
+                editResult(expectedMessage, BENSON.getId()), expectedModel);
     }
 
     @Test

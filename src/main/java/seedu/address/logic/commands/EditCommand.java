@@ -89,11 +89,16 @@ public class EditCommand extends Command {
         assert editedPatient.getId().equals(patientToEdit.getId()) : "An edit never changes the patient's ID.";
 
         model.setPatient(patientToEdit, editedPatient);
+        assert model.findPatientById(targetId).filter(editedPatient::equals).isPresent()
+                : "The edited patient must be stored with all their details.";
         model.updateFilteredPatientList(PREDICATE_SHOW_ALL_PATIENTS);
         model.showInPatientList(editedPatient);
-        logger.fine("Edited patient " + targetId + ".");
-        return new CommandResult(String.format(MESSAGE_EDIT_PATIENT_SUCCESS, Messages.format(editedPatient)))
+        String warning = Messages.formatSameNameWarning(model.getLaiNurse().getPatientList(), editedPatient);
+        logger.fine("Edited patient " + targetId + (warning.isEmpty() ? "." : " with a same-name warning."));
+        CommandResult result = new CommandResult(
+                String.format(MESSAGE_EDIT_PATIENT_SUCCESS, Messages.format(editedPatient)))
                 .withNavigation(Navigation.toPatient(editedPatient.getId()));
+        return warning.isEmpty() ? result : result.withNoteAppended(warning);
     }
 
     /**

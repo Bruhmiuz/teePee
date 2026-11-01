@@ -430,6 +430,36 @@ public class LogicManagerTest {
         assertTrue(model.hasPatient(new PatientBuilder(AMY).build()));
     }
 
+    @Test
+    public void execute_sameNameAndBackupFails_keepsBothWarningsAndPatients() throws Exception {
+        Patient existing = new PatientBuilder(AMY).withId("EXISTING1").build();
+        model.addPatient(existing);
+        Path backupPath = temporaryFolder.resolve("lainurse.backup.json");
+        JsonLaiNurseStorage laiNurseStorage = new JsonLaiNurseStorage(temporaryFolder.resolve("lainurse.json")) {
+            @Override
+            public void saveLaiNurse(ReadOnlyLaiNurse laiNurse, Path filePath) throws IOException {
+                if (filePath.equals(backupPath)) {
+                    throw new IOException("disk full");
+                }
+                super.saveLaiNurse(laiNurse, filePath);
+            }
+        };
+        StorageManager failingStorage = new StorageManager(laiNurseStorage,
+                new JsonUserPrefsStorage(temporaryFolder.resolve("prefs.json")));
+        logic = new LogicManager(model, failingStorage);
+
+        CommandResult result = logic.execute(AddCommand.COMMAND_WORD + ID_DESC_AMY + NAME_DESC_AMY
+                + PHONE_DESC_AMY + ADDRESS_DESC_AMY);
+
+        assertEquals(String.format(AddCommand.MESSAGE_SUCCESS, Messages.format(AMY))
+                + "\nWarning: this name is also used by AMY BEE (EXISTING1). Check the patient IDs.\n"
+                + String.format(LogicManager.BACKUP_WARNING_FORMAT, backupPath), result.getFeedbackToUser());
+        assertEquals(Optional.of(Navigation.toPatient(AMY.getId())), result.getNavigation());
+        assertEquals(List.of(existing, AMY), model.getLaiNurse().getPatientList());
+        assertEquals(model.getLaiNurse(), failingStorage.readLaiNurse().orElseThrow());
+        assertFalse(Files.exists(backupPath));
+    }
+
     /**
      * Returns a storage that saves to the temporary folder, but fails the next saves with {@code failures}, in order,
      * until there are none left.

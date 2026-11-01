@@ -217,6 +217,10 @@ Format: `add --id ID --name NAME --phone PHONE --address ADDRESS [--medical-hist
 * Parameters may appear in any order. Each option may appear only once. Separate options and values using spaces or tabs; values may contain spaces.
 * IDs contain 1 to 10 letters or digits. IDs are case-insensitive, and a patient with an existing ID cannot be added again. LaiNurse then names the patient who has that ID, such as `ALEX YEOH (S1234567A) already exists in LaiNurse.` If that patient is archived, it says so, and how to unarchive them: `ALEX YEOH (S1234567A) already exists in LaiNurse, and is archived. To unarchive them: 'unarchive S1234567A'`
 * Names, addresses, medical history and notes accept any non-blank text. IDs and these text fields are stored in uppercase, with repeated whitespace collapsed.
+* Patients with different IDs may share a name. The patient is added and saved as usual, and a warning below the success
+  message names every other patient with the same complete name, including archived patients and those hidden by a
+  filter. Matching ignores case and repeated whitespace. For example: `Warning: this name is also used by ALEX YEOH
+  (S1234567A). Check the patient IDs.` Archived matches have `[archived]` after their ID. No confirmation is required.
 * Invisible characters that text pasted from a website can carry, such as the zero-width space, are removed from names, addresses, medical history, notes and appointment details, so a value is stored as you see it, and a value of such characters only counts as blank. For example, `Alex` and `Smith` joined by a zero-width space is stored as `ALEXSMITH`, which `find --name alexsmith` finds. The characters that some scripts and emoji need, such as in 👩‍⚕️, are kept. An ID, a phone number or a date with an invisible character is rejected.
 * Phone numbers may contain digits, spaces, `+`, and `-`, and must contain at least three digits.
 * A new patient starts with no appointments. Set their appointments with [`addappt`](#adding-an-appointment-addappt).
@@ -249,6 +253,9 @@ Format: `edit ID [--name NAME] [--phone PHONE] [--address ADDRESS] [--medical-hi
 * The patient's appointments are not changed here. Change them with [`addappt`](#adding-an-appointment-addappt), [`editappt`](#editing-an-appointment-editappt) or [`deleteappt`](#deleting-an-appointment-deleteappt); they keep their details and order otherwise.
 * After a patient is edited, the list shows all patients again. The edited patient is selected in the list, and their details are shown, as `view` does. Renaming a patient moves their row, to keep the list sorted by name.
 * An archived patient can be edited, and stays archived.
+* If the resulting name is shared with another patient, the edit is saved and the result shows the same warning as
+  [`add`](#adding-a-patient-add), including archived patients and those hidden by a filter. This also applies when only
+  another field is edited, or the name is given again unchanged. The patient being edited does not count as a match.
 
 Examples:
 *  `edit S1234567A --phone 91234567 --address Blk 30 Geylang Street 29, #06-41` changes the phone number and address of patient `S1234567A`.
