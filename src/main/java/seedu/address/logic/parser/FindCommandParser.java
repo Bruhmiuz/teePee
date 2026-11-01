@@ -12,9 +12,11 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_NOTES;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
 
 import java.util.Optional;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.util.TextNormalizer;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -26,6 +28,7 @@ import seedu.address.model.patient.PatientContainsSubstringsPredicate;
  */
 public class FindCommandParser implements Parser<FindCommand> {
 
+    private static final Logger logger = LogsCenter.getLogger(FindCommandParser.class);
     private static final Pattern OPTION_PATTERN = Pattern.compile("(?<!\\S)--\\S*");
     private static final Prefix[] SEARCH_PREFIXES = {
         PREFIX_ID, PREFIX_NAME, PREFIX_PHONE, PREFIX_ADDRESS, PREFIX_MEDICAL_HISTORY, PREFIX_NOTES
@@ -63,6 +66,7 @@ public class FindCommandParser implements Parser<FindCommand> {
 
     /**
      * Returns an optional non-blank substring, removing a matching pair of surrounding double quotes.
+     * Phone substrings must contain at least one digit.
      */
     private static Optional<String> parseSearchValue(ArgumentMultimap argMultimap, Prefix prefix)
             throws ParseException {
@@ -84,6 +88,13 @@ public class FindCommandParser implements Parser<FindCommand> {
 
         if (TextNormalizer.normalizeText(value).isEmpty() || OPTION_PATTERN.matcher(value).find()) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
+        }
+        if (prefix.equals(PREFIX_PHONE)) {
+            if (value.replaceAll("[^0-9]", "").isEmpty()) {
+                logger.fine("Rejected phone search without digits.");
+                throw new ParseException(PatientContainsSubstringsPredicate.MESSAGE_PHONE_SEARCH_CONSTRAINTS);
+            }
+            logger.fine("Parsed phone search.");
         }
         return Optional.of(value);
     }
