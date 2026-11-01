@@ -293,8 +293,8 @@ The `deleteappt` command also follows this shape, up to the lookup: it finds the
 <img src="images/DeleteAppointmentSequenceDiagram.png" width="800" />
 
 The `viewappt` command follows the same shape: it builds an `AppointmentBetweenDatesPredicate` from the date
-range and filters the patient list with it (`--id` narrows both the appointments and the patient list to one
-patient), then returns a `CommandResult` carrying the range for the appointment view.
+range to count the matching patients without changing the patient list (`--id` narrows the appointment page to
+one patient), then returns a `CommandResult` carrying the range for the appointment view.
 
 <img src="images/ViewAppointmentSequenceDiagram.png" width="800" />
 
@@ -1303,7 +1303,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 1. Nurse requests to view appointments on a date or in a range, optionally for one patient by ID.
 2. LaiNurse shows only the matching appointments, with the next appointment from now and its patient's details, and
-   lists the matching patients.
+   reports how many patients have an appointment in the range.
 3. Nurse requests to go back to the weekly view.
 4. LaiNurse shows the week of the selected appointment, with that appointment still selected.
 
@@ -1337,8 +1337,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 1e. The nurse gives no date and no ID.
 
-    * 1e1. LaiNurse shows the weekly view of this week, with the next appointment from now selected, and lists the
-      patients with an appointment this week.
+    * 1e1. LaiNurse shows the weekly view of this week, with the next appointment from now selected.
 
       Use case ends.
 
