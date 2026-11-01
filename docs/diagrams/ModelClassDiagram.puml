@@ -47,7 +47,7 @@ Patient *--> Address
 Patient *--> "0..1" MedicalHistory
 Patient *--> "0..1" Notes
 Patient *--> "1" AppointmentSchedule
-AppointmentSchedule *--> "*" Appointment
+AppointmentSchedule --> "*" Appointment
 
 Patient -[hidden]up--> I
 UniquePatientList -[hidden]right-> I
