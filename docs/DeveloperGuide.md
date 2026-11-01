@@ -1313,7 +1313,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 1a. The nurse gives a date that is not a real date in `yyyy-MM-dd`.
 
-    * 1a1. LaiNurse shows an error message.
+    * 1a1. LaiNurse informs the nurse that the date is invalid.
 
       Use case resumes at step 1.
 
@@ -1325,7 +1325,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 1c. The start date is after the end date, or the nurse gives only an end date that is before today.
 
-    * 1c1. LaiNurse shows an error message.
+    * 1c1. LaiNurse informs the nurse that the dates are invalid.
 
       Use case resumes at step 1.
 
@@ -1337,19 +1337,19 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 1e. The nurse gives no date and no ID.
 
-    * 1e1. LaiNurse shows the weekly view of this week, with the next appointment from now selected.
+    * 1e1. LaiNurse shows this week's appointments, with the next appointment from now selected.
 
       Use case ends.
 
 * 1f. The nurse gives an ID and no date.
 
-    * 1f1. LaiNurse shows every appointment of that patient, past and upcoming, on one page.
+    * 1f1. LaiNurse shows every appointment of that patient, past and upcoming.
 
       Use case resumes at step 2.
 
 * 1g. The patient ID the nurse gives is invalid or belongs to no patient.
 
-    * 1g1. LaiNurse shows an error message, and the patient list and the appointment page stay as they were.
+    * 1g1. LaiNurse informs the nurse that no patient has the given ID, and nothing else changes.
 
       Use case resumes at step 1.
 
