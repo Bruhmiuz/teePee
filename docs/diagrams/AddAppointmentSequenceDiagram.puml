@@ -6,98 +6,129 @@ box Logic LOGIC_COLOR_T1
 participant ":LogicManager" as LogicManager LOGIC_COLOR
 participant ":LaiNurseParser" as LaiNurseParser LOGIC_COLOR
 participant ":AddAppointmentCommandParser" as AddAppointmentCommandParser LOGIC_COLOR
-participant "a:Appointment" as Appointment LOGIC_COLOR
-participant "d:AddAppointmentCommand" as AddAppointmentCommand LOGIC_COLOR
-participant "r:CommandResult" as CommandResult LOGIC_COLOR
+participant "command:AddAppointmentCommand" as AddAppointmentCommand LOGIC_COLOR
+participant "Messages" as Messages <<utility>> LOGIC_COLOR
 end box
 
 box Model MODEL_COLOR_T1
-participant "m:Model" as Model MODEL_COLOR
+participant "toAdd:Appointment" as Appointment MODEL_COLOR
+participant "model:ModelManager" as Model MODEL_COLOR
+participant "patient:Patient" as Patient MODEL_COLOR
+participant "schedule:AppointmentSchedule" as Schedule MODEL_COLOR
+participant "editedSchedule:AppointmentSchedule" as EditedSchedule MODEL_COLOR
+participant "created:PatientAppointment" as PatientAppointment MODEL_COLOR
 end box
 
-[-> LogicManager : execute("addappt S1234567A 2026-12-01 10:00")
+[-> LogicManager : execute(\n"addappt S1234567A ~--date 2026-12-01 10:00")
 activate LogicManager
 
-LogicManager -> LaiNurseParser : parseCommand("addappt S1234567A 2026-12-01 10:00")
+LogicManager -> LaiNurseParser : parseCommand(\n"addappt S1234567A ~--date 2026-12-01 10:00")
 activate LaiNurseParser
 
 create AddAppointmentCommandParser
-LaiNurseParser -> AddAppointmentCommandParser
+LaiNurseParser -> AddAppointmentCommandParser : AddAppointmentCommandParser()
 activate AddAppointmentCommandParser
 
 AddAppointmentCommandParser --> LaiNurseParser
 deactivate AddAppointmentCommandParser
 
-LaiNurseParser -> AddAppointmentCommandParser : parse("S1234567A 2026-12-01 10:00")
+LaiNurseParser -> AddAppointmentCommandParser : parse(\n" S1234567A ~--date 2026-12-01 10:00")
 activate AddAppointmentCommandParser
 
 create Appointment
-AddAppointmentCommandParser -> Appointment : Appointment("2026-12-01 10:00")
+AddAppointmentCommandParser -> Appointment : Appointment("2026-12-01 10:00",\nOptional.empty())
 activate Appointment
 
 Appointment --> AddAppointmentCommandParser
 deactivate Appointment
 
 create AddAppointmentCommand
-AddAppointmentCommandParser -> AddAppointmentCommand : AddAppointmentCommand(S1234567A, a)
+AddAppointmentCommandParser -> AddAppointmentCommand : AddAppointmentCommand(id, toAdd)
 activate AddAppointmentCommand
 
 AddAppointmentCommand --> AddAppointmentCommandParser
 deactivate AddAppointmentCommand
 
-AddAppointmentCommandParser --> LaiNurseParser : d
+AddAppointmentCommandParser --> LaiNurseParser : command
 deactivate AddAppointmentCommandParser
-'Hidden arrow to position the destroy marker below the end of the activation bar.
-AddAppointmentCommandParser -[hidden]-> LaiNurseParser
-destroy AddAppointmentCommandParser
 
-LaiNurseParser --> LogicManager : d
+LaiNurseParser --> LogicManager : command
 deactivate LaiNurseParser
 
-LogicManager -> AddAppointmentCommand : execute(m)
+LogicManager -> AddAppointmentCommand : execute(model)
 activate AddAppointmentCommand
 
-AddAppointmentCommand -> Model : findPatientById(S1234567A)
+AddAppointmentCommand -> Model : findPatientById(targetId)
 activate Model
 
-Model --> AddAppointmentCommand : p
+Model --> AddAppointmentCommand : Optional.of(patient)
 deactivate Model
 
-AddAppointmentCommand -> AddAppointmentCommand : new Appointment(schedule.getNextNumber(), a.value, a.getDetails())
-activate AddAppointmentCommand
-AddAppointmentCommand --> AddAppointmentCommand : numbered
-deactivate AddAppointmentCommand
+AddAppointmentCommand -> Patient : getSchedule()
+activate Patient
 
-AddAppointmentCommand -> AddAppointmentCommand : schedule.add(numbered)
-activate AddAppointmentCommand
+Patient --> AddAppointmentCommand : schedule
+deactivate Patient
 
-AddAppointmentCommand --> AddAppointmentCommand : editedSchedule
-deactivate AddAppointmentCommand
+AddAppointmentCommand -> Schedule : add(toAdd)
+activate Schedule
 
-AddAppointmentCommand -> Model : setPatient(p, editedPatient)
+create EditedSchedule
+Schedule -> EditedSchedule : AppointmentSchedule(updated)
+activate EditedSchedule
+
+EditedSchedule --> Schedule
+deactivate EditedSchedule
+
+Schedule --> AddAppointmentCommand : editedSchedule
+deactivate Schedule
+
+AddAppointmentCommand -> EditedSchedule : getLastAt(toAdd)
+activate EditedSchedule
+
+EditedSchedule --> AddAppointmentCommand : numbered
+deactivate EditedSchedule
+
+AddAppointmentCommand -> Patient : withSchedule(editedSchedule)
+activate Patient
+
+Patient --> AddAppointmentCommand : editedPatient
+deactivate Patient
+
+AddAppointmentCommand -> Model : setPatient(patient, editedPatient)
 activate Model
 
 Model --> AddAppointmentCommand
 deactivate Model
 
-AddAppointmentCommand -> Model : getAppointmentList()
+create PatientAppointment
+AddAppointmentCommand -> PatientAppointment : PatientAppointment(editedPatient, numbered)
+activate PatientAppointment
+
+PatientAppointment --> AddAppointmentCommand
+deactivate PatientAppointment
+
+AddAppointmentCommand -> Messages : formatClashWarning(model, created)
+activate Messages
+
+Messages --> AddAppointmentCommand : warning
+deactivate Messages
+
+AddAppointmentCommand -> Model : getSettings()
 activate Model
-Model --> AddAppointmentCommand : allAppointments
+
+Model --> AddAppointmentCommand : settingsProperty
 deactivate Model
 
-AddAppointmentCommand -> AddAppointmentCommand : Messages.formatClashWarning(allAppointments, created)
+AddAppointmentCommand -> Messages : formatArchivedNote(editedPatient,\nsettingsProperty.getValue())
+activate Messages
 
+Messages --> AddAppointmentCommand : archivedNote
+deactivate Messages
 
-create CommandResult
-AddAppointmentCommand -> CommandResult : CommandResult(message)
-activate CommandResult
-
-CommandResult --> AddAppointmentCommand
-deactivate CommandResult
-
-AddAppointmentCommand --> LogicManager : r
+AddAppointmentCommand --> LogicManager : new CommandResult(message)\n.withNavigation(Navigation.toAppointment(created))
 deactivate AddAppointmentCommand
 
-[<--LogicManager
+[<-- LogicManager : finalResult
 deactivate LogicManager
 @enduml

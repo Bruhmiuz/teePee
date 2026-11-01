@@ -38,7 +38,7 @@ Predicate --> FindCommandParser
 deactivate Predicate
 
 create FindCommand
-FindCommandParser -> FindCommand : FindCommand(predicate)
+FindCommandParser -> FindCommand : FindCommand(predicate, Optional.empty())
 activate FindCommand
 
 FindCommand --> FindCommandParser
@@ -46,9 +46,6 @@ deactivate FindCommand
 
 FindCommandParser --> LaiNurseParser : command
 deactivate FindCommandParser
-'Hidden arrow to position the destroy marker below the end of the activation bar.
-FindCommandParser -[hidden]-> LaiNurseParser
-destroy FindCommandParser
 
 LaiNurseParser --> LogicManager : command
 deactivate LaiNurseParser
@@ -68,7 +65,7 @@ activate ModelManager
 ModelManager --> FindCommand : patients
 deactivate ModelManager
 
-FindCommand --> LogicManager : searchResult
+FindCommand --> LogicManager : new CommandResult(String.format(\nMessages.MESSAGE_PATIENTS_LISTED_OVERVIEW, patients.size()))\n.withNavigation(Navigation.toView(View.PATIENTS))
 deactivate FindCommand
 
 [<-- LogicManager : finalResult
