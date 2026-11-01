@@ -225,6 +225,17 @@ public class MarkdownRendererTest {
         assertTrue(containsTextStyle(rendered, "-fx-fill: #ef7c00"));
     }
 
+    @Test
+    public void render_italics_renderWithoutUnderscores() {
+        VBox rendered = MarkdownRenderer.render("Copy the file to the folder you want to use as the "
+                + "_home folder_ for LaiNurse.");
+
+        String visible = visibleText(rendered);
+        assertFalse(visible.contains("_"));
+        assertTrue(visible.contains("home folder"));
+        assertTrue(containsTextStyle(rendered, "-fx-font-style: italic"));
+    }
+
     private static boolean containsTextStyle(Parent root, String styleFragment) {
         return descendants(root).stream().anyMatch(n -> n instanceof Text t
                 && t.getStyle().contains(styleFragment));

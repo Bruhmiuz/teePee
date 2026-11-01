@@ -29,9 +29,9 @@ public class MarkdownRenderer {
     private static final String NUS_BLUE = "#003d7c";
     private static final String NUS_BLUE_BORDER = "#1f5f9e";
 
-    // Matches links [text](url), <kbd>key</kbd>, **bold**, and `code`
+    // Matches links [text](url), <kbd>key</kbd>, **bold**, `code`, and _italics_
     private static final Pattern INLINE_PATTERN =
-            Pattern.compile("(\\[.*?\\]\\(.*?\\)|<kbd>.*?</kbd>|\\*\\*.*?\\*\\*|`.*?`)");
+            Pattern.compile("(\\[.*?\\]\\(.*?\\)|<kbd>.*?</kbd>|\\*\\*.*?\\*\\*|`.*?`|_[^_]+?_)");
 
     // Matches image syntax ![alt](url) so images resolve to offline placeholders instead of being skipped
     private static final Pattern IMAGE_PATTERN = Pattern.compile("!\\[(.*?)\\]\\((.*?)\\)");
@@ -417,6 +417,10 @@ public class MarkdownRenderer {
                 code.setStyle("-fx-fill: " + NUS_ORANGE + "; -fx-font-family: monospace; "
                         + "-fx-font-size: 12px; -fx-font-weight: bold;");
                 flow.getChildren().add(code);
+            } else if (match.startsWith("_") && match.endsWith("_")) {
+                Text italic = new Text(match.substring(1, match.length() - 1));
+                italic.setStyle("-fx-fill: #c9d1d9; -fx-font-size: 13px; -fx-font-style: italic;");
+                flow.getChildren().add(italic);
             }
 
             lastIdx = matcher.end();
