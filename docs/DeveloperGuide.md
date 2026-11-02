@@ -175,75 +175,9 @@ the selection changes, the panel tells `MainWindow`, which shows the appointment
 whatever is today, and a blue for selection, which is the keyboard focus and the selected tab, row and
 appointment. So the marked appointment in the details is orange only if it is today.
 
-Whenever the text in the command box changes, `CommandBox` asks `Logic#getCompletions(String)` for the ways to finish
-the word that the text ends with. Each is a `Completion`: the whole command after the completion, and the word that it
-fills in. `CommandBox` passes the words to `StatusBarFooter#showCompletions`, which shows them after a **Tab** key cap at
-the left end of the status bar, while the command box has the focus and at least one completion would change the text.
-It shows at most the first five words, then the number of the others, such as `+19 more`, so that a long list of
-patient IDs does not fill the status bar.
-Tab replaces the text with the first completion, and each further Tab with the next. While Tab goes through them,
-`CommandBox` keeps the list, so the status bar keeps showing it. After the only completion, `CommandBox` asks for the
-completions of the new text at once, so that `addap` gives `addappt`, and the status bar then shows the patient IDs
-that the next Tab goes through. With nothing to finish, Tab does nothing, so it never moves the focus out of the
-command box. On Tab, and when the command box gets the focus back, `CommandBox` asks again unless Tab is going through a
-list, as the patients may have changed since the user typed. The hint is in the status bar, not in a pop-up under the
-command box, so that it never covers the result of the last command. The team chose this design from three mockups.
-
-`TabCompleter` in the `Logic` component holds the rules, so `CommandBox` needs no knowledge of the command formats. It
-completes the first word to the longer command words that start with it, the word after `help` to what `help` can
-explain, a word that starts with `-` to the command's options that are not typed yet, and the word after `--id` in
-`viewappt` to a patient ID. It does not complete the ID after `--id` in `find`, which searches for any part of an ID,
-or in `add`, which takes a new one. The word being completed matches ignoring case, but command words, options and
-`help` topics are completed in lowercase, the only case that the parsers accept. The words before it are matched
-exactly, as the parsers match them, so `EDIT S1234567A --PH` has nothing to complete. Its table of each command's options must be updated with the parser when a
-command gets a new option. Otherwise it passes the text to `IdCompleter`, which completes the ID that a command takes
-first. `view` and `delete` take only an ID, so the ID must end the command. `edit`, `addappt`, `editappt`,
-`deleteappt`, `markappt` and `unmarkappt` take the ID first, so `IdCompleter` completes the word after the command word
-and keeps later options or appointment numbers. A whole command word that no other command word starts with, such as
-`addappt`, also goes to `IdCompleter`, which adds a space and the ID.
-`CommandBox` also keeps a `CommandHistory` of the commands entered since the app
-started, which the Up and Down keys go through. The history is kept only in the UI, because no command needs it.
-
-The keyboard focus is in one of three areas, given by `FocusArea`: the command box, and in the view that is shown, the
-view tabs or the list. The details beside the list are not an area, so the keyboard never moves the focus there. In the
-view, Tab moves between the tabs and the list, as `FocusArea#afterTab` gives. Up and Down move between them too: each
-list calls back to `MainWindow` when Up is pressed at its first row, and `MainWindow` handles Down on the tabs. Up on
-the tabs does nothing: `MainWindow` consumes it, so that JavaFX does not move the focus to another node. In both lists,
-Ctrl+Up and Ctrl+Down (Cmd on macOS, as given by `KeyEvent#isShortcutDown`) select the first and last row. The tabs
-take the focus only from the keyboard, so a click on a tab does not move the focus. If a tab has the focus when the view
-changes, `MainWindow` moves the focus to the tab of the view being shown.
-
-Esc in the command box calls back to `MainWindow`, which moves the focus to the list, or to the tabs if the patient list
-is empty, and leaves the typed text in place. Outside the command box, `MainWindow` handles keys with event filters on
-the window, which see each key before the focused part does. `BrowseKeys` decides what Enter, Esc, Tab, Shift+Up,
-Shift+Down and typed text do there:
-
-* Enter, and any printable character, move the focus back to the command box. A typed character is added to the text
-  there.
-* Esc resets the view by one step, and keeps the selected entry so that it is seen among the rest. In the patient
-  view, `MainWindow#resetView` calls `Logic#resetPatientList`, which removes the filter of the patient list, such as
-  that of `find`, and keeps its scope. With no filter, it goes back to the default scope, as `view` does. It runs no
-  command. So nothing is saved, the status message stays, and no `Navigation` selects the first patient;
-  `resetView` only selects again, in the longer list, the patient whose details are shown. (Running `view` itself would
-  show the first patient's details and then the earlier patient's again.) In the appointment view,
-  `AppointmentListPanel#reset` removes the filter of `viewappt`: from a page, it goes back to the weekly view of the
-  selected appointment's week, or of this week if none is selected, with the default scope, unless the selected
-  appointment is an archived patient's. In the weekly view, it goes back to the default scope. It keeps the selection
-  if it can. See [Archiving patients](#archiving-patients).
-* Tab moves the focus between the tabs and the list. The appointment list always takes the focus, so that Left and
-  Right can leave an empty week.
-* Shift+Up and Shift+Down scroll the details beside the list, with `PatientDetailPanel#scroll`, as the details never
-  take the focus.
-* Shift+Tab does nothing, also in the command box. `MainWindow` consumes it, or JavaFX would move the focus to another
-  node.
-
-The menu bar must not take these keys. JavaFX's `MenuBar` selects a menu that the mouse is over, in a focused window,
-and while a menu is selected, a key filter that it adds to the scene takes Left and Right to move between the menus.
-That filter runs before the filters on the tabs and the lists, and the menu stays selected after the mouse has left,
-until a click outside the menu bar. So `MainWindow#ignoreHoverOfClosedMenus` stops the mouse-entered events of the
-menus while no menu is open. As JavaFX then sets no `:hover`, it gives the menu under the mouse the `hovered`
-pseudo-class, which `DarkTheme.css` styles as Modena styles `:hover`. A click still opens a menu, and an open menu
-still follows the mouse to the next one.
+Some of how the UI behaves has a section of its own under Implementation: [Tab completion](#tab-completion), the
+[command history](#command-history), the [keyboard shortcuts](#keyboard-shortcuts) and
+[automatic navigation](#automatic-navigation).
 
 `FocusArea`, `BrowseKeys`, `AppointmentWeek`, `AppointmentPage`, `DetailAppointments` and `AppointmentFormatter` hold
 no JavaFX nodes, so unit tests cover these rules, and the UI parts only connect them to JavaFX.
@@ -450,19 +384,50 @@ such as `--notes` and `--add-notes`. `ParserUtil#parseOptionalFieldEdit` turns t
 `OptionalFieldEdit#applyTo` takes the field's current value and the field's constructor, such as `Notes::new`, so the
 joined text is checked and normalized like any other value. Adding to an empty field sets it.
 
-**Design considerations**
+**Aspect: How to identify the patient**
 
-* **Identifying the patient: by ID (chosen) or by list number.** An ID stays the same when the list is filtered or
-  sorted, so the nurse cannot edit the wrong patient by using a stale list number, and can edit a patient who is not
-  shown. The cost is typing a longer value, which the command box's ID completion reduces.
-* **Clearing an optional field: an empty value (chosen) or a `--clear-…` option.** An empty `--notes` clears the notes,
-  as an empty `t/` clears the tags in AB3, so there is no new option to learn. The cost is that a stray `--notes`
-  clears the notes, but the result shows the patient without them, and `add` still rejects a blank value.
-* **Adding to an optional field: `--add-…` options (chosen) or a marker in the value, such as `--notes +TEXT`.** A
-  separate option leaves every value valid, including one that starts with `+`, and Tab completion can offer it. The
-  cost is one more option for each field.
-* **Joining added text: `; ` (chosen), a space or `, `.** Values are one line, so a line break is not possible. `; `
-  reads as a list of separate entries, which suits a medical history, and commas often appear inside one entry.
+* **Alternative 1 (current choice):** By ID.
+    * Pros: An ID stays the same when the list is filtered or sorted, so the nurse cannot edit the wrong patient by
+      using a stale list number, and can edit a patient who is not shown.
+    * Cons: The nurse types a longer value, which the command box's ID completion reduces.
+* **Alternative 2:** By list number.
+    * Pros: The value is shorter to type.
+    * Cons: A stale list number can edit the wrong patient, and a patient who is not shown cannot be edited.
+
+**Aspect: How to clear an optional field**
+
+* **Alternative 1 (current choice):** An empty value.
+    * Pros: An empty `--notes` clears the notes, as an empty `t/` clears the tags in AB3, so there is no new option to
+      learn.
+    * Cons: A stray `--notes` clears the notes, but the result shows the patient without them, and `add` still rejects
+      a blank value.
+* **Alternative 2:** A `--clear-…` option.
+    * Pros: A stray empty option cannot clear a field.
+    * Cons: There is a new option to learn.
+
+**Aspect: How to add to an optional field**
+
+* **Alternative 1 (current choice):** `--add-…` options.
+    * Pros: A separate option leaves every value valid, including one that starts with `+`, and Tab completion can offer
+      it.
+    * Cons: There is one more option for each field.
+* **Alternative 2:** A marker in the value, such as `--notes +TEXT`.
+    * Pros: There are no more options.
+    * Cons: A value that starts with `+` would be read as the marker, and Tab completion cannot offer it.
+
+**Aspect: How to join added text**
+
+Values are one line, so a line break is not possible.
+
+* **Alternative 1 (current choice):** `; `.
+    * Pros: It reads as a list of separate entries, which suits a medical history.
+    * Cons: A `;` inside an entry reads as two entries.
+* **Alternative 2:** `, `.
+    * Pros: It reads as ordinary text.
+    * Cons: Commas often appear inside one entry.
+* **Alternative 3:** A space.
+    * Pros: It adds the least text.
+    * Cons: The entries run together.
 
 ### Warning about shared patient names
 
@@ -539,7 +504,7 @@ between time zones, so changing the computer's time zone, or a daylight saving c
 
 A patient has optional `Notes` for other personal information not covered by the other fields, such as hobbies, pet peeves
 and daily routines. An appointment has optional `AppointmentDetails`, free text about the visit, such as what to do or
-bring. Both follow `MedicalHistory`: `TextNormalizer` trims the text, collapses its whitespace and stores it in upper case, and
+bring. Both follow `MedicalHistory`: `TextNormalizer` trims the text, collapses its whitespace and stores it in uppercase, and
 blank text is rejected.
 
 The free-text fields, `Name`, `Address`, `MedicalHistory`, `Notes` and `AppointmentDetails`, normalize with
@@ -680,7 +645,7 @@ it counts that patient's appointments in the range for the status message, so a 
 messages count patients. The `AppointmentRange` also carries the ID, and `AppointmentListPanel` filters the page's
 appointments by it, so the page shows only that patient's until Esc or another `viewappt` replaces the range.
 
-**Design considerations: whether `viewappt` filters the patient list**
+**Aspect: Whether `viewappt` filters the patient list**
 
 * **Alternative 1 (current choice):** `viewappt` shows its results only in the appointment view, and leaves the
   patient list as it was.
@@ -693,7 +658,7 @@ appointments by it, so the page shows only that patient's until Esc or another `
     * Cons: The appointment view already shows them. A `viewappt` silently replaces a `find` filter, and with archived
       patients, it would also have to change the patient list's scope.
 
-**Design considerations: where appointment searches belong**
+**Aspect: Where appointment searches belong**
 
 * **Alternative 1 (current choice):** Only `viewappt` searches appointments, by real dates.
     * Pros: Each command answers one question. `find` answers "who is this patient?", and `viewappt` answers "whom do I
@@ -719,7 +684,48 @@ Each `Command` declares the view it shows by overriding `Command#getView()`, whi
 in that range on one page. The result of a plain `viewappt` has no range, so the panel shows the weekly view of this
 week.
 
-A command can also choose the entry to select, by adding a `CommandResult.Navigation` with
+What a command selects is described in [Automatic navigation](#automatic-navigation).
+
+An `AppointmentRange` can also name a patient, with `new AppointmentRange(start, end, id)`. The page
+then shows only that patient's appointments, and its header starts with their ID.
+
+Switching the tab by mouse or key runs no command and changes no model state. So the result display, the filtered
+patient list and the shown page of appointments all keep their state. If the keyboard focus is in the view being hidden, `MainWindow`
+moves it to the tab of the view being shown.
+
+**Aspect: Where the view of a command is decided**
+
+* **Alternative 1 (current choice):** Each command class declares its view, and `LogicManager` adds it to the result.
+    * Pros: The rule for a command lives in its own class, and a new command that ends in `appt` declares its view in
+      one method. Commands build their results as before, so the tests that compare a command's whole
+      `CommandResult` did not change.
+    * Cons: A command cannot pick a different view depending on its input.
+* **Alternative 2:** Each command sets the view in the `CommandResult` it builds.
+    * Pros: A command can choose the view at run time.
+    * Cons: Every command that shows a view must build its result differently, and every test of those commands must
+      expect the view.
+
+**Aspect: What the appointment view lists**
+
+* **Alternative 1 (current choice):** The weekly view lists every appointment, a week at a time, and a plain `viewappt`
+  shows this week. `viewappt` with a date, a range or `--id` shows only the appointments in its range, on one page with
+  a heading for each day that has one, and Esc goes back to the weekly view.
+    * Pros: The view shows exactly the appointments that the command found, however many weeks the range covers, and
+      no day looks empty because of a filter. The filter lives in the UI, so the model needs no second filtered list.
+    * Cons: The panel has two kinds of page, and the user presses Esc to get back to the weekly view.
+* **Alternative 2:** The view always shows one week of every appointment, and `viewappt` only chooses the week and the
+  selected appointment.
+    * Pros: There is one kind of page, and a week always shows all the visits of that week.
+    * Cons: After `viewappt` with a range, appointments outside the range still show, and a range of several weeks
+      needs paging to see.
+
+### Automatic navigation
+
+After a command, the window goes to what the command was about, so that the nurse does not have to find it. This
+section describes how a command chooses that. [Patient and appointment views](#patient-and-appointment-views) describes
+how it chooses the view.
+
+A command chooses the entry to select by adding a `CommandResult.Navigation` with
 `CommandResult#withNavigation`. `Navigation.toPatient(id)` selects that patient in the patient view, and
 `Navigation.toAppointment(entry)` selects that appointment in the appointment view. If the result has no range, the
 appointment view stays on the page shown if that page has the appointment, so that a nurse working through a range
@@ -729,9 +735,6 @@ or, if the result has no range, in this week. A command that filters the patient
 entry in the same result, because the entry is selected after the filter and the range are applied. A result can
 instead clear the selection with `CommandResult#withSelectionCleared`, which `MainWindow` applies to both views, so
 that no patient's details are shown.
-
-An `AppointmentRange` can also name a patient, with `new AppointmentRange(start, end, id)`. The page
-then shows only that patient's appointments, and its header starts with their ID.
 
 After the command, `LogicManager` checks that the entry to select is in the list that the view shows: a patient in
 the filtered patient list, and an appointment in the range, including the range's patient. If it is not, the
@@ -749,35 +752,111 @@ Each command navigates as follows:
 | `delete`, `deleteappt`, `clear`, `clearappt` | `withSelectionCleared()`: keeps the view and selects nothing |
 | `help`, `exit`, `set` | no navigation: keeps the view and the selection |
 
-Switching the tab by mouse or key runs no command and changes no model state. So the result display, the filtered
-patient list and the shown page of appointments all keep their state. If the keyboard focus is in the view being hidden, `MainWindow`
-moves it to the tab of the view being shown.
+While `delete`, `clear` or `clearappt` waits for confirmation, `LogicManager` returns the prompt with no view and no
+navigation, and so it does if the user cancels. The view and the selection stay until the command runs.
 
-**Design considerations: where the view of a command is decided**
+### Keyboard shortcuts
 
-* **Alternative 1 (current choice):** Each command class declares its view, and `LogicManager` adds it to the result.
-    * Pros: The rule for a command lives in its own class, and a new command that ends in `appt` declares its view in
-      one method. Commands build their results as before, so the tests that compare a command's whole
-      `CommandResult` did not change.
-    * Cons: A command cannot pick a different view depending on its input.
-* **Alternative 2:** Each command sets the view in the `CommandResult` it builds.
-    * Pros: A command can choose the view at run time.
-    * Cons: Every command that shows a view must build its result differently, and every test of those commands must
-      expect the view.
+Every key below works without the mouse. Where a key is handled depends on which part has the focus:
 
-**Design considerations: what the appointment view lists**
+| Focus | Keys | Handled by |
+| --- | --- | --- |
+| Command box | Enter, Tab, Esc, Up and Down | `CommandBox`, which runs the command, or calls [Tab completion](#tab-completion), `MainWindow` or the [command history](#command-history) |
+| View tabs | Left and Right, Down, Up | `MainWindow` |
+| A list | Up and Down, Ctrl+Up and Ctrl+Down, Page Up, Page Down, Home and End | The list's panel, `PatientListPanel` or `AppointmentListPanel` |
+| The appointment list | Left and Right | `AppointmentListPanel`, which shows the previous or next week |
+| View tabs or a list | Enter, Esc, Tab, Shift+Up and Shift+Down, and typed text | `MainWindow`, as `BrowseKeys` decides |
+| Anywhere | F1, which opens the Help Window | The Help menu item, which `MainWindow#setAccelerators` gives this accelerator |
+| Anywhere | Shift+Tab, which does nothing | `MainWindow` |
 
-* **Alternative 1 (current choice):** The weekly view lists every appointment, a week at a time, and a plain `viewappt`
-  shows this week. `viewappt` with a date, a range or `--id` shows only the appointments in its range, on one page with
-  a heading for each day that has one, and Esc goes back to the weekly view.
-    * Pros: The view shows exactly the appointments that the command found, however many weeks the range covers, and
-      no day looks empty because of a filter. The filter lives in the UI, so the model needs no second filtered list.
-    * Cons: The panel has two kinds of page, and the user presses Esc to get back to the weekly view.
-* **Alternative 2:** The view always shows one week of every appointment, and `viewappt` only chooses the week and the
-  selected appointment.
-    * Pros: There is one kind of page, and a week always shows all the visits of that week.
-    * Cons: After `viewappt` with a range, appointments outside the range still show, and a range of several weeks
-      needs paging to see.
+The User Guide lists what each key does for the user.
+
+The keyboard focus is in one of three areas, given by `FocusArea`: the command box, and in the view that is shown, the
+view tabs or the list. The details beside the list are not an area, so the keyboard never moves the focus there. In the
+view, Tab moves between the tabs and the list, as `FocusArea#afterTab` gives. Up and Down move between them too: each
+list calls back to `MainWindow` when Up is pressed at its first row, and `MainWindow` handles Down on the tabs. Up on
+the tabs does nothing: `MainWindow` consumes it, so that JavaFX does not move the focus to another node. In both lists,
+Ctrl+Up and Ctrl+Down (Cmd on macOS, as given by `KeyEvent#isShortcutDown`) select the first and last row. The tabs
+take the focus only from the keyboard, so a click on a tab does not move the focus. If a tab has the focus when the view
+changes, `MainWindow` moves the focus to the tab of the view being shown.
+
+Esc in the command box calls back to `MainWindow`, which moves the focus to the list, or to the tabs if the patient list
+is empty, and leaves the typed text in place. Outside the command box, `MainWindow` handles keys with event filters on
+the window, which see each key before the focused part does. `BrowseKeys` decides what Enter, Esc, Tab, Shift+Up,
+Shift+Down and typed text do there:
+
+* Enter, and any printable character, move the focus back to the command box. A typed character is added to the text
+  there.
+* Esc resets the view by one step, and keeps the selected entry so that it is seen among the rest. In the patient
+  view, `MainWindow#resetView` calls `Logic#resetPatientList`, which removes the filter of the patient list, such as
+  that of `find`, and keeps its scope. With no filter, it goes back to the default scope, as `view` does. It runs no
+  command. So nothing is saved, the status message stays, and no `Navigation` selects the first patient;
+  `resetView` only selects again, in the longer list, the patient whose details are shown. (Running `view` itself would
+  show the first patient's details and then the earlier patient's again.) In the appointment view,
+  `AppointmentListPanel#reset` removes the filter of `viewappt`: from a page, it goes back to the weekly view of the
+  selected appointment's week, or of this week if none is selected, with the default scope, unless the selected
+  appointment is an archived patient's. In the weekly view, it goes back to the default scope. It keeps the selection
+  if it can. See [Archiving patients](#archiving-patients).
+* Tab moves the focus between the tabs and the list. The appointment list always takes the focus, so that Left and
+  Right can leave an empty week.
+* Shift+Up and Shift+Down scroll the details beside the list, with `PatientDetailPanel#scroll`, as the details never
+  take the focus.
+* Shift+Tab does nothing, also in the command box. `MainWindow` consumes it, or JavaFX would move the focus to another
+  node.
+
+The menu bar must not take these keys. JavaFX's `MenuBar` selects a menu that the mouse is over, in a focused window,
+and while a menu is selected, a key filter that it adds to the scene takes Left and Right to move between the menus.
+That filter runs before the filters on the tabs and the lists, and the menu stays selected after the mouse has left,
+until a click outside the menu bar. So `MainWindow#ignoreHoverOfClosedMenus` stops the mouse-entered events of the
+menus while no menu is open. As JavaFX then sets no `:hover`, it gives the menu under the mouse the `hovered`
+pseudo-class, which `DarkTheme.css` styles as Modena styles `:hover`. A click still opens a menu, and an open menu
+still follows the mouse to the next one.
+
+### Tab completion
+
+Whenever the text in the command box changes, `CommandBox` asks `Logic#getCompletions(String)` for the ways to finish
+the word that the text ends with. Each is a `Completion`: the whole command after the completion, and the word that it
+fills in. `CommandBox` passes the words to `StatusBarFooter#showCompletions`, which shows them after a **Tab** key cap at
+the left end of the status bar, while the command box has the focus and at least one completion would change the text.
+It shows at most the first five words, then the number of the others, such as `+19 more`, so that a long list of
+patient IDs does not fill the status bar.
+Tab replaces the text with the first completion, and each further Tab with the next. While Tab goes through them,
+`CommandBox` keeps the list, so the status bar keeps showing it. After the only completion, `CommandBox` asks for the
+completions of the new text at once, so that `addap` gives `addappt`, and the status bar then shows the patient IDs
+that the next Tab goes through. With nothing to finish, Tab does nothing, so it never moves the focus out of the
+command box. On Tab, and when the command box gets the focus back, `CommandBox` asks again unless Tab is going through a
+list, as the patients may have changed since the user typed. The hint is in the status bar, not in a pop-up under the
+command box, so that it never covers the result of the last command. The team chose this design from three mockups.
+
+`TabCompleter` in the `Logic` component holds the rules, so `CommandBox` needs no knowledge of the command formats. It
+completes the first word to the longer command words that start with it, the word after `help` to what `help` can
+explain, a word that starts with `-` to the command's options that are not typed yet, and the word after `--id` in
+`viewappt` and `clearappt` to a patient ID. It does not complete the ID after `--id` in `find`, which searches for any part of an ID,
+or in `add`, which takes a new one. The word being completed matches ignoring case, but command words, options and
+`help` topics are completed in lowercase, the only case that the parsers accept. The words before it are matched
+exactly, as the parsers match them, so `EDIT S1234567A --PH` has nothing to complete. Its table of each command's options must be updated with the parser when a
+command gets a new option. Otherwise it passes the text to `IdCompleter`, which completes the ID that a command takes
+first. `view`, `delete`, `archive` and `unarchive` take only an ID, so the ID must end the command. `edit`, `addappt`,
+`editappt`, `deleteappt`, `markappt`, `unmarkappt` and `clearappt` take the ID first, so `IdCompleter` completes the word after the command word
+and keeps later options or appointment numbers. A whole command word that no other command word starts with, such as
+`addappt`, also goes to `IdCompleter`, which adds a space and the ID.
+
+`Logic#getCompletions` gives `TabCompleter` the patient IDs in the order that Tab goes through them: the patients in the
+displayed list first, then those hidden by a filter, with archived patients last.
+
+### Command history
+
+`CommandBox` keeps a `CommandHistory` of the commands entered since the app started, which the Up and Down keys go
+through. The history is kept only in the UI, because no command needs it, and it is not saved when the app closes.
+
+`CommandBox#handleCommandEntered` adds the text to the history before it runs the command, so a command that fails is
+in the history too. All other input is added as well, such as the word that
+confirms a deletion. `CommandHistory#add` skips text that is the same as the newest command, so that Up does not stop on
+the same command twice. An empty command box adds nothing.
+
+`CommandHistory#previous` keeps what the user was typing when they first press Up, and `CommandHistory#next` gives it
+back after the newest command, so going through the history does not lose it. Running a command goes back to the line
+being typed.
 
 ### Three-tier help system and offline User Guide rendering
 
@@ -787,11 +866,9 @@ The help system provides a three-tier support model designed to give nurses imme
 2. **Targeted CLI Help (`help [COMMAND]`)**: Displays parameter formats, constraints, and syntax examples for a specific command (e.g., `help add`) directly in the result display box by reading canonical `MESSAGE_USAGE` definitions.
 3. **Pop-up User Guide Window (`help window`, menu bar, or <kbd>F1</kbd>)**: Opens a standalone non-modal window displaying the full, offline User Guide rendered using native JavaFX components.
 
-#### Implementation
-
 The help architecture spans argument parsing in `Logic`, command dispatching in `HelpCommand`, and native rendering in `UI`.
 
-##### 1. Command Parsing & Target Validation (`HelpCommandParser`)
+**Command parsing and target validation (`HelpCommandParser`)**
 
 `HelpCommandParser` processes user input according to the following rules:
 * Strips surrounding whitespace and checks for an empty argument string, returning a targetless `HelpCommand()` (Tier 1: General Help).
@@ -799,7 +876,7 @@ The help architecture spans argument parsing in `Logic`, command dispatching in 
 * Accepts only a single bare command word: rejects the deprecated `--` flag form (e.g., `help --add`, `help -- add`, `help --`) and multi-token arguments (e.g., `help add patient`) by throwing a `ParseException` with `HelpCommand.MESSAGE_INVALID_HELP_ARGUMENT`.
 * Validates the target against `HelpCommand.COMMAND_USAGE_MAP` and `HelpCommand.TARGET_WINDOW`, rejecting unknown targets (e.g., `help 3`, `help nonexistent`) at parse time with the same `ParseException`.
 
-##### 2. Dynamic Command Usage Mapping (`HelpCommand`)
+**Command usage mapping (`HelpCommand`)**
 
 Rather than hardcoding command names and usage strings inside `HelpCommand`:
 * A static `Map<String, String> COMMAND_USAGE_MAP` is initialized using a `TreeMap` to sort available command words alphabetically.
@@ -808,12 +885,12 @@ Rather than hardcoding command names and usage strings inside `HelpCommand`:
 * The help window target (`"window"`) is deliberately decoupled from `COMMAND_USAGE_MAP`. It is handled as a distinct navigation branch returning `new CommandResult(SHOWING_HELP_MESSAGE, true, false)`.
 * If a target matches a registered command, its usage string is returned. Unknown targets cannot reach `HelpCommand` because `HelpCommandParser` validates the target before constructing the command.
 
-##### 3. Build-Time Bundling & Extraction
+**Bundling the guide at build time, and extracting it**
 
 * Gradle's `processResources` task packages `docs/UserGuide.md` into the application JAR classpath under `/docs/UserGuide.md`, serving as the single offline source of truth.
 * `HelpBookUtil` loads the document as an input stream via `Class#getResourceAsStream("/docs/UserGuide.md")`.
 
-##### 4. Native UI Node Generation (`MarkdownRenderer`)
+**Generating native UI nodes (`MarkdownRenderer`)**
 
 `MarkdownRenderer` parses the sanitized Markdown sequentially into native JavaFX nodes without external third-party dependencies:
 * **Section Structure & Headings**: Tracks headers (`#`, `##`, `###`) and horizontal separators (`---`), rendering them as styled `Label` and `Separator` nodes, while resetting active list counters.
@@ -832,25 +909,23 @@ Rather than hardcoding command names and usage strings inside `HelpCommand`:
     * Parses links `[text](url)` so that clicking an external URL copies it to the system clipboard and toggles the link label to `(Copied!)` for 1.5 seconds via a JavaFX `PauseTransition`, eliminating OS browser dependencies in headless testing environments.
 * **HTML `<br>` Sanitization**: Trailing `<br>` tags are stripped to eliminate excessive vertical padding, while consecutive internal `<br>` breaks are collapsed to a single `\n`.
 
-#### Design Considerations
-
 **Aspect: How command usages are maintained in `HelpCommand`**
 
-* **Alternative 1 (Current choice): Dynamic registry referencing static `COMMAND_WORD` and `MESSAGE_USAGE` from individual command classes.**
-    * *Pros:* Single source of truth. Modifying a command's syntax in its respective class automatically updates `help [COMMAND]` without code duplication.
-    * *Cons:* Requires `HelpCommand` to reference all concrete command classes.
-* **Alternative 2: Storing all usage strings inside `HelpCommand`.**
-    * *Pros:* All help-related strings are located in one file.
-    * *Cons:* High maintenance overhead; updating a command's parameters requires synchronizing two separate classes, risking documentation drift.
+* **Alternative 1 (current choice):** Dynamic registry referencing static `COMMAND_WORD` and `MESSAGE_USAGE` from individual command classes.
+    * Pros: Single source of truth. Modifying a command's syntax in its respective class automatically updates `help [COMMAND]` without code duplication.
+    * Cons: Requires `HelpCommand` to reference all concrete command classes.
+* **Alternative 2:** Storing all usage strings inside `HelpCommand`.
+    * Pros: All help-related strings are located in one file.
+    * Cons: High maintenance overhead; updating a command's parameters requires synchronizing two separate classes, risking documentation drift.
 
 **Aspect: How the offline User Guide is rendered**
 
-* **Alternative 1 (Current choice): Native custom Markdown renderer using standard JavaFX nodes (`TextFlow`, `VBox`, `ScrollPane`, `GridPane`).**
-    * *Pros:* Fully compliant with course constraints (zero external libraries, no `javafx-web`/`WebView`), runs reliably across platforms and headless CI test environments, and natively adopts application styling.
-    * *Cons:* Requires maintaining internal parser logic for markdown constructs.
-* **Alternative 2: JavaFX `WebView` component.**
-    * *Pros:* Renders full HTML/Markdown with complete CSS out of the box.
-    * *Cons:* Requires native WebKit binaries not bundled across all platforms, violates course external dependency rules, and is prone to crashes in headless test runners.
+* **Alternative 1 (current choice):** Native custom Markdown renderer using standard JavaFX nodes (`TextFlow`, `VBox`, `ScrollPane`, `GridPane`).
+    * Pros: Fully compliant with course constraints (zero external libraries, no `javafx-web`/`WebView`), runs reliably across platforms and headless CI test environments, and natively adopts application styling.
+    * Cons: Requires maintaining internal parser logic for markdown constructs.
+* **Alternative 2:** JavaFX `WebView` component.
+    * Pros: Renders full HTML/Markdown with complete CSS out of the box.
+    * Cons: Requires native WebKit binaries not bundled across all platforms, violates course external dependency rules, and is prone to crashes in headless test runners.
 
 ### Backing up the data file
 
@@ -880,12 +955,12 @@ What a failed save does depends on which file failed:
 
 **Aspect: What a command does when its data cannot be saved**
 
-* **Alternative 1 (Current choice): Undo the change, and say so.**
-    * *Pros:* The model always matches the data file, and the command can simply be run again.
-    * *Cons:* Every command copies the data first. The patients are immutable, so this copies only the list.
-* **Alternative 2: Keep the change, and warn that it is not saved yet.**
-    * *Pros:* No copy is needed, and the next command that saves also saves this change.
-    * *Cons:* A user who runs the command again applies it twice, and closing the app loses the change.
+* **Alternative 1 (current choice):** Undo the change, and say so.
+    * Pros: The model always matches the data file, and the command can simply be run again.
+    * Cons: Every command copies the data first. The patients are immutable, so this copies only the list.
+* **Alternative 2:** Keep the change, and warn that it is not saved yet.
+    * Pros: No copy is needed, and the next command that saves also saves this change.
+    * Cons: A user who runs the command again applies it twice, and closing the app loses the change.
 
 At launch, `MainApp#initModelManager` asks `LaiNurseLoader#load(Storage)` for the data to start with.
 `LaiNurseLoader` returns a `LaiNurseLoader.Result`: the data, and a message for the user if the data did not come from
@@ -915,34 +990,34 @@ while writing the data file, the backup still holds the data saved before, and t
 
 **Aspect: When to fall back to the backup**
 
-* **Alternative 1 (Current choice): Only when the data file cannot be loaded.**
-    * *Pros:* A missing data file still loads the sample data, so deleting the file stays the way to start again,
+* **Alternative 1 (current choice):** Only when the data file cannot be loaded.
+    * Pros: A missing data file still loads the sample data, so deleting the file stays the way to start again,
       as the User Guide says.
-    * *Cons:* If the user deletes the data file by mistake, they must restore the data themselves, from the copy of
+    * Cons: If the user deletes the data file by mistake, they must restore the data themselves, from the copy of
       the backup that `LaiNurseLoader` keeps.
-* **Alternative 2: Also when the data file is missing.**
-    * *Pros:* Recovers from a data file deleted by mistake.
-    * *Cons:* Deleting the data file no longer resets the app: the user would have to delete both files.
+* **Alternative 2:** Also when the data file is missing.
+    * Pros: Recovers from a data file deleted by mistake.
+    * Cons: Deleting the data file no longer resets the app: the user would have to delete both files.
 
 **Aspect: How to restore the backup**
 
-* **Alternative 1 (Current choice): Automatically at launch, with no command.**
-    * *Pros:* Covers the common case, a data file broken by an edit, with no new command to learn, parse and test.
-    * *Cons:* The user restores the corrupt copy by hand, by copying it over the data file with the app closed.
-* **Alternative 2: A `restore` command.**
-    * *Pros:* The user decides when to restore.
-    * *Cons:* The app would need to stop saving until the user decides, and a new command adds risk this close to the
+* **Alternative 1 (current choice):** Automatically at launch, with no command.
+    * Pros: Covers the common case, a data file broken by an edit, with no new command to learn, parse and test.
+    * Cons: The user restores the corrupt copy by hand, by copying it over the data file with the app closed.
+* **Alternative 2:** A `restore` command.
+    * Pros: The user decides when to restore.
+    * Cons: The app would need to stop saving until the user decides, and a new command adds risk this close to the
       feature freeze.
 
 **Aspect: Protecting the backup from edits**
 
-* **Alternative 1 (Current choice): Do not protect it; the User Guide says not to edit it.**
-    * *Pros:* Works the same on every OS, and does not change OS settings, as the course's constraints require.
-    * *Cons:* A user can still edit the backup. If both files then cannot be loaded, the app starts with no data,
+* **Alternative 1 (current choice):** Do not protect it; the User Guide says not to edit it.
+    * Pros: Works the same on every OS, and does not change OS settings, as the course's constraints require.
+    * Cons: A user can still edit the backup. If both files then cannot be loaded, the app starts with no data,
       and only the corrupt copy of the data file is kept.
-* **Alternative 2: Make the backup hidden or read-only.**
-    * *Pros:* Harder to edit by mistake.
-    * *Cons:* How to do so depends on the OS, and a read-only file must be made writable again before each save.
+* **Alternative 2:** Make the backup hidden or read-only.
+    * Pros: Harder to edit by mistake.
+    * Cons: How to do so depends on the OS, and a read-only file must be made writable again before each save.
 
 ### Archiving patients
 
@@ -1014,7 +1089,7 @@ archived patient. The count of `AppointmentListPanel` has the same form, for the
 completes `archive`, `unarchive`, `--all` and `--archived`, and `LogicManager#getCompletions` puts archived
 patients' IDs last.
 
-**Design considerations: whether the appointment view shares the patient list's scope**
+**Aspect: Whether the appointment view shares the patient list's scope**
 
 * **Alternative 1 (current choice):** The scope belongs to the patient list. The appointment view treats archived
   patients as part of the filter of `viewappt`, which every `viewappt` sets again.
@@ -1027,7 +1102,7 @@ patients' IDs last.
     * Cons: A `find --all` in the patient view changes the appointment view as well, and a `viewappt` without an
       option shows archived patients' appointments because of an earlier, unrelated command.
 
-**Design considerations: how archived patients are hidden**
+**Aspect: How archived patients are hidden**
 
 * **Alternative 1 (current choice):** A scope, kept apart from the filter, that commands set on their own.
     * Pros: `find` searches within the scope and Esc can undo the filter and the scope one at a time, since the
@@ -1048,7 +1123,7 @@ and turn it off again after each test.
 
 **Aspect: How a feature is kept from users**
 
-* **Alternative 1 (Current choice):** A switch in one class, checked where the feature meets the user.
+* **Alternative 1 (current choice):** A switch in one class, checked where the feature meets the user.
     * Pros: The feature's code is merged, built and tested with everything else, and releasing it changes one line.
     * Cons: Until the release, the code has paths that users cannot reach, and tests must cover them with the switch
       on.
@@ -1098,7 +1173,7 @@ The selective clearing of #217 is behind `FeatureFlags#isSelectiveClearEnabled()
 
 **Aspect: How a clear is confirmed**
 
-* **Alternative 1 (Current choice):** The next input must be the word `confirm`.
+* **Alternative 1 (current choice):** The next input must be the word `confirm`.
     * Pros: The user cannot confirm by reflex, as by pressing Up and Enter to run the same command again.
     * Cons: The user must type the word exactly, and `LogicManager` keeps state between inputs.
 * **Alternative 2:** Run the same command again to confirm it.
@@ -1179,7 +1254,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 2.  LaiNurse adds the patient
 3.  LaiNurse shows the details of the added patient
 
-   Use case ends.
+    Use case ends.
 
 **Extensions**
 
@@ -1344,23 +1419,23 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **MSS**
 
-1. Nurse requests to view appointments on a date or in a range, optionally for one patient by ID.
-2. LaiNurse shows only the matching appointments, with the next appointment from now and its patient's details, and
-   reports how many patients have an appointment in the range, or with an ID, how many appointments that patient has.
-3. Nurse requests to go back to the weekly view.
-4. LaiNurse shows the week of the selected appointment, with that appointment still selected.
+1.  Nurse requests to view appointments on a date or in a range, optionally for one patient by ID
+2.  LaiNurse shows only the matching appointments, with the next appointment from now and its patient's details, and
+    reports how many patients have an appointment in the range, or with an ID, how many appointments that patient has
+3.  Nurse requests to go back to the weekly view
+4.  LaiNurse shows the week of the selected appointment, with that appointment still selected
 
-   Use case ends.
+    Use case ends.
 
 **Extensions**
 
-* 1a. The nurse gives a date that is not a real date in `yyyy-MM-dd`.
+* 1a. Nurse gives a date that is not a real date in `yyyy-MM-dd`.
 
     * 1a1. LaiNurse informs the nurse that the date is invalid.
 
       Use case resumes at step 1.
 
-* 1b. The nurse gives a range with no start date.
+* 1b. Nurse gives a range with no start date.
 
     * 1b1. The range becomes today up to the given end date.
 
@@ -1372,19 +1447,19 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case resumes at step 1.
 
-* 1d. The nurse gives a range with no end date.
+* 1d. Nurse gives a range with no end date.
 
     * 1d1. The range becomes the start date onwards, with no end.
 
       Use case resumes at step 2.
 
-* 1e. The nurse gives no date and no ID.
+* 1e. Nurse gives no date and no ID.
 
     * 1e1. LaiNurse shows this week's appointments, with the next appointment from now selected.
 
       Use case ends.
 
-* 1f. The nurse gives an ID and no date.
+* 1f. Nurse gives an ID and no date.
 
     * 1f1. The range becomes that patient's whole schedule, past and upcoming.
 
@@ -1448,33 +1523,43 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **MSS**
 
-1.  Nurse requests help for a specific command (e.g., `help add`).
-2.  LaiNurse displays the parameter syntax, format constraints, and usage examples for that command in the result display.
+1.  Nurse requests help for a specific command (e.g., `help add`)
+2.  LaiNurse displays the parameter syntax, format constraints, and usage examples for that command in the result display
 
     Use case ends.
 
 **Extensions**
 
 * 1a. Nurse requests a general overview of all commands (`help`).
+
     * 1a1. LaiNurse displays an alphabetical list of all available commands and general navigation guidance in the result display.
-    * Use case ends.
+
+      Use case ends.
 
 * 1b. Nurse requests to open the full offline User Guide window (`help window`, press <kbd>F1</kbd>, or select **Help** > **Help**).
+
     * 1b1. LaiNurse opens the Help Window containing the complete offline User Guide.
-    * Use case ends.
+
+      Use case ends.
 
 * 1c. Nurse enters an unrecognized command target (e.g., `help nonexistent`) or the discontinued flag form (e.g., `help --add`).
+
     * 1c1. LaiNurse displays an invalid command format error with the usage of `help` and lists all valid targets.
-    * Use case ends.
+
+      Use case ends.
 
 * 1d. Nurse provides a malformed help argument (e.g., `help -- add`, `help --`, or multiple tokens such as `help add patient`).
+
     * 1d1. LaiNurse displays an invalid command format error with the usage of `help`.
-    * Use case ends.
+
+      Use case ends.
 
 * 1e. Nurse enters the target command with mixed or uppercase letters (e.g., `help VIEW`).
+
     * 1e1. LaiNurse rejects the target as unknown and displays an invalid command format error with the usage of
       `help` and lists all valid targets.
-    * Use case ends.
+
+      Use case ends.
 
 **Use case: UC08 - Edit an appointment**
 
@@ -1521,7 +1606,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 2a. The edited appointment clashes with another visit, including to the same patient.
 
-    * 2a1. LaiNurse keeps the edit and appends a warning naming the other appointments: another patient's with
+    * 2a1. LaiNurse keeps the edit and shows a warning naming the other appointments: another patient's with
       the patient, and the same patient's as "this patient's appointment".
 
       Use case resumes at step 3.
@@ -1560,7 +1645,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 2a. Another undone appointment has the given date and time, including one of this patient's visits.
 
-    * 2a1. LaiNurse adds the appointment and appends a clash warning naming the other appointments: another
+    * 2a1. LaiNurse adds the appointment and shows a clash warning naming the other appointments: another
       patient's with the patient, and the same patient's as "this patient's appointment".
 
       Use case resumes at step 3.
@@ -1599,104 +1684,145 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 **MSS**
 
-1. Nurse requests to mark or unmark an appointment using its patient ID and appointment number.
-2. LaiNurse changes only the appointment's completion status and saves the data.
-3. LaiNurse shows and selects the updated appointment, with a pin before its time if it is done.
+1.  Nurse requests to mark or unmark an appointment using its patient ID and appointment number
+2.  LaiNurse changes only the appointment's completion status and saves the data
+3.  LaiNurse shows and selects the updated appointment, with a pin before its time if it is done
 
-   Use case ends.
+    Use case ends.
 
 **Extensions**
 
 * 1a. The arguments are missing, invalid or include extra parameters.
+
     * 1a1. LaiNurse displays an error describing the valid format or appointment number.
-    * Use case resumes at step 1.
+
+      Use case resumes at step 1.
+
 * 1b. The patient or appointment does not exist.
+
     * 1b1. LaiNurse displays the existing missing-patient or missing-appointment error.
-    * Use case resumes at step 1.
+
+      Use case resumes at step 1.
+
 * 1c. The appointment already has the requested status.
+
     * 1c1. LaiNurse reports the existing status and changes nothing.
-    * Use case resumes at step 1.
+
+      Use case resumes at step 1.
+
 * 2a. Unmarking restores a clash with another undone visit.
-    * 2a1. LaiNurse keeps the change and appends the clash warning, including hidden patients.
-    * Use case resumes at step 3.
+
+    * 2a1. LaiNurse keeps the change and shows the clash warning, including hidden patients.
+
+      Use case resumes at step 3.
 
 **Use case: UC12 - Archive a patient**
 
 **MSS**
 
-1. Nurse requests to archive a patient using their ID.
-2. LaiNurse marks the patient as archived and saves the data.
-3. LaiNurse hides the patient from the patient list and the appointment view, and stops their appointments from
-   clashing.
+1.  Nurse requests to archive a patient using their ID
+2.  LaiNurse marks the patient as archived and saves the data
+3.  LaiNurse hides the patient from the patient list and the appointment view, and stops their appointments from
+    clashing
 
-   Use case ends.
+    Use case ends.
 
 **Extensions**
 
 * 1a. The ID is missing or invalid.
+
     * 1a1. LaiNurse shows an error message with the valid format.
-    * Use case resumes at step 1.
+
+      Use case resumes at step 1.
+
 * 1b. The given ID does not match any patient.
+
     * 1b1. LaiNurse shows an error message.
-    * Use case resumes at step 1.
+
+      Use case resumes at step 1.
+
 * 1c. The patient is already archived.
+
     * 1c1. LaiNurse says so and changes nothing.
-    * Use case ends.
+
+      Use case ends.
+
 * 3a. The patient list shows archived patients, after `view --all`.
+
     * 3a1. LaiNurse keeps the patient in the list, at the bottom and greyed out, and selected.
-    * Use case ends.
-* 3b. The nurse later requests to see archived patients, with `view --all` or `view --archived`.
+
+      Use case ends.
+
+* 3b. Nurse later requests to see archived patients, with `view --all` or `view --archived`.
+
     * 3b1. LaiNurse shows them, and keeps showing them until the nurse chooses another scope.
-    * Use case ends.
-* 3c. The nurse requests to unarchive the patient.
+
+      Use case ends.
+
+* 3c. Nurse requests to unarchive the patient.
+
     * 3c1. LaiNurse shows the patient with the others again, and their appointments can clash again.
-    * Use case ends.
+
+      Use case ends.
 
 **Use case: UC13 - Delete many patients or appointments**
 
 **MSS**
 
-1. Nurse requests to delete every patient, every archived patient, or the appointments of every patient or of one,
-   optionally from one date, or date and time, to another.
-2. LaiNurse says how many patients or appointments it would delete, and asks the nurse to confirm.
-3. Nurse types the confirmation phrase.
-4. LaiNurse deletes them and saves the data.
-5. LaiNurse keeps the view that is shown, and selects nothing.
+1.  Nurse requests to delete every patient, every archived patient, or the appointments of every patient or of one,
+    optionally from one date, or date and time, to another
+2.  LaiNurse says how many patients or appointments it would delete, and asks the nurse to confirm
+3.  Nurse types the confirmation phrase
+4.  LaiNurse deletes them and saves the data
+5.  LaiNurse keeps the view that is shown, and selects nothing
 
-   Use case ends.
+    Use case ends.
 
 **Extensions**
 
 * 1a. The arguments are invalid, such as an option with a value that takes none, or `--from` after `--to`.
+
     * 1a1. LaiNurse shows an error message with the valid format, or says that `--from` must not be after `--to`.
-    * Use case resumes at step 1.
+
+      Use case resumes at step 1.
+
 * 1b. The given ID does not match any patient.
+
     * 1b1. LaiNurse shows an error message.
-    * Use case resumes at step 1.
+
+      Use case resumes at step 1.
+
 * 1c. Nothing matches, so there is nothing to delete.
+
     * 1c1. LaiNurse says so, and asks for no confirmation.
-    * Use case ends.
+
+      Use case ends.
+
 * 3a. Nurse types anything other than the confirmation phrase, even another command.
+
     * 3a1. LaiNurse cancels the deletion, deletes nothing, and does not run what the nurse typed.
-    * Use case ends.
+
+      Use case ends.
 
 **Use case: UC14 - Change a setting**
 
 **MSS**
 
-1. Nurse requests to see the settings.
-2. LaiNurse lists each setting, and whether it is on or off.
-3. Nurse requests to turn one setting on or off.
-4. LaiNurse changes the setting and saves it.
-5. LaiNurse updates the clash marks and the past appointments in the view shown to follow the setting.
+1.  Nurse requests to see the settings
+2.  LaiNurse lists each setting, and whether it is on or off
+3.  Nurse requests to turn one setting on or off
+4.  LaiNurse changes the setting and saves it
+5.  LaiNurse updates the clash marks and the past appointments in the view shown to follow the setting
 
-   Use case ends.
+    Use case ends.
 
 **Extensions**
 
 * 3a. The setting is unknown, or the value is not `on` or `off`.
+
     * 3a1. LaiNurse shows an error message with the valid format and the names of the settings.
-    * Use case resumes at step 3.
+
+      Use case resumes at step 3.
 
 ### Non-Functional Requirements
 
@@ -1728,7 +1854,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
   interface of the same name.
 * **JavaFX / FXML**: The UI framework that the app's interface is built with, and the markup format of its layout
   files (`src/main/resources/view`).
-* **Markdown**: The format that the User Guide is written in, which the in-app Help window renders natively.
+* **Markdown**: The format that the User Guide is written in, which the in-app Help Window renders natively.
 * **Mainstream OS**: Windows, Linux, Unix, or macOS.
 * **Sample data**: The six patients LaiNurse starts with when it has no data file; their appointments fall on the
   Monday to Wednesday of the week the app was first launched, plus Alex Yeoh's blood test four weeks later.
@@ -1749,7 +1875,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 * **Notes**: Optional free-form personal information about a patient that the other fields do not cover, such as their
   hobbies, pet peeves and daily routines (e.g., "walks every morning"). Health information goes in the Medical History
   instead.
-* **Normalization (normalized text)**: How LaiNurse stores text: trimmed, in upper case, with each run of whitespace
+* **Normalization (normalized text)**: How LaiNurse stores text: trimmed, in uppercase, with each run of whitespace
   collapsed into one space, so values differing only in case or spacing are equal.
 * **Patients view (patient view)**: The tab that shows the patient list beside one patient's details; also called the
   patient view or the **Patients** tab.
@@ -1825,6 +1951,8 @@ testers are expected to do more *exploratory* testing.
     1. Other incorrect view command to try: `view S123-456` (not a valid ID)<br>
        Expected: The panel does not change. The status message shows the correct command format.
 
+### Completing with Tab
+
 1. Completing with Tab
 
     1. Prerequisites: Start with the sample data, which includes patients with the IDs `S1234567A` and `S2345678B`.
@@ -1865,6 +1993,8 @@ testers are expected to do more *exploratory* testing.
     1. Test case: type `add --id S1`, `view XYZ`, `view S1 extra`, `edit --phone 91234567`, `exit` or
        `view S1234567A`, then press Tab<br>
        Expected: The status bar shows only the data file path. The command box does not change.
+
+### Using the keyboard
 
 1. Moving between the command box and the patient list
 
@@ -1909,6 +2039,8 @@ testers are expected to do more *exploratory* testing.
     1. Test case: `find --name zzz`, then press Esc<br>
        Expected: The list says `No patients match the filter.`, so the focus goes to the **Patients** tab instead. A
        second Esc shows all patients.
+
+### Going through command history
 
 1. Going through command history with Up and Down
 
@@ -2201,7 +2333,7 @@ testers are expected to do more *exploratory* testing.
        Expected: Only Alex Yeoh's blood-test appointment is shown, and the status message shows
        `1 appointment(s) of ALEX YEOH on or after BLOOD`.
 
-    1. Test case: `viewappt --id s1234567a`, the ID in lower case<br>
+    1. Test case: `viewappt --id s1234567a`, the ID in lowercase<br>
        Expected: The same as `viewappt --id S1234567A` gives. IDs are case-insensitive.
 
     1. Test case: `viewappt --id S1234567A --from AFTER`, a range without appointments, where `AFTER` is any date after
@@ -2344,6 +2476,8 @@ testers are expected to do more *exploratory* testing.
        Expected: At first, the panel lists the new appointment under **Appointments**, in orange. Within a few seconds
        of the minute after `HH:MM`, when the appointment has passed, it moves under **Past**, dimmed. On the
        **Appointments** tab, it is greyed out.
+
+### Automatic navigation
 
 1. Commands that keep the view
 
@@ -2721,7 +2855,7 @@ testers are expected to do more *exploratory* testing.
     1. Test case: then `view S1234567A`<br>
        Expected: `Cancelled. Nothing was deleted.` The `view` command does not run, so the selection stays.
     1. Test case: `clear`, then `CONFIRM`<br>
-       Expected: `Cancelled. Nothing was deleted.`, as the word must be in lower case.
+       Expected: `Cancelled. Nothing was deleted.`, as the word must be in lowercase.
 
 1. Deleting appointments
 
@@ -2776,38 +2910,50 @@ testers are expected to do more *exploratory* testing.
 ### Viewing help and command instructions
 
 1. Command overview via CLI
-    * Test case: `help`
-        * Expected: An alphabetical summary of all available commands (`add`, `addappt`, `archive`, `clear`, `clearappt`, `delete`, `deleteappt`, `edit`, `editappt`, `exit`, `find`, `help`, `markappt`, `set`, `unarchive`, `unmarkappt`, `view`, `viewappt`) is displayed in the result box.
 
-2. Targeted command help
-    * Test case: `help add`
-        * Expected: Parameter syntax and usage examples for `add` are displayed.
-    * Test case: `help help`
-        * Expected: The syntax and example of the `help` command itself is displayed.
-    * Test case: `help viewappt`
-        * Expected: The `viewappt` syntax is displayed: a date, a `--from`/`--to` range, or neither for this week, each
-          with an optional `--id ID`. With `--id ID` alone, it shows all of that patient's appointments.
-    * Test case: `help DELETE` or `help VIEW`
-        * Expected: The invalid command format error is displayed, because targets are matched case-sensitively and
-          uppercase forms are rejected like unknown targets.
+    1. Test case: `help`<br>
+       Expected: An alphabetical summary of all available commands (`add`, `addappt`, `archive`, `clear`, `clearappt`, `delete`, `deleteappt`, `edit`, `editappt`, `exit`, `find`, `help`, `markappt`, `set`, `unarchive`, `unmarkappt`, `view`, `viewappt`) is displayed in the result box.
 
-3. Rejecting invalid help inputs
-    * Test case: `help nonexistent`
-        * Expected: Displays `Invalid command format!`, the usage of `help`, and the list of valid targets.
-    * Test case: `help --add` or `help --window`
-        * Expected: The discontinued `--` flag form is rejected; displays the same invalid command format error.
-    * Test case: `help -- add` or `help --`
-        * Expected: Displays the same invalid command format error.
-    * Test case: `help add patient`
-        * Expected: Multi-token arguments are rejected; displays invalid command format error.
+1. Targeted command help
 
-4. Opening the full User Guide window
-    * Test case: `help window`
-        * Expected: The Help Window opens displaying the full bundled User Guide formatted with native JavaFX nodes. The status message confirms: `Opened help window.`.
-    * Test case: Press <kbd>F1</kbd> or click **Help** > **Help** in the menu bar.
-        * Expected: Opens the Help Window.
-    * Test case: Inside the Help Window, click any inline link or the **Copy URL** button.
-        * Expected: The target URL is copied to the system clipboard, and the label changes to indicate `(Copied!)` temporarily.
+    1. Test case: `help add`<br>
+       Expected: Parameter syntax and usage examples for `add` are displayed.
+
+    1. Test case: `help help`<br>
+       Expected: The syntax and example of the `help` command itself is displayed.
+
+    1. Test case: `help viewappt`<br>
+       Expected: The `viewappt` syntax is displayed: a date, a `--from`/`--to` range, or neither for this week, each
+       with an optional `--id ID`. With `--id ID` alone, it shows all of that patient's appointments.
+
+    1. Test case: `help DELETE` or `help VIEW`<br>
+       Expected: The invalid command format error is displayed, because targets are matched case-sensitively and
+       uppercase forms are rejected like unknown targets.
+
+1. Rejecting invalid help inputs
+
+    1. Test case: `help nonexistent`<br>
+       Expected: Displays `Invalid command format!`, the usage of `help`, and the list of valid targets.
+
+    1. Test case: `help --add` or `help --window`<br>
+       Expected: The discontinued `--` flag form is rejected; displays the same invalid command format error.
+
+    1. Test case: `help -- add` or `help --`<br>
+       Expected: Displays the same invalid command format error.
+
+    1. Test case: `help add patient`<br>
+       Expected: Multi-token arguments are rejected; displays invalid command format error.
+
+1. Opening the full User Guide window
+
+    1. Test case: `help window`<br>
+       Expected: The Help Window opens displaying the full bundled User Guide formatted with native JavaFX nodes. The status message confirms: `Opened help window.`.
+
+    1. Test case: Press <kbd>F1</kbd> or click **Help** > **Help** in the menu bar.<br>
+       Expected: Opens the Help Window.
+
+    1. Test case: Inside the Help Window, click any inline link or the **Copy URL** button.<br>
+       Expected: The target URL is copied to the system clipboard, and the label changes to indicate `(Copied!)` temporarily.
 
 ### Saving data
 

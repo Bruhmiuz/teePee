@@ -51,5 +51,5 @@ You can reach us by opening an issue in our [GitHub repository](https://github.c
 
 [[github](https://github.com/bruhmiuz)]
 
-* Role: Ex-Fang Tekh Lid
+* Role: Ex-FAANG Tech Lead
 * Responsibilities: Yap

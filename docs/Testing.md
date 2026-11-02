@@ -17,7 +17,7 @@ You can run tests in two ways.
   * To run a subset of tests, you can right-click on a test package,
     test class, or a test and choose `Run 'ABC'`
 * **Method 2: Using Gradle**
-  * Open a console and run the command `gradlew clean test` (Mac/Linux: `./gradlew clean test`)
+  * Open a console and run the command `gradlew clean test` (PowerShell: `.\gradlew clean test`, Mac/Linux: `./gradlew clean test`)
 
 <div markdown="span" class="alert alert-secondary">:link: **Link**: Read [this Gradle Tutorial from the se-edu/guides](https://se-education.org/guides/tutorials/gradle.html) to learn more about using Gradle.
 </div>
@@ -29,7 +29,7 @@ You can run tests in two ways.
 This project has three types of tests:
 
 1. *Unit tests* target the lowest-level methods and classes.<br>
-   For example: `seedu.address.commons.StringUtilTest`
+   For example: `seedu.address.commons.util.StringUtilTest`
 1. *Integration tests* check how multiple code units work together; the individual units are assumed to work.<br>
    For example: `seedu.address.storage.StorageManagerTest`
 1. *Hybrid tests* combine unit and integration testing. These tests check both the individual units and how they work together.<br>

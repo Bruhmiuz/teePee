@@ -65,9 +65,6 @@ LaiNurse is a **desktop application that gives home nurses fast access to patien
   For example, `--name NAME [--medical-history MEDICAL_HISTORY]` can be used as `--name John Doe --medical-history Asthma` or as `--name John Doe`.<br>
   An option whose value is in its own square brackets, such as `[--notes [NOTES]]` in `edit`, can also be given with no value.
 
-* Items followed by `…`​ can appear zero or more times.<br>
-  For example, `[KEYWORD]…​` may be omitted, or written as `John` or `John Jane`.
-
 * Options (words starting with `--`) can be in any order. A parameter that must come first, such as `ID` in `edit`, must stay first.<br>
   For example, if the command specifies `--name NAME --phone PHONE`, `--phone PHONE --name NAME` is also acceptable.
 
@@ -200,12 +197,8 @@ Format: `help [COMMAND]`
 * Typing an unknown command name (e.g., `help 3`), a wrong-case target (e.g., `help VIEW`), or the unsupported `help --COMMAND` flag form results in an invalid command format error that lists the valid targets.
 
 Examples:
-* `help` shows a quick summary list of all available commands in the result display.
 * `help add` shows the exact parameters and examples for adding a patient.
-* `help help` shows the syntax and example of the `help` command.
-* `help edit` shows the exact parameters and examples for editing a patient.
 * `help window` opens the full User Guide window.
-* Pressing <kbd>F1</kbd> opens the full User Guide window.
 
 ### Adding a patient: `add`
 
@@ -296,11 +289,9 @@ Examples:
 * `find --name "John" --address "Marina Bay"` finds patients whose name contains `John` or whose address contains `Marina Bay`, with patients matching both fields first.
 * `find --name Irfan --id 1234567` on the sample data shows Irfan Ibrahim before Alex Yeoh, because Irfan matches both fields while Alex matches only ID.
 * `find --id “T04”` finds patients whose ID contains `T04`.
-* `find --id "123"` finds patients whose ID contains `123`.
 * `find --phone "(43)-88"` on the sample data finds Alex Yeoh, whose phone number is `87438807`.
 * `find --medical-history penicillin --name tan` finds patients whose medical history contains `penicillin` or whose name contains `tan`.
 * `find --notes "enjoys gardening"` finds patients whose notes contain that phrase.
-* `find --notes morning --name tan` finds patients whose notes contain `morning` or whose name contains `tan`.
 * `find --name yu --archived` finds archived patients whose name contains `yu`.
 
 ### Viewing appointments: `viewappt`
@@ -526,7 +517,6 @@ Format: `delete ID`
 * Deletes the patient with the specified `ID`. IDs are case-insensitive, so `s1234567a` and `S1234567A` refer to the same patient.
 * The patient does not need to be in the displayed list, because `delete` searches all patients.
 * If no patient has that ID, LaiNurse shows an error and deletes nothing.
-* Deleting a patient also deletes all their appointments.
 * LaiNurse first says what it would delete, such as `This deletes ALEX YEOH (S1234567A) and their 2 appointment(s).`, and waits. Type `confirm` to go ahead. Anything else cancels. See the caution under [`clear`](#deleting-many-patients-clear).
 * The displayed list keeps its current filter, so the list numbers of the patients below the deleted one go down by one.
 * After a patient is deleted, no patient is selected, and the details beside the list show their starting message. This is so in both views.
@@ -611,17 +601,15 @@ An archived patient is saved with `"archived": true`. A patient who is not archi
 Appointments are saved with their mark, for example
 `{"dateTime": "2026-10-05 09:30", "marked": false, "details": "INSULIN REVIEW"}`. Their numbers are not saved:
 LaiNurse numbers each patient's appointments in date order when it loads them, and appointments at the same date and
-time keep their order in the file. A `number` saved by an earlier version is ignored, and older files with appointment
-strings still load. Same-time visits are all preserved. A missing `marked` field defaults to false (unmarked). If supplied, `marked` must be the
-JSON boolean `true` or `false`; strings, numbers and null are invalid. A file from an earlier version, which saved the
-mark as `done`, still loads.
+time keep their order in the file. Same-time visits are all preserved. A missing `marked` field defaults to false (unmarked). If supplied, `marked` must be the
+JSON boolean `true` or `false`; strings, numbers and null are invalid.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
 Do not edit `lainurse.backup.json`. LaiNurse cannot stop you from editing it, and it does not check it until it needs it. The backup protects you only in the cases in the table above.<br>
 If the backup is missing or cannot be loaded either, LaiNurse starts with no data, and the next command that succeeds, even `view`, `help` or `exit`, saves that empty data over both files. Your data is then only in `lainurse.corrupt.json`. To leave both files as they are, close the window with its close button instead.<br>
 LaiNurse keeps only one backup, and every save replaces it. If you edit `lainurse.json` and LaiNurse loads it, the next save writes your edits to the backup too, so the backup cannot undo an edit that loads but that you regret.<br>
 If `lainurse.json` is missing, LaiNurse loads the sample data even when there is a backup, and the next save replaces the backup with the sample data. So LaiNurse first copies the backup to `lainurse.previous.json`. To restore your data, close LaiNurse and copy `lainurse.previous.json` to `lainurse.json`.<br>
-Appointment dates and times in the file follow the formats above, and a file saved by an earlier version with a signed or wider year, such as `+12345-01-01` or `-2026-10-05`, also fails to load. Furthermore, certain edits can cause LaiNurse to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
+Certain edits can cause LaiNurse to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
 </div>
 
 --------------------------------------------------------------------------------------------------------------------
