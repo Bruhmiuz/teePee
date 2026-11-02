@@ -333,7 +333,7 @@ Format: `addappt ID --date DATE_OR_DATETIME [--details DETAILS]`
 
 * `ID` is the patient's ID, as in [`edit`](#editing-a-patient-edit), and must come first. The patient does not have to be in the list currently shown: even under a `find` filter, which stays, the patient may still be hidden when you return to the Patients view.
 * `--date` gives the date, or date and time, of the new appointment, in the appointment date format described in the notes about the command format above. Past dates are accepted. Without `--date`, LaiNurse says that the date is missing.
-* `--details` sets the appointment's details, such as what to do or bring. Like notes, details are stored in upper case, and cannot be blank.
+* `--details` sets the appointment's details, such as what to do or bring. Like notes, details are stored in upper case, and cannot be blank. Quotes are stored as part of the details, so leave them out.
 * `--date` and the optional `--details` can be in either order after the ID, and each may be given only once.
 * The new appointment starts **Undone**.
 * A patient's appointments are numbered from 1 in date order: by date, then by time, with an appointment that has no time first on its date. A new appointment at the same date and time as another comes after it. Adding, moving or deleting an appointment renumbers the patient's appointments after it, so check the number shown before you use it in a command.
@@ -359,7 +359,7 @@ Format: `editappt ID NUMBER [--date NEW_DATE_OR_DATETIME] [--details [DETAILS]] 
 * `NUMBER` is the appointment's number shown as `#N`, without the `#`: its place among the patient's appointments in
   date order. Numbers belong to a patient; they are different from the positions down the appointment page. If the patient has no such number, nothing is changed.
 * `--date` moves the appointment to a new date, or date and time, in the same format as in [`addappt`](#adding-an-appointment-addappt). Giving a date alone turns it into an appointment with no time.
-* `--details` sets the appointment's details, such as what to do or bring, replacing any it had. Like notes, details are stored in upper case. With no value, `--details` clears the details.
+* `--details` sets the appointment's details, such as what to do or bring, replacing any it had. Like notes, details are stored in upper case. Quotes are stored as part of the details, so leave them out. With no value, `--details` clears the details.
 * `--add-details` adds text to the end of the details, after `; `, or sets the details if the appointment has none. The text to add cannot be blank. `--details` and `--add-details` cannot be given together.
 * Give at least one of `--date`, `--details` and `--add-details`. The options may appear in any order after the ID and number, each at most once.
 * Moving an appointment keeps its details, unless `--details` is also given to replace or clear them, or `--add-details` to add to them.
