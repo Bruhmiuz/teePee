@@ -103,6 +103,11 @@ public class LogicManagerTest {
         assertEquals(Messages.MESSAGE_CANCELLED, logic.execute("list").getFeedbackToUser());
         assertEquals(1, model.getLaiNurse().getPatientList().size());
 
+        // the phrase is case-sensitive
+        logic.execute("clear");
+        assertEquals(Messages.MESSAGE_CANCELLED, logic.execute("CONFIRM").getFeedbackToUser());
+        assertEquals(1, model.getLaiNurse().getPatientList().size());
+
         // the phrase confirms it
         logic.execute("clearappt " + amy.getId().value + " --to 2026-10-05");
         assertEquals(ClearAppointmentCommand.MESSAGE_SUCCESS.formatted(1),

@@ -535,12 +535,12 @@ Format: `clear [--archived]`
 * LaiNurse keeps the view that is shown, and selects nothing.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-`clear` and `clearappt` delete much at once, and cannot be undone. So they first say what they would delete, such as `This deletes 2 archived patient(s) and their 1 appointment(s).`, and wait. Type `I LOVE 2103T` exactly, in capitals, to confirm. Anything else, even another command, cancels: LaiNurse says `Cancelled. Nothing was deleted.`, and does not run what you typed. When there is nothing to delete, the command says so at once, and there is nothing to confirm.
+`clear` and `clearappt` delete much at once, and cannot be undone. So they first say what they would delete, such as `This deletes 2 archived patient(s) and their 1 appointment(s).`, and wait. Type `confirm` exactly, in lower case, to confirm. Anything else, even another command, cancels: LaiNurse says `Cancelled. Nothing was deleted.`, and does not run what you typed. When there is nothing to delete, the command says so at once, and there is nothing to confirm.
 </div>
 
 Examples:
-* `clear --archived`, then `I LOVE 2103T`, deletes every archived patient.
-* `clear`, then `I LOVE 2103T`, deletes every patient. To start again from the sample data instead, see [Editing the data file](#editing-the-data-file).
+* `clear --archived`, then `confirm`, deletes every archived patient.
+* `clear`, then `confirm`, deletes every patient. To start again from the sample data instead, see [Editing the data file](#editing-the-data-file).
 
 ### Changing settings: `set`
 
@@ -637,8 +637,8 @@ Action | Format, Examples
 **Add** | `add --id ID --name NAME --phone PHONE --address ADDRESS [--medical-history MEDICAL_HISTORY] [--notes NOTES]` <br> e.g., `add --id S3333333C --name James Ho --phone 22224444 --address 123, Clementi Rd, 1234665 --notes Enjoys gardening`
 **AddAppt** | `addappt ID --date DATE_OR_DATETIME [--details DETAILS]`<br> e.g., `addappt S1234567A --date 2026-12-01 10:00 --details Bring insulin pen`
 **Archive** | `archive ID`<br> e.g., `archive S2345678B`
-**Clear** | `clear [--archived]`, then `I LOVE 2103T` to confirm<br> e.g., `clear --archived`
-**ClearAppt** | `clearappt [ID]` or `clearappt [--id ID] [--from DATE_OR_DATETIME] [--to DATE_OR_DATETIME]`, then `I LOVE 2103T` to confirm<br> e.g., `clearappt S1234567A`, `clearappt --to 2026-10-04`
+**Clear** | `clear [--archived]`, then `confirm` to confirm<br> e.g., `clear --archived`
+**ClearAppt** | `clearappt [ID]` or `clearappt [--id ID] [--from DATE_OR_DATETIME] [--to DATE_OR_DATETIME]`, then `confirm` to confirm<br> e.g., `clearappt S1234567A`, `clearappt --to 2026-10-04`
 **Delete** | `delete ID`<br> e.g., `delete T0123456B`
 **DeleteAppt** | `deleteappt ID NUMBER`<br> e.g., `deleteappt S1234567A 1`
 **Edit** | `edit ID [--name NAME] [--phone PHONE] [--address ADDRESS] [--medical-history [MEDICAL_HISTORY]] [--add-medical-history MORE_HISTORY] [--notes [NOTES]] [--add-notes MORE_NOTES]`<br> e.g., `edit S1234567A --notes Walks every morning`, `edit S1234567A --add-medical-history Asthma`

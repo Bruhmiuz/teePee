@@ -37,7 +37,7 @@ public class Messages {
     public static final String MESSAGE_CLASHING_ARCHIVED_PATIENT_NOTE = "\nNote: this patient is archived. "
             + "To unarchive them: 'unarchive %1$s'";
     /** What the user types to confirm a command that deletes much at once (#217). */
-    public static final String CONFIRMATION_PHRASE = "I LOVE 2103T";
+    public static final String CONFIRMATION_PHRASE = "confirm";
     public static final String MESSAGE_CONFIRM = "%1$s\nType \"" + CONFIRMATION_PHRASE + "\" to confirm, "
             + "or anything else to cancel.";
     public static final String MESSAGE_CANCELLED = "Cancelled. Nothing was deleted.";

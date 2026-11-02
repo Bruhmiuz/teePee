@@ -1081,9 +1081,9 @@ The selective clearing of #217 is behind `FeatureFlags#isSelectiveClearEnabled()
 
 **Aspect: How a clear is confirmed**
 
-* **Alternative 1 (Current choice):** The next input must be a fixed phrase.
+* **Alternative 1 (Current choice):** The next input must be the word `confirm`.
     * Pros: The user cannot confirm by reflex, as by pressing Up and Enter to run the same command again.
-    * Cons: The user must type the phrase exactly, and `LogicManager` keeps state between inputs.
+    * Cons: The user must type the word exactly, and `LogicManager` keeps state between inputs.
 * **Alternative 2:** Run the same command again to confirm it.
     * Pros: Nothing new to type.
     * Cons: Up and Enter repeats the command, so it confirms as easily as by mistake.
@@ -2639,8 +2639,8 @@ testers are expected to do more *exploratory* testing.
        Expected: `There are no archived patients to delete.`, and nothing is asked or deleted.
     1. Test case: `archive S2345678B`, then `clear --archived`<br>
        Expected: `This deletes 1 archived patient(s) and their 1 appointment(s).`, followed by
-       `Type "I LOVE 2103T" to confirm, or anything else to cancel.` Nothing is deleted yet.
-    1. Test case: then `I LOVE 2103T`<br>
+       `Type "confirm" to confirm, or anything else to cancel.` Nothing is deleted yet.
+    1. Test case: then `confirm`<br>
        Expected: `Deleted 1 archived patient(s).` Bernice Yu is gone, also after `view --all`, and the other 5
        patients stay.
     1. Test cases: `clear --archived yes`, `clear extra`, `clear --archived --archived`<br>
@@ -2654,19 +2654,19 @@ testers are expected to do more *exploratory* testing.
        Expected: `This deletes 6 patient(s) and their 4 appointment(s).`, followed by the confirmation prompt.
     1. Test case: then `view S1234567A`<br>
        Expected: `Cancelled. Nothing was deleted.` The `view` command does not run, so the selection stays.
-    1. Test case: `clear`, then `i love 2103t`<br>
-       Expected: `Cancelled. Nothing was deleted.`, as the phrase must be in capitals.
+    1. Test case: `clear`, then `CONFIRM`<br>
+       Expected: `Cancelled. Nothing was deleted.`, as the word must be in lower case.
 
 1. Deleting appointments
 
     1. Prerequisites: Start with the sample data. Use its Monday and Tuesday dates for `MON` and `TUE`.
     1. Test case: `clearappt`, then any other input<br>
        Expected: `This deletes 4 appointment(s) of 3 patient(s).` and the prompt, then the cancellation.
-    1. Test case: `clearappt --from MON 10:00 --to TUE`, then `I LOVE 2103T`<br>
+    1. Test case: `clearappt --from MON 10:00 --to TUE`, then `confirm`<br>
        Expected: `This deletes 1 appointment(s) of 1 patient(s).`, then `Deleted 1 appointment(s).` Bernice Yu's
        date-only Tuesday appointment is gone, as it counts as at the start of Tuesday. Alex Yeoh's Monday 09:30
        appointment stays, as it is before `MON 10:00`.
-    1. Test case: `clearappt S1234567A --to MON`, then `I LOVE 2103T`<br>
+    1. Test case: `clearappt S1234567A --to MON`, then `confirm`<br>
        Expected: `This deletes 1 appointment(s) of ALEX YEOH (S1234567A).`, then `Deleted 1 appointment(s).` Alex's
        monthly blood test becomes #1.
     1. Test case: `clearappt S4567890F`<br>
