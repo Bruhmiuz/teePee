@@ -206,9 +206,9 @@ public class ParserUtil {
     /**
      * Parses a patient-local appointment number, which is a positive whole number with no sign or fraction.
      * A number too large for any appointment is kept, so that the command reports that the patient has no such
-     * appointment. One too large for a {@code long} is read as {@code Long.MAX_VALUE}.
+     * appointment.
      *
-     * @throws ParseException if {@code number} is not a positive whole number.
+     * @throws ParseException if {@code number} is not a positive whole number, or is too large for a {@code long}.
      */
     public static long parseAppointmentNumber(String number) throws ParseException {
         requireNonNull(number);
@@ -219,7 +219,8 @@ public class ParserUtil {
         try {
             return Long.parseLong(number);
         } catch (NumberFormatException e) {
-            return Long.MAX_VALUE;
+            logger.fine("Rejected appointment number that is too large.");
+            throw new ParseException(String.format(Appointment.MESSAGE_NUMBER_TOO_LARGE, number));
         }
     }
 

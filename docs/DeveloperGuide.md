@@ -494,6 +494,8 @@ timed one. Both commands and UI use this query. Clashes never reject commands or
 stored as flags. Add/edit/unmark success messages include every conflicting patient and appointment number. In the
 appointment list and the details, `ClashMark` puts a red boxed `!` before the time of each clashing appointment, so
 that a clash does not show by color alone. Day headings do not mark clashes, so that today's heading stays orange.
+Done visits are left out only under the default settings: [Settings](#settings) can let done, past or archived
+appointments clash too, but never a date-only one.
 
 **Time zones.** An `Appointment` holds a `LocalDate` and an optional `LocalTime`, with no time zone or offset, and is
 saved as text such as `2026-10-05 09:30`. This assumes that the nurse and their patients are in one time zone, which
@@ -540,7 +542,8 @@ given to `addappt` or `--add-details`, as `parseNotes` does for notes, and logs 
 number before any options and retain the existing option normalization and duplicate option checks.
 `ParserUtil.parseAppointmentNumber` rejects zero, signs and fractions. It keeps a number too large for any
 appointment as a `long`, so that the command reports that the patient has no such appointment, as it does for any
-other missing number. `AppointmentLookup.Target` holds the positive number; the shared lookup uses `findByNumber`
+other missing number. It rejects a number too large for a `long`, with an error that repeats the number as typed.
+`AppointmentLookup.Target` holds the positive number; the shared lookup uses `findByNumber`
 and reports a missing number before any mutation.
 An assertion checks that the resolved appointment has the requested number.
 
@@ -1138,7 +1141,8 @@ The settings of #216 decide how marks, past clashes and archived patients behave
 
 * `Settings` in `model` holds four switches: `isMarkStoppingClashes`, `isMarkCountedAsDone`, `isPastClashing` and
   `isArchivedClashing`. Its defaults are how LaiNurse behaves without settings. `UserPrefs` saves it in
-  `preferences.json` with the window settings, and a file without it loads the defaults.
+  `preferences.json` with the window settings, and a file without it loads the defaults. A file with `null` for
+  either one fails to load, as a file with a value of the wrong type does, so LaiNurse uses the default preferences.
 * `ModelManager#getSettings()` gives the settings that apply as an `ObservableValue`: the user's once the feature is
   released, and the defaults before. `set` (`SetCommand`) shows the settings, or turns one on or off with
   `Model#setSettings`. `LogicManager` saves the user preferences after any command that changes them, so a changed
@@ -2679,6 +2683,10 @@ testers are expected to do more *exploratory* testing.
 
     1. Test case: `deleteappt S1234567A 99`<br>
        Expected: No appointment is deleted. The status message says `Patient S1234567A has no appointment #99.`
+
+    1. Test case: `deleteappt S1234567A 99999999999999999999`<br>
+       Expected: No appointment is deleted. The status message says
+       `Appointment number 99999999999999999999 is too large.`
 
     1. Test case: `deleteappt S0000000Z 1`<br>
        Expected: No appointment is deleted. The status message shows `No patient has the ID S0000000Z.`

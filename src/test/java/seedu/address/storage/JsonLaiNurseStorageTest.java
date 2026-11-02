@@ -52,6 +52,11 @@ public class JsonLaiNurseStorageTest {
     }
 
     @Test
+    public void read_onlyNull_exceptionThrown() {
+        assertThrows(DataLoadingException.class, () -> readLaiNurse("nullLaiNurse.json"));
+    }
+
+    @Test
     public void readLaiNurse_invalidPatientLaiNurse_throwDataLoadingException() {
         assertThrows(DataLoadingException.class, () -> readLaiNurse("invalidPatientLaiNurse.json"));
     }

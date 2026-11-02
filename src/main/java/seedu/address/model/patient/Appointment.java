@@ -29,6 +29,7 @@ public class Appointment implements Comparable<Appointment> {
             + ", such as 2026-09-20 or 2026-09-20 14:00.";
     public static final String MESSAGE_NUMBER_CONSTRAINTS =
             "Appointment numbers must be positive whole numbers, such as 1 or 2.";
+    public static final String MESSAGE_NUMBER_TOO_LARGE = "Appointment number %1$s is too large.";
 
     /** The order that {@link #compareTo} gives, built once rather than on every comparison. */
     private static final Comparator<Appointment> NATURAL_ORDER = Comparator.comparing(Appointment::getDate)
