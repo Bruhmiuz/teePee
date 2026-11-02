@@ -239,7 +239,7 @@ Format: `edit ID [--name NAME] [--phone PHONE] [--address ADDRESS] [--medical-hi
 * Edits the patient with the given `ID`, which is the patient ID shown in their row, not their position in the list. The patient does not have to be in the list currently shown.
 * `ID` must come first; the other parameters may appear in any order. Separate options and values using spaces or tabs.
 * As in `add`, whitespace-delimited words beginning with `--` are reserved for options. Unknown options, misspellings, and `--id` are rejected with the command usage instructions.
-* The ID itself cannot be edited. To correct a wrong ID, delete the patient and add them again.
+* The ID itself cannot be edited. To correct a wrong ID, delete the patient and add them again. Deleting a patient also deletes their appointments, so note them down first with [`viewappt --id ID`](#viewing-appointments-viewappt), and add them again with [`addappt`](#adding-an-appointment-addappt).
 * At least one of the optional parameters must be provided.
 * `--name`, `--phone`, `--address`, `--medical-history` and `--notes` replace the existing value, and follow the same rules as in [`add`](#adding-a-patient-add). `--medical-history` and `--notes` can also set a value for a patient who has none.
 * `--medical-history` or `--notes` with no value clears that field. For example, `edit S1234567A --notes` removes the patient's notes. In `add`, a blank value is still rejected.
@@ -514,6 +514,7 @@ Format: `delete ID`
 * Deletes the patient with the specified `ID`. IDs are case-insensitive, so `s1234567a` and `S1234567A` refer to the same patient.
 * The patient does not need to be in the displayed list, because `delete` searches all patients.
 * If no patient has that ID, LaiNurse shows an error and deletes nothing.
+* Deleting a patient also deletes all their appointments.
 * The displayed list keeps its current filter, so the list numbers of the patients below the deleted one go down by one.
 * After a patient is deleted, no patient is selected, and the details beside the list show their starting message. This is so in both views.
 
