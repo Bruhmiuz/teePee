@@ -15,7 +15,7 @@ public class Phone {
 
     public static final String MESSAGE_CONSTRAINTS =
             "Phone numbers accept any non-blank text containing at least three digits, and cannot contain "
-                    + "invisible characters.";
+                    + "common invisible characters such as the zero-width space.";
 
     /*
      * The first lookahead requires at least three ASCII digits anywhere in the value. The rest accepts any visible
