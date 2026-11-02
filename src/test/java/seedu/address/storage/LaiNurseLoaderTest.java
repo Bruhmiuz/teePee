@@ -124,6 +124,18 @@ public class LaiNurseLoaderTest {
     }
 
     @Test
+    public void load_nullPatientInDataFile_backupLoaded() throws Exception {
+        LaiNurse saved = getTypicalLaiNurse();
+        storage.saveLaiNurse(saved);
+        String nullPatient = "{ \"patients\" : [ null ] }";
+        Files.writeString(storage.getLaiNurseFilePath(), nullPatient);
+
+        LaiNurseLoader.Result result = LaiNurseLoader.load(storage);
+        assertEquals(saved, new LaiNurse(result.data()));
+        assertEquals(nullPatient, Files.readString(storage.getLaiNurseCorruptFilePath()));
+    }
+
+    @Test
     public void load_invalidDataFileMissingBackup_emptyDataLoaded() throws Exception {
         Files.createDirectories(storage.getLaiNurseFilePath().getParent());
         Files.writeString(storage.getLaiNurseFilePath(), NOT_JSON);
