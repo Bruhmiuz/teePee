@@ -101,7 +101,7 @@ public class LogicManagerTest {
         assertEquals(1, model.getLaiNurse().getPatientList().size());
 
         // any other input cancels it, and runs no command
-        assertEquals(Messages.MESSAGE_CANCELLED, logic.execute("list").getFeedbackToUser());
+        assertEquals(Messages.MESSAGE_CANCELLED, logic.execute("view").getFeedbackToUser());
         assertEquals(1, model.getLaiNurse().getPatientList().size());
 
         // the phrase is case-sensitive
@@ -120,7 +120,7 @@ public class LogicManagerTest {
 
         // with nothing to delete, there is nothing to confirm
         assertCommandException("clear --archived", ClearCommand.MESSAGE_NO_ARCHIVED_PATIENTS);
-        assertEquals(ListCommand.MESSAGE_SUCCESS, logic.execute("list").getFeedbackToUser());
+        assertEquals(ListCommand.MESSAGE_SUCCESS, logic.execute("view").getFeedbackToUser());
     }
 
     @Test
@@ -175,8 +175,7 @@ public class LogicManagerTest {
 
     @Test
     public void execute_validCommand_success() throws Exception {
-        String listCommand = ListCommand.COMMAND_WORD;
-        assertCommandSuccess(listCommand, ListCommand.MESSAGE_SUCCESS, model);
+        assertCommandSuccess("view", ListCommand.MESSAGE_SUCCESS, model);
     }
 
     @Test
@@ -226,7 +225,7 @@ public class LogicManagerTest {
     @Test
     public void execute_eachCommand_resultNamesTheViewItShows() throws Exception {
         // commands that list or change patients show the patient view
-        assertEquals(Optional.of(View.PATIENTS), logic.execute(ListCommand.COMMAND_WORD).getView());
+        assertEquals(Optional.of(View.PATIENTS), logic.execute("view").getView());
         assertEquals(Optional.of(View.PATIENTS), logic.execute("find --name Amy").getView());
         // a command word that ends in "appt" shows the appointment view
         assertEquals(Optional.of(View.APPOINTMENTS), logic.execute("viewappt 2026-10-06").getView());
@@ -333,7 +332,7 @@ public class LogicManagerTest {
                 logic.getCompletions("view S1").stream().map(Completion::text).toList());
         assertEquals(List.of("S1000003C", "S1000001A", "S1000002B"),
                 logic.getCompletions("viewappt --id s").stream().map(Completion::word).toList());
-        assertEquals(List.of(), logic.getCompletions("list"));
+        assertEquals(List.of(), logic.getCompletions("exit"));
     }
 
     @Test

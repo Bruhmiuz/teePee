@@ -167,9 +167,12 @@ public class LaiNurseParserTest {
     }
 
     @Test
-    public void parseCommand_list() throws Exception {
-        assertTrue(parser.parseCommand(ListCommand.COMMAND_WORD) instanceof ListCommand);
-        assertTrue(parser.parseCommand(ListCommand.COMMAND_WORD + " 3") instanceof ListCommand);
+    public void parseCommand_list_unknownCommand() {
+        assertThrows(ParseException.class, MESSAGE_UNKNOWN_COMMAND, () -> parser.parseCommand("list"));
+    }
+
+    @Test
+    public void parseCommand_viewWithoutId_listCommand() throws Exception {
         // view without an ID lists the patients in a scope
         assertEquals(new ListCommand(), parser.parseCommand(ViewCommand.COMMAND_WORD));
         assertEquals(new ListCommand(PatientScope.ALL), parser.parseCommand(ViewCommand.COMMAND_WORD + " --all"));
@@ -215,7 +218,7 @@ public class LaiNurseParserTest {
     public void parseCommand_zeroWidthSpaceInCommandWord_throwsParseException() {
         // Zero-width characters are neither \h nor \s, so they stay glued to the command word,
         // which then matches no registered command.
-        assertThrows(ParseException.class, MESSAGE_UNKNOWN_COMMAND, () -> parser.parseCommand("list\u200B"));
+        assertThrows(ParseException.class, MESSAGE_UNKNOWN_COMMAND, () -> parser.parseCommand("view\u200B"));
         assertThrows(ParseException.class, MESSAGE_UNKNOWN_COMMAND, () -> parser.parseCommand("\u200Blist"));
         assertThrows(ParseException.class, MESSAGE_UNKNOWN_COMMAND, () -> parser.parseCommand(
                 "add\u200B --id T0123456B --name Alex Yu --phone 91234567 --address Blk 1"));

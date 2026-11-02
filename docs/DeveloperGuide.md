@@ -1845,7 +1845,7 @@ testers are expected to do more *exploratory* testing.
     1. Test case: type `edit s23 --phone 91234567`, then press Tab<br>
        Expected: The command box shows `edit S2345678B --phone 91234567`. The options are kept.
 
-    1. Test case: type `add --id S1`, `view XYZ`, `view S1 extra`, `edit --phone 91234567`, `list` or
+    1. Test case: type `add --id S1`, `view XYZ`, `view S1 extra`, `edit --phone 91234567`, `exit` or
        `view S1234567A`, then press Tab<br>
        Expected: The status bar shows only the data file path. The command box does not change.
 
@@ -1895,11 +1895,11 @@ testers are expected to do more *exploratory* testing.
 
 1. Going through command history with Up and Down
 
-    1. Prerequisites: Start LaiNurse, then enter `list`, `find --name bernice` and `view S1234567A`.
+    1. Prerequisites: Start LaiNurse, then enter `view`, `find --name bernice` and `view S1234567A`.
 
     1. Test case: type `abc`, then press Up three times<br>
-       Expected: The command box shows `view S1234567A`, then `find --name bernice`, then `list`. A fourth Up keeps
-       `list`.
+       Expected: The command box shows `view S1234567A`, then `find --name bernice`, then `view`. A fourth Up keeps
+       `view`.
 
     1. Test case: after the test case above, press Down three times<br>
        Expected: The command box shows `find --name bernice`, then `view S1234567A`, then `abc` again.
@@ -1963,13 +1963,13 @@ testers are expected to do more *exploratory* testing.
        `add --id NOTES2 --name Jane Tan --phone 91234567 --address Clementi --notes First --notes Second`<br>
        Expected: A duplicate-option error is shown, and nothing changes.
 
-    1. Enter `delete NOTES1`, then `confirm`, then `list` after testing to restore the sample patients.
+    1. Enter `delete NOTES1`, then `confirm`, then `view` after testing to restore the sample patients.
 
 ### Finding patients by substrings
 
 1. Searching each patient field
 
-    1. Prerequisites: Start with the unmodified sample data and enter `list`.
+    1. Prerequisites: Start with the unmodified sample data and enter `view`.
 
     1. Test case: `find --id 0123`<br>
        Expected: Only Charlotte Oliveiro is shown, because their ID contains `0123`.
@@ -2013,7 +2013,7 @@ testers are expected to do more *exploratory* testing.
     1. Test case: `find --address "Gardens Serangoon"`<br>
        Expected: An empty list is shown with a count of zero. Multiword values must match a contiguous substring.
 
-    1. Test case: `list`<br>
+    1. Test case: `view`<br>
        Expected: All six sample patients are shown again. Alex Yeoh, the first, is selected, and the panel shows their
        details.
 
@@ -2048,7 +2048,7 @@ testers are expected to do more *exploratory* testing.
        Expected: The displayed list, its scope and patient records are unchanged. The status message shows
        `Phone search values must contain at least one digit.`
 
-    1. Enter `list` after testing to show all patients again.
+    1. Enter `view` after testing to show all patients again.
 
 ### Sorting by name
 
@@ -2057,7 +2057,7 @@ testers are expected to do more *exploratory* testing.
     1. Prerequisites: Start with the sample data, which is already in name order: Alex Yeoh, Bernice Yu,
        Charlotte Oliveiro, David Li, Irfan Ibrahim, Roy Balakrishnan.
 
-    1. Test case: `list`<br>
+    1. Test case: `view`<br>
        Expected: All six patients are shown, in the name order above.
 
     1. Test case: `add --id S0245678G --name Zara Lim --phone 98765432 --address "Blk 123 Clementi Ave 3, #05-12"`<br>
@@ -2335,7 +2335,7 @@ testers are expected to do more *exploratory* testing.
        Expected: The **Appointments** tab stays selected. Alex Yeoh's appointment disappears from the page, which then
        says `No appointments in this range.` Nothing is selected, and the panel shows its starting message.
 
-    1. Test case: `list`<br>
+    1. Test case: `view`<br>
        Expected: The **Patients** tab is selected, and all patients are listed. Bernice Yu, now the first, is selected.
 
 ### Adding a patient
@@ -2725,7 +2725,7 @@ testers are expected to do more *exploratory* testing.
 
 1. Command overview via CLI
     * Test case: `help`
-        * Expected: An alphabetical summary of all available commands (`add`, `addappt`, `archive`, `clear`, `clearappt`, `delete`, `deleteappt`, `edit`, `editappt`, `exit`, `find`, `help`, `list`, `markappt`, `set`, `unarchive`, `unmarkappt`, `view`, `viewappt`) is displayed in the result box.
+        * Expected: An alphabetical summary of all available commands (`add`, `addappt`, `archive`, `clear`, `clearappt`, `delete`, `deleteappt`, `edit`, `editappt`, `exit`, `find`, `help`, `markappt`, `set`, `unarchive`, `unmarkappt`, `view`, `viewappt`) is displayed in the result box.
 
 2. Targeted command help
     * Test case: `help add`
@@ -2764,7 +2764,7 @@ before you change any file in its `data` folder.
 
 1. Saving the data file and its backup
 
-    1. Launch the app in an empty folder, and run `list`.<br>
+    1. Launch the app in an empty folder, and run `view`.<br>
        Expected: `data/lainurse.json` and `data/lainurse.backup.json` are created, and hold the same data.
 
     1. Test case: `delete` a patient, then close the app.<br>
@@ -2792,12 +2792,12 @@ before you change any file in its `data` folder.
 
     1. Test case: Delete `data/lainurse.json`, and launch the app.<br>
        Expected: The app starts with the sample patients. The result display says that `data/lainurse.json` is missing,
-       and that the backup is kept at `data/lainurse.previous.json`. After `list`, both files hold the sample data, and
+       and that the backup is kept at `data/lainurse.previous.json`. After `view`, both files hold the sample data, and
        `data/lainurse.previous.json` still holds the data from before.
 
 1. Dealing with a corrupted data file
 
-    1. Prerequisites: `data/lainurse.backup.json` holds valid data, such as after `list`.
+    1. Prerequisites: `data/lainurse.backup.json` holds valid data, such as after `view`.
 
     1. Test case: Replace the contents of `data/lainurse.json` with `{ not json`, and launch the app.<br>
        Expected: The app starts with the data in the backup. The result display says that `data/lainurse.json` could
@@ -2807,7 +2807,7 @@ before you change any file in its `data` folder.
     1. Test case: As above, but instead change a patient's `phone` in `data/lainurse.json` to `abc`.<br>
        Expected: As above. The corrupt copy holds the edited file, with `abc`.
 
-    1. Test case: After either test case above, run `list`, close the app, and launch it again.<br>
+    1. Test case: After either test case above, run `view`, close the app, and launch it again.<br>
        Expected: `data/lainurse.json` holds the backup's data again, so the app starts with it and with an empty
        result display. `data/lainurse.corrupt.json` is unchanged.
 

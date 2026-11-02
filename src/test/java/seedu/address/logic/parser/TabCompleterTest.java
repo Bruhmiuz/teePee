@@ -42,7 +42,7 @@ public class TabCompleterTest {
 
     @Test
     public void complete_wholeCommandWordWithNothingToComplete_returnsEmptyList() {
-        assertEquals(List.of(), words("list"));
+        assertEquals(List.of(), words("exit"));
         assertEquals(List.of(), words("viewappt"));
         assertEquals(List.of(), words("viewappt "));
         assertEquals(List.of(), words("xyz"));

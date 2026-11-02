@@ -180,7 +180,7 @@ public class FindCommandFlowTest {
         assertEquals(List.of(), model.getFilteredPatientList());
         assertEquals(String.format(Messages.MESSAGE_PATIENTS_LISTED_OVERVIEW, 0), result.getFeedbackToUser());
 
-        execute("list");
+        execute("view");
         assertEquals(getTypicalPatients(), model.getFilteredPatientList());
         assertEquals(getTypicalPatients(), model.getLaiNurse().getPatientList());
     }
@@ -188,7 +188,7 @@ public class FindCommandFlowTest {
     @Test
     public void execute_listAfterRankedSearch_restoresAllPatientsInNameOrder() throws Exception {
         executeRankedSearch();
-        execute("list");
+        execute("view");
         assertEquals(getTypicalPatients(), model.getFilteredPatientList());
     }
 

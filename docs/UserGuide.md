@@ -197,7 +197,7 @@ Format: `help [COMMAND]`
 * Typing `help` without arguments outputs a summary of all commands in the result display, including help itself.
 * Adding a command name (e.g., `help add`, `help edit`, `help help`) displays the syntax and practical examples for that command.
 * Typing `help window` opens the pop-up Help Window containing the complete User Guide.
-* Typing an unknown command name (e.g., `help 3`), a wrong-case target (e.g., `help LIST`), or the unsupported `help --COMMAND` flag form results in an invalid command format error that lists the valid targets.
+* Typing an unknown command name (e.g., `help 3`), a wrong-case target (e.g., `help VIEW`), or the unsupported `help --COMMAND` flag form results in an invalid command format error that lists the valid targets.
 
 Examples:
 * `help` shows a quick summary list of all available commands in the result display.
