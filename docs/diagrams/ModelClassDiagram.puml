@@ -40,10 +40,10 @@ UserPrefs .up.|> ReadOnlyUserPrefs
 
 LaiNurse *--> "1" UniquePatientList
 UniquePatientList --> "~* all" Patient
-Patient *--> PatientId
-Patient *--> Name
-Patient *--> Phone
-Patient *--> Address
+Patient *--> "1" PatientId
+Patient *--> "1" Name
+Patient *--> "1" Phone
+Patient *--> "1" Address
 Patient *--> "0..1" MedicalHistory
 Patient *--> "0..1" Notes
 Patient *--> "1" AppointmentSchedule
