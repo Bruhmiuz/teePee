@@ -40,7 +40,7 @@ LaiNurse is a **desktop application that gives home nurses fast access to patien
 
    * `viewappt` : Switches to the **Appointments** view, and shows the weekly view of this week, with the next appointment from now selected.
 
-   * `delete S1234567A` : Deletes the patient with the ID `S1234567A` (Alex Yeoh, in the sample data).
+   * `delete S1234567A` : Deletes the patient with the ID `S1234567A` (Alex Yeoh, in the sample data), after you type `confirm`.
 
    * `exit` : Exits the app.
 
@@ -512,7 +512,7 @@ Examples:
 
 ### Deleting a patient: `delete`
 
-Deletes the specified patient from LaiNurse.
+Deletes the specified patient and all their appointments from LaiNurse. You confirm the deletion first.
 
 Format: `delete ID`
 
@@ -520,11 +520,12 @@ Format: `delete ID`
 * The patient does not need to be in the displayed list, because `delete` searches all patients.
 * If no patient has that ID, LaiNurse shows an error and deletes nothing.
 * Deleting a patient also deletes all their appointments.
+* LaiNurse first says what it would delete, such as `This deletes ALEX YEOH (S1234567A) and their 2 appointment(s).`, and waits. Type `confirm` to go ahead. Anything else cancels. See the caution under [`clear`](#deleting-many-patients-clear).
 * The displayed list keeps its current filter, so the list numbers of the patients below the deleted one go down by one.
 * After a patient is deleted, no patient is selected, and the details beside the list show their starting message. This is so in both views.
 
 Examples:
-* `delete S1234567A` deletes the patient with the ID `S1234567A`.
+* `delete S1234567A`, then `confirm`, deletes the patient with the ID `S1234567A`.
 
 ### Deleting many patients: `clear`
 
@@ -537,7 +538,7 @@ Format: `clear [--archived]`
 * LaiNurse keeps the view that is shown, and selects nothing.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-`clear` and `clearappt` delete much at once, and cannot be undone. So they first say what they would delete, such as `This deletes 2 archived patient(s) and their 1 appointment(s).`, and wait. Type `confirm` exactly, in lower case, to confirm. Anything else, even another command, cancels: LaiNurse says `Cancelled. Nothing was deleted.`, and does not run what you typed. When there is nothing to delete, the command says so at once, and there is nothing to confirm.
+`clear`, `clearappt` and `delete` delete much at once, and cannot be undone. So they first say what they would delete, such as `This deletes 2 archived patient(s) and their 1 appointment(s).`, and wait. Type `confirm` exactly, in lower case, to confirm. Anything else, even another command, cancels: LaiNurse says `Cancelled. Nothing was deleted.`, and does not run what you typed. When there is nothing to delete, the command says so at once, and there is nothing to confirm.
 </div>
 
 Examples:
@@ -641,7 +642,7 @@ Action | Format, Examples
 **Archive** | `archive ID`<br> e.g., `archive S2345678B`
 **Clear** | `clear [--archived]`, then `confirm` to confirm<br> e.g., `clear --archived`
 **ClearAppt** | `clearappt [ID]` or `clearappt [--id ID] [--from DATE_OR_DATETIME] [--to DATE_OR_DATETIME]`, then `confirm` to confirm<br> e.g., `clearappt S1234567A`, `clearappt --to 2026-10-04`
-**Delete** | `delete ID`<br> e.g., `delete T0123456B`
+**Delete** | `delete ID`, then `confirm` to confirm<br> e.g., `delete T0123456B`
 **DeleteAppt** | `deleteappt ID NUMBER`<br> e.g., `deleteappt S1234567A 1`
 **Edit** | `edit ID [--name NAME] [--phone PHONE] [--address ADDRESS] [--medical-history [MEDICAL_HISTORY]] [--add-medical-history MORE_HISTORY] [--notes [NOTES]] [--add-notes MORE_NOTES]`<br> e.g., `edit S1234567A --notes Walks every morning`, `edit S1234567A --add-medical-history Asthma`
 **EditAppt** | `editappt ID NUMBER [--to NEW_DATE_OR_DATETIME] [--details [DETAILS]] [--add-details MORE_DETAILS]`<br> e.g., `editappt S1234567A 1 --to 2026-10-06 10:00`, `editappt S1234567A 1 --add-details Bring glucometer`

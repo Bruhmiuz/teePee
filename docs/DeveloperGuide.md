@@ -282,6 +282,9 @@ call as an example.
 
 ![Interactions Inside the Logic Component for the `delete S1234567A` Command](images/DeleteSequenceDiagram.png)
 
+The diagram leaves out the confirmation: `LogicManager` runs `delete` only once the next input is the confirmation
+phrase, as described in [Clearing selectively](#clearing-selectively).
+
 The appointment commands follow the same shape. The diagram below shows the `addappt` command, which uses
 `Model#findPatientById()` to find the patient among all patients and adds the appointment to their schedule.
 
@@ -1067,14 +1070,14 @@ The settings of #216 decide how marks, past clashes and archived patients behave
 ### Clearing selectively
 
 The selective clearing of #217 is behind `FeatureFlags#isSelectiveClearEnabled()`, which is on. With the switch off,
-`clear` deletes every patient at once, as in AB3, and `clearappt` is an unknown command.
+`clear` and `delete` run at once, as in AB3, and `clearappt` is an unknown command.
 
 * `clear --archived` (`ClearCommand` with `isArchivedOnly`) deletes only archived patients. `clearappt`
   (`ClearAppointmentCommand`) deletes every appointment, all of one patient's appointments, or every appointment from
   `--from` to `--to`, of every patient, or with `--id`, of one. The patients stay. A date without a time given to `--from` is the start of that day, and one
   given to `--to` its end, and an appointment with no time counts as at the start of its day. A patient's remaining
   appointments are numbered again in date order.
-* Both are `Confirmable`. When `LogicManager` parses one, it asks for `Confirmable#describeDeletion` and returns it with
+* These two and `delete` are `Confirmable`. When `LogicManager` parses one, it asks for `Confirmable#describeDeletion` and returns it with
   `Messages#MESSAGE_CONFIRM` instead of running the command, which it keeps as `pendingCommand`. If the next input is
   `Messages#CONFIRMATION_PHRASE`, it runs the command, and saves as after any command. Any other input cancels it, and
   runs no command. A command with nothing to delete fails at once, so there is nothing to confirm.
@@ -1225,8 +1228,9 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 1.  Nurse <u>finds the patient (UC02)</u>
 2.  Nurse requests to delete the patient by ID
-3.  LaiNurse deletes the patient and all of the patient's details
-4.  LaiNurse shows a message confirming the deletion
+3.  LaiNurse says what it would delete, and asks the nurse to confirm
+4.  Nurse confirms
+5.  LaiNurse deletes the patient, their appointments and their other details, and says so
 
     Use case ends.
 
@@ -1247,6 +1251,12 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
     * 2b1. LaiNurse shows an error message.
 
       Use case resumes at step 2.
+
+* 4a. Nurse does not confirm.
+
+    * 4a1. LaiNurse says that nothing was deleted.
+
+      Use case ends.
 
 **Use case: UC04 - Edit a patient's details**
 
@@ -1786,10 +1796,10 @@ testers are expected to do more *exploratory* testing.
     1. Test case: `find --name bernice`, then `view S1234567A`<br>
        Expected: The list shows all patients again, the row of the patient with the ID `S1234567A` is highlighted, and the panel shows their details.
 
-    1. Test case: `view S1234567A`, then `delete S2345678B`, another patient<br>
+    1. Test case: `view S1234567A`, then `delete S2345678B`, another patient, then `confirm`<br>
        Expected: No patient is selected, and the panel goes back to its starting message, because a command that removes patients selects nothing.
 
-    1. Test case: `view S1234567A`, then `delete S1234567A`<br>
+    1. Test case: `view S1234567A`, then `delete S1234567A`, then `confirm`<br>
        Expected: The panel goes back to its starting message.
 
     1. Test case: `view S0000000Z`, where no patient has that ID<br>
@@ -1900,7 +1910,11 @@ testers are expected to do more *exploratory* testing.
 
     1. Prerequisites: Start with the sample data, which includes a patient with the ID `S1234567A`.
 
-    1. Test case: `delete S1234567A`<br>
+    1. Test case: `delete S2345678B`, then `yes`<br>
+       Expected: The status message says `This deletes BERNICE YU (S2345678B) and their 1 appointment(s).`, with the
+       confirmation prompt, and then `Cancelled. Nothing was deleted.` The patient stays.
+
+    1. Test case: `delete S1234567A`, then `confirm`<br>
        Expected: The patient with the ID `S1234567A` is deleted from the list. The status message shows the deleted patient's details. No patient is selected, and the panel shows its starting message.
 
     1. Test case: `delete S0000000Z`, where no patient has that ID<br>
@@ -1949,7 +1963,7 @@ testers are expected to do more *exploratory* testing.
        `add --id NOTES2 --name Jane Tan --phone 91234567 --address Clementi --notes First --notes Second`<br>
        Expected: A duplicate-option error is shown, and nothing changes.
 
-    1. Enter `delete NOTES1`, then `list` after testing to restore the sample patients.
+    1. Enter `delete NOTES1`, then `confirm`, then `list` after testing to restore the sample patients.
 
 ### Finding patients by substrings
 
@@ -2317,7 +2331,7 @@ testers are expected to do more *exploratory* testing.
 
     1. Prerequisites: Start with the sample data, and enter `viewappt MON`.
 
-    1. Test case: `delete S1234567A`<br>
+    1. Test case: `delete S1234567A`, then `confirm`<br>
        Expected: The **Appointments** tab stays selected. Alex Yeoh's appointment disappears from the page, which then
        says `No appointments in this range.` Nothing is selected, and the panel shows its starting message.
 

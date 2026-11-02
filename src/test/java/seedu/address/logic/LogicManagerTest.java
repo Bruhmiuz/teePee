@@ -35,6 +35,7 @@ import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.CommandResult.AppointmentRange;
 import seedu.address.logic.commands.CommandResult.Navigation;
 import seedu.address.logic.commands.CommandResult.View;
+import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.Completion;
@@ -140,6 +141,30 @@ public class LogicManagerTest {
     public void execute_invalidCommandFormat_throwsParseException() {
         String invalidCommand = "uicfhmowqewca";
         assertParseException(invalidCommand, MESSAGE_UNKNOWN_COMMAND);
+    }
+
+    @Test
+    public void execute_delete_asksForConfirmationFirst() throws Exception {
+        FeatureFlags.setSelectiveClearEnabled(true);
+        Patient amy = new PatientBuilder(AMY).withAppointments("2026-10-05", "2026-10-06").build();
+        model.addPatient(amy);
+        String command = "delete " + amy.getId().value;
+
+        // the first time, delete only says what would go
+        assertEquals(String.format(Messages.MESSAGE_CONFIRM,
+                "This deletes " + amy.getName() + " (" + amy.getId() + ") and their 2 appointment(s)."),
+                logic.execute(command).getFeedbackToUser());
+        assertTrue(model.hasPatient(amy));
+
+        // any other input cancels it
+        assertEquals(Messages.MESSAGE_CANCELLED, logic.execute("yes").getFeedbackToUser());
+        assertTrue(model.hasPatient(amy));
+
+        // the phrase confirms it
+        logic.execute(command);
+        assertEquals(String.format(DeleteCommand.MESSAGE_DELETE_PATIENT_SUCCESS, Messages.format(amy)),
+                logic.execute(Messages.CONFIRMATION_PHRASE).getFeedbackToUser());
+        assertFalse(model.hasPatient(amy));
     }
 
     @Test

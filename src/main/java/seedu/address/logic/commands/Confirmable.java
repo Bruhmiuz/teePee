@@ -4,7 +4,7 @@ import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 
 /**
- * A command that deletes much at once, so that LaiNurse asks the user to confirm it before it runs (#217).
+ * A command that deletes what cannot be recovered, so that LaiNurse asks the user to confirm it before it runs (#217).
  */
 public interface Confirmable {
 
