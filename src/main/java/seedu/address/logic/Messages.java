@@ -1,5 +1,8 @@
 package seedu.address.logic;
 
+import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
+import static seedu.address.model.patient.PatientNameComparator.PATIENT_NAME_ORDER;
+
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -86,6 +89,26 @@ public class Messages {
      */
     public static String format(Appointment appointment) {
         return appointment + appointment.getDetails().map(details -> "; Details: " + details).orElse("");
+    }
+
+    /**
+     * Returns a warning naming the other patients in {@code patients} who share {@code target}'s normalized name,
+     * in patient name and ID order, or an empty string if there are none. The target is excluded by ID, and archived
+     * matches are labeled. The warning has no leading newline, for {@code CommandResult#withNoteAppended}.
+     *
+     * @throws NullPointerException if {@code patients}, any patient in it, or {@code target} is null.
+     */
+    public static String formatSameNameWarning(Collection<Patient> patients, Patient target) {
+        requireAllNonNull(patients, target);
+
+        String matches = patients.stream()
+                .filter(patient -> !patient.getId().equals(target.getId()))
+                .filter(patient -> patient.getName().equals(target.getName()))
+                .sorted(PATIENT_NAME_ORDER)
+                .map(patient -> patient.getName() + " (" + patient.getId() + ")"
+                        + (patient.isArchived() ? " [archived]" : ""))
+                .collect(Collectors.joining("; "));
+        return matches.isEmpty() ? "" : "Warning: this name is also used by " + matches + ". Check the patient IDs.";
     }
 
     /**
