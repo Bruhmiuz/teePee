@@ -12,6 +12,8 @@ title: Developer Guide
 
 * Codebase adapted from [AddressBook-Level3 (AB3)](https://github.com/se-edu/addressbook-level3) developed by the SE-EDU initiative.
 * UI components and controls utilize native [JavaFX 17+](https://openjfx.io/) libraries.
+* Data is saved and loaded with [Jackson](https://github.com/FasterXML/jackson), and tested with
+  [JUnit 5](https://github.com/junit-team/junit5).
 
 * AI Use Declaration from Qin Fangzheng: "As my career path is not related to software engineering, I choose AI-5/AI-6 as my AI use level, where I get Codex to do the tasks, and then I myself review the results, including feature behavior and partial code."
 
@@ -74,6 +76,9 @@ The *Sequence Diagram* below shows how the components interact with each other f
 the command `delete S1234567A`.
 
 <img src="images/ArchitectureSequenceDiagram.png" width="574" />
+
+The diagram leaves out the confirmation: `delete S1234567A` itself only returns the prompt, and `LogicManager` deletes
+the patient and saves when the next input is `confirm`, as described in [Clearing selectively](#clearing-selectively).
 
 Each of the four main components (also shown in the diagram above),
 
