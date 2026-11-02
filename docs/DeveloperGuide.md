@@ -43,6 +43,8 @@ Tutorial_ at se-edu/guides](https://se-education.org/guides/tutorials/plantUml.h
 diagrams.
 </div>
 
+Some diagrams in this guide carry a mess score out of 10, where higher is worse, and a remark.
+
 ### Architecture
 
 <img src="images/ArchitectureDiagram.png" width="280" />
@@ -230,16 +232,22 @@ The appointment commands run at once, and otherwise follow the same shape. The d
 
 <img src="images/AddAppointmentSequenceDiagram.png" width="800" />
 
+**Mess score: 8/10.** The text says that it finds the patient through `Model`. The diagram has never met `Model`.
+
 The `deleteappt` command also follows this shape, up to the lookup: it finds the matching appointment with
 `AppointmentLookup#find()` and removes it from the patient's schedule.
 
 <img src="images/DeleteAppointmentSequenceDiagram.png" width="800" />
+
+**Mess score: 8/10.** It deletes an appointment without ever touching the thing that holds it.
 
 The `viewappt` command follows the same shape: it builds an `AppointmentBetweenDatesPredicate` from the date
 range to count the matching patients without changing the patient list (`--id` narrows the appointment page to
 one patient), then returns a `CommandResult` carrying the range for the appointment view.
 
 <img src="images/ViewAppointmentSequenceDiagram.png" width="800" />
+
+**Mess score: 7/10.** Wide enough to need its own monitor, and it leaves before the UI arrives.
 
 How the `Logic` component works:
 
@@ -327,6 +335,12 @@ Every date and time in the app goes through `DateUtil`, which accepts a date onl
 
 ### Finding patients by substrings
 
+The sequence diagram below shows `find --name Alex --address Serangoon`.
+
+<img src="images/FindSequenceDiagram.png" width="800" />
+
+**Mess score: 9/10.** A whole diagram to set one filter, and it never shows the filter being set.
+
 `FindCommandParser` recognizes the six patient-detail options defined in `CliSyntax`: ID, name, phone number, address,
 medical history and notes. It reuses `ArgumentTokenizer.normalizeOptionSeparators`, as `add` and `edit` do,
 then uses `ArgumentTokenizer` and `ArgumentMultimap` to extract values and reject
@@ -371,6 +385,8 @@ in the scope of the patient list, and `--all` or `--archived` sets that scope fi
 `edit S1234567A --phone 91234567` changes the phone number of patient `S1234567A`.
 
 <img src="images/EditSequenceDiagram.png" width="800" />
+
+**Mess score: 3/10.** One of the few sequence diagrams here with a new idea, so it gets off lightly.
 
 `EditCommandParser` reads the ID from the preamble and stores each change in an `EditPatientDescriptor`. A field that
 is not given stays `null` in the descriptor, so `EditCommand#createEditedPatient()` keeps the patient's value for it.
@@ -565,6 +581,8 @@ data file unchanged.
 
 <img src="images/EditAppointmentActivityDiagram.png" width="750" />
 
+**Mess score: 6/10.** The Mark diagram's twin with worse posture, and two boxes that just say "Show the error".
+
 `addappt ID --date DATE_OR_DATETIME [--details DETAILS]` takes the patient ID first, then the date with `--date`
 and optional details with `--details`, in either order. Its parser reuses `ArgumentTokenizer` and
 `ParserUtil.parseAppointment`, preserving strict date validation and whitespace normalization, and rejects repeated
@@ -612,6 +630,8 @@ patients. Done visits remain visible and keep their date-based grouping, counts,
 Both commands allow any date; editing preserves completion until an explicit status command changes it.
 
 <img src="images/MarkUnmarkAppointmentActivityDiagram.png" width="450" />
+
+**Mess score: 2/10.** Reads top to bottom and names every failure. Suspiciously competent.
 
 ### Viewing appointments by date
 
