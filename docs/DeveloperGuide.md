@@ -582,7 +582,7 @@ and optional details with `--details`, in either order. Its parser reuses `Argum
 `ParserUtil.parseAppointment`, preserving strict date validation and whitespace normalization, and rejects repeated
 options and any other words between the ID and the options. A missing `--date` gets
 `AddAppointmentCommand.MESSAGE_MISSING_DATE`, so the error names what is missing, and a bad `--date` value gets the
-appointment date format, as `--to` does in `editappt`. It logs parsing success or a rejected input at `FINE` level
+appointment date format, as `--date` does in `editappt`. It logs parsing success or a rejected input at `FINE` level
 without logging appointment details. It finds the patient through
 `Model#findPatientById()`,
 adds the appointment with `AppointmentSchedule#add`, finds its number with `getLastAt`, and replaces the patient.
@@ -1826,8 +1826,8 @@ testers are expected to do more *exploratory* testing.
        `+1 more`. The second Tab gives `addappt S1234567A`.
 
     1. Test case: type `editappt S1234567A 1 --`, then press Tab<br>
-       Expected: The status bar shows `--to · --details · --add-details`. The command box shows
-       `editappt S1234567A 1 --to`.
+       Expected: The status bar shows `--date · --details · --add-details`. The command box shows
+       `editappt S1234567A 1 --date`.
 
     1. Test case: type `edit S1234567A --name Alex --`<br>
        Expected: The status bar shows every option of `edit` except `--name`.
@@ -2406,7 +2406,7 @@ testers are expected to do more *exploratory* testing.
     1. Prerequisites: Start with the sample data. Alex Yeoh (`S1234567A`) has appointment #1 at `MON 09:30`, with
        the details `INSULIN REVIEW`, and #2 at `BLOOD`, with the details `MONTHLY BLOOD TEST`.
 
-    1. Test case: `editappt S1234567A 1 --to TUE 10:00`<br>
+    1. Test case: `editappt S1234567A 1 --date TUE 10:00`<br>
        Expected: The **Appointments** tab is selected, showing the sample week, with Alex Yeoh's appointment at
        10:00 selected and still showing `INSULIN REVIEW`. The status message ends with
        `(moved from MON 09:30)`.
@@ -2428,15 +2428,15 @@ testers are expected to do more *exploratory* testing.
 
     1. Prerequisites: Start with the sample data.
 
-    1. Test case: `editappt S1234567A 99 --to TUE`, an appointment number the patient does not have<br>
+    1. Test case: `editappt S1234567A 99 --date TUE`, an appointment number the patient does not have<br>
        Expected: No appointment is changed. The status message says `Patient S1234567A has no appointment #99.`
 
-    1. Test case: `editappt S1234567A 1 --to BLOOD`<br>
+    1. Test case: `editappt S1234567A 1 --date BLOOD`<br>
        Expected: The appointment moves to `BLOOD` with its details, and both visits are preserved. It becomes #2,
        after the blood test already on that date, which becomes #1. Neither has a time, so there is no clash warning.
 
     1. Test case: `editappt S1234567A 1`, with nothing to change<br>
-       Expected: No appointment is changed. The status message says that at least one of `--to`, `--details` and
+       Expected: No appointment is changed. The status message says that at least one of `--date`, `--details` and
        `--add-details` must be given.
 
 ### Adding an appointment
@@ -2523,7 +2523,7 @@ testers are expected to do more *exploratory* testing.
    names `this patient's appointment #1` and Bernice's #1. Both Alex visits survive.
 1. Run `editappt S1234567A --appt MON 09:30 --details Review`, then the equivalent `deleteappt` selector.
    Expected: Each rejects the unsupported option, shows its number-based command format and saves no changes.
-1. Run `editappt S1234567A 2 --to TUE 10:00`, then `view S1234567A`.
+1. Run `editappt S1234567A 2 --date TUE 10:00`, then `view S1234567A`.
    Expected: Only the second visit moves, with its details, and stays selected. It is still #2, between the visit
    on Monday and the blood test. The details show `#2` before its date.
 1. Run `deleteappt S1234567A 1`, then restart.
@@ -2551,7 +2551,7 @@ testers are expected to do more *exploratory* testing.
        it is no longer eligible for Alex's next-appointment summary, but stays in its date-based group.
     1. Test case: `markappt S1234567A 2` again<br>
        Expected: An already-done error; model, page, selection and saved file stay unchanged.
-    1. Test case: `editappt S1234567A 2 --to 2099-12-31 --details Follow up`, then restart<br>
+    1. Test case: `editappt S1234567A 2 --date 2099-12-31 --details Follow up`, then restart<br>
        Expected: #2 keeps its pin and the new details after rescheduling and restart. It is still #2, as it is still
        after #1.
     1. Test case: `unmarkappt S1234567A 2`, then the same command again<br>

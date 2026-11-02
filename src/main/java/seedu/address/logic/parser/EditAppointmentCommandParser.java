@@ -3,8 +3,8 @@ package seedu.address.logic.parser;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_ADD_DETAILS;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_DATE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_DETAILS;
-import static seedu.address.logic.parser.CliSyntax.PREFIX_TO;
 
 import java.util.Optional;
 
@@ -29,7 +29,7 @@ public class EditAppointmentCommandParser implements Parser<EditAppointmentComma
         requireNonNull(args);
         String invalidFormatMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT,
                 EditAppointmentCommand.MESSAGE_USAGE);
-        Prefix[] prefixes = {PREFIX_TO, PREFIX_DETAILS, PREFIX_ADD_DETAILS};
+        Prefix[] prefixes = {PREFIX_DATE, PREFIX_DETAILS, PREFIX_ADD_DETAILS};
         String normalizedArgs = ArgumentTokenizer.normalizeOptionSeparators(args, invalidFormatMessage, prefixes);
         ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(normalizedArgs, prefixes);
 
@@ -74,10 +74,10 @@ public class EditAppointmentCommandParser implements Parser<EditAppointmentComma
     }
 
     /**
-     * Returns the date, or date and time, given with {@code PREFIX_TO}, if there is one.
+     * Returns the date, or date and time, given with {@code PREFIX_DATE}, if there is one.
      */
     private static Optional<Appointment> parseNewDateTime(ArgumentMultimap argMultimap) throws ParseException {
-        Optional<String> newDateTime = argMultimap.getValue(PREFIX_TO);
+        Optional<String> newDateTime = argMultimap.getValue(PREFIX_DATE);
         if (newDateTime.isEmpty()) {
             return Optional.empty();
         }

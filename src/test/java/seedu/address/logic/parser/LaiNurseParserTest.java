@@ -100,7 +100,7 @@ public class LaiNurseParserTest {
     @Test
     public void parseCommand_editAppointment() throws Exception {
         EditAppointmentCommand command = (EditAppointmentCommand) parser.parseCommand(
-                EditAppointmentCommand.COMMAND_WORD + " S1234567A 1 --to 2026-10-06");
+                EditAppointmentCommand.COMMAND_WORD + " S1234567A 1 --date 2026-10-06");
         assertEquals(new EditAppointmentCommand(new PatientId("S1234567A"), 1,
                 Optional.of(new Appointment("2026-10-06")), Optional.empty()), command);
     }
@@ -113,7 +113,7 @@ public class LaiNurseParserTest {
                 parser.parseCommand("deleteappt\u00a0s1234567a\u202f1"));
         assertEquals(new EditAppointmentCommand(new PatientId("S1234567A"), 1,
                 Optional.of(new Appointment("2026-10-06")), Optional.empty()),
-                parser.parseCommand("editappt\u00a0s1234567a\u202f1\u00a0--to\u202f2026-10-06"));
+                parser.parseCommand("editappt\u00a0s1234567a\u202f1\u00a0--date\u202f2026-10-06"));
     }
 
     @Test

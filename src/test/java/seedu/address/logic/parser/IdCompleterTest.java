@@ -81,8 +81,8 @@ public class IdCompleterTest {
 
     @Test
     public void complete_editApptWithOptionsAfterId_completesIdAndKeepsOptions() {
-        assertEquals(List.of("editappt T7654321B 2 --to 2026-10-06"),
-                completeTexts("editappt t7 2 --to 2026-10-06", IDS));
+        assertEquals(List.of("editappt T7654321B 2 --date 2026-10-06"),
+                completeTexts("editappt t7 2 --date 2026-10-06", IDS));
         assertEquals(List.of("editappt S1234567A", "editappt S1999999C"), completeTexts("editappt S1", IDS));
     }
 

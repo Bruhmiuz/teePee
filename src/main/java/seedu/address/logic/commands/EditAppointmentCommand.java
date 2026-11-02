@@ -2,8 +2,8 @@ package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_ADD_DETAILS;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_DATE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_DETAILS;
-import static seedu.address.logic.parser.CliSyntax.PREFIX_TO;
 
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -38,16 +38,16 @@ public class EditAppointmentCommand extends Command {
             + PREFIX_ADD_DETAILS.toString().trim() + " adds text to the end of them, after \""
             + OptionalFieldEdit.APPEND_SEPARATOR + "\". The two cannot be given together.\n"
             + "Parameters: ID NUMBER "
-            + "[" + PREFIX_TO + "NEW_DATE_OR_DATETIME] "
+            + "[" + PREFIX_DATE + "NEW_DATE_OR_DATETIME] "
             + "[" + PREFIX_DETAILS + "[DETAILS]] "
             + "[" + PREFIX_ADD_DETAILS + "MORE_DETAILS]\n"
             + "Example: " + COMMAND_WORD + " S1234567A 2 "
-            + PREFIX_TO + "2026-10-06 10:00 "
+            + PREFIX_DATE + "2026-10-06 10:00 "
             + PREFIX_DETAILS + "Bring insulin pen";
 
     public static final String MESSAGE_EDIT_APPOINTMENT_SUCCESS = "Edited appointment %1$d of %2$s (%3$s): %4$s";
     public static final String MESSAGE_MOVED_FROM = " (moved from %1$s)";
-    public static final String MESSAGE_NOT_EDITED = "At least one of " + PREFIX_TO.toString().trim() + ", "
+    public static final String MESSAGE_NOT_EDITED = "At least one of " + PREFIX_DATE.toString().trim() + ", "
             + PREFIX_DETAILS.toString().trim() + " and " + PREFIX_ADD_DETAILS.toString().trim()
             + " must be provided.";
 
