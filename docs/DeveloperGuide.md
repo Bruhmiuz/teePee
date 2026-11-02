@@ -1195,15 +1195,9 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case resumes at step 1.
 
-* 1c. One of the given appointment dates/times is invalid.
+* 1c. A patient with the given ID already exists.
 
-    * 1c1. LaiNurse shows an error message.
-
-      Use case resumes at step 1.
-
-* 1d. A patient with the given ID already exists.
-
-    * 1d1. LaiNurse shows an error message.
+    * 1c1. LaiNurse informs the nurse that a patient with the given ID already exists.
 
       Use case ends.
 
@@ -1284,8 +1278,8 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 **MSS**
 
 1.  Nurse <u>finds the patient (UC02)</u>
-2.  Nurse requests to edit the patient by ID with the fields to change, and any appointments to add or remove
-3.  LaiNurse updates the patient's details and appointments
+2.  Nurse requests to edit the patient by ID with the fields to change
+3.  LaiNurse updates the patient's details
 4.  LaiNurse shows the updated details of the patient
 
     Use case ends.
@@ -1326,21 +1320,9 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case resumes at step 2.
 
-* 2f. An appointment to remove is not one of the patient's appointments.
+* 2f. Nurse asks to both replace and add to the medical history, or the notes.
 
-    * 2f1. LaiNurse shows an error message naming the appointment, and makes no changes.
-
-      Use case resumes at step 2.
-
-* 2g. An appointment to add is one the patient already has.
-
-    * 2g1. LaiNurse keeps a single copy of the appointment.
-
-      Use case resumes at step 3.
-
-* 2h. Nurse asks to both replace and add to the medical history, or the notes.
-
-    * 2h1. LaiNurse shows an error message saying that the two options cannot be given together.
+    * 2f1. LaiNurse shows an error message saying that the two options cannot be given together.
 
       Use case resumes at step 2.
 
@@ -1657,11 +1639,11 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 * 3a. The patient list shows archived patients, after `view --all`.
     * 3a1. LaiNurse keeps the patient in the list, at the bottom and greyed out, and selected.
     * Use case ends.
-* 4a. The nurse later requests to see archived patients, with `view --all` or `view --archived`.
-    * 4a1. LaiNurse shows them, and keeps showing them until the nurse chooses another scope.
+* 3b. The nurse later requests to see archived patients, with `view --all` or `view --archived`.
+    * 3b1. LaiNurse shows them, and keeps showing them until the nurse chooses another scope.
     * Use case ends.
-* 5a. The nurse requests to unarchive the patient.
-    * 5a1. LaiNurse shows the patient with the others again, and their appointments can clash again.
+* 3c. The nurse requests to unarchive the patient.
+    * 3c1. LaiNurse shows the patient with the others again, and their appointments can clash again.
     * Use case ends.
 
 **Use case: UC13 - Delete many patients or appointments**
