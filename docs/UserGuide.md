@@ -174,7 +174,7 @@ Esc | In the patient view, removes the filter of `find`, and keeps the scope, su
 * Tab finishes these words:
   * **Command words.** For example, `dele` gives `delete`, then `deleteappt`. `view` gives `viewappt`, so type a space after `view` to finish a patient ID instead. When there is only one match, the next Tab goes on to the patient ID if the command takes one, so `addap` gives `addappt`, and the next Tab `addappt S1234567A`.
   * **Options.** Type `-` or the start of an option. For example, `edit S1234567A --ph` gives `edit S1234567A --phone`. Tab offers only the options of that command, and skips the ones you have already typed, and the ones that cannot be given with them: `--all` and `--archived` exclude each other, and in `view` and `viewappt`, a patient ID excludes both.
-  * **Patient IDs** after `view`, `delete`, `archive`, `unarchive`, `edit`, `addappt`, `editappt`, `deleteappt`, `markappt`, `unmarkappt` or `clearappt`, and after `--id` in `viewappt` and `clearappt`. Type the first few characters of the ID, or none. Patients in the displayed list come first, and archived patients last. For example, `view s12` gives `view S1234567A`.<br>
+  * **Patient IDs** after `view`, `delete`, `archive`, `unarchive`, `edit`, `addappt`, `editappt`, `deleteappt`, `markappt`, `unmarkappt` or `clearappt`, and after `--id` in `viewappt`. Type the first few characters of the ID, or none. Patients in the displayed list come first, and archived patients last. For example, `view s12` gives `view S1234567A`.<br>
     With `edit`, `addappt`, `editappt`, `deleteappt`, `markappt` and `unmarkappt`, Tab also works after you have typed the remaining arguments, and keeps them. For example, `edit s12 --phone 91234567` becomes `edit S1234567A --phone 91234567`, and `markappt s12 2` becomes `markappt S1234567A 2`.
   * **Help topics** after `help`. For example, `help ad` gives `help add`, then `help addappt`. `help w` gives `help window`.
   * **Settings** after `set`. For example, `set mark` gives `set mark-noclash`, then `set mark-past`, and `set past-clash ` gives `set past-clash on`, then `set past-clash off`.
@@ -400,10 +400,10 @@ Examples:
 
 Deletes every appointment, all appointments of one patient, or every appointment in a range of dates. The patients stay. You confirm the deletion first: LaiNurse says what it would delete, and you type `confirm` to go ahead. Anything else cancels. See the caution under [`clear`](#deleting-many-patients-clear).
 
-Format: `clearappt [ID]`, or `clearappt [--id ID] [--from DATE_OR_DATETIME] [--to DATE_OR_DATETIME]`
+Format: `clearappt [ID] [--from DATE_OR_DATETIME] [--to DATE_OR_DATETIME]`
 
 * With no parameters, `clearappt` deletes every appointment of every patient.
-* With an `ID`, it deletes only that patient's appointments. The ID can come first, or after `--id`, but not both. The patient does not have to be in the list shown.
+* With an `ID`, it deletes only that patient's appointments. The ID comes first, before any option. The patient does not have to be in the list shown.
 * `--from` and `--to` limit the deletion to the appointments from one date, or date and time, to another, both included. Either can be left out, for no limit on that side. A date without a time is the start of that day after `--from`, and the end of that day after `--to`. An appointment with no time counts as at the start of its day: `--from 2026-10-05 10:00` keeps a date-only appointment on `2026-10-05`.
 * `--from` must not be after `--to`.
 * It deletes the appointments of every patient, also patients hidden by a filter, and archived patients.
@@ -413,7 +413,7 @@ Format: `clearappt [ID]`, or `clearappt [--id ID] [--from DATE_OR_DATETIME] [--t
 Examples:
 * `clearappt S1234567A` deletes both of Alex Yeoh's appointments, after you confirm it.
 * `clearappt --to 2026-10-04` deletes every appointment up to the end of 4 October 2026, such as the visits of last month that you no longer need.
-* `clearappt --id G1234567E --from 2026-10-01 --to 2026-10-31 12:00` deletes Irfan Ibrahim's appointments from 1 October 2026 to noon on 31 October 2026.
+* `clearappt G1234567E --from 2026-10-01 --to 2026-10-31 12:00` deletes Irfan Ibrahim's appointments from 1 October 2026 to noon on 31 October 2026.
 
 ### Marking an appointment as done: `markappt`
 
@@ -655,7 +655,7 @@ Action | Format, Examples
 **AddAppt** | `addappt ID --date DATE_OR_DATETIME [--details DETAILS]`<br> e.g., `addappt S1234567A --date 2026-12-01 10:00 --details Bring insulin pen`
 **Archive** | `archive ID`<br> e.g., `archive S2345678B`
 **Clear** | `clear [--archived]`, then `confirm` to confirm<br> e.g., `clear --archived`
-**ClearAppt** | `clearappt [ID]` or `clearappt [--id ID] [--from DATE_OR_DATETIME] [--to DATE_OR_DATETIME]`, then `confirm` to confirm<br> e.g., `clearappt S1234567A`, `clearappt --to 2026-10-04`
+**ClearAppt** | `clearappt [ID] [--from DATE_OR_DATETIME] [--to DATE_OR_DATETIME]`, then `confirm` to confirm<br> e.g., `clearappt S1234567A`, `clearappt --to 2026-10-04`
 **Delete** | `delete ID`, then `confirm` to confirm<br> e.g., `delete T0123456B`
 **DeleteAppt** | `deleteappt ID NUMBER`<br> e.g., `deleteappt S1234567A 1`
 **Edit** | `edit ID [--name NAME] [--phone PHONE] [--address ADDRESS] [--medical-history [MEDICAL_HISTORY]] [--add-medical-history MORE_HISTORY] [--notes [NOTES]] [--add-notes MORE_NOTES]`<br> e.g., `edit S1234567A --notes Walks every morning`, `edit S1234567A --add-medical-history Asthma`

@@ -145,9 +145,7 @@ public class TabCompleter {
                 default -> List.of();
             };
         }
-        boolean isIdOption = COMMANDS_WITH_ID_OPTION.contains(commandWord) || FeatureFlags.isSelectiveClearEnabled()
-                && commandWord.equals(ClearAppointmentCommand.COMMAND_WORD);
-        if (isIdOption && previousWord.equals(PREFIX_ID.getPrefix().strip())) {
+        if (COMMANDS_WITH_ID_OPTION.contains(commandWord) && previousWord.equals(PREFIX_ID.getPrefix().strip())) {
             String partialId = word.toUpperCase(Locale.ROOT);
             return ids.stream()
                     .map(id -> id.value)
@@ -199,7 +197,7 @@ public class TabCompleter {
     private static List<String> optionsOf(String commandWord) {
         if (FeatureFlags.isSelectiveClearEnabled()) {
             if (commandWord.equals(ClearAppointmentCommand.COMMAND_WORD)) {
-                return options(PREFIX_ID, PREFIX_FROM, PREFIX_TO);
+                return options(PREFIX_FROM, PREFIX_TO);
             }
             if (commandWord.equals(ClearCommand.COMMAND_WORD)) {
                 return options(PREFIX_ARCHIVED);

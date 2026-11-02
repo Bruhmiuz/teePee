@@ -201,10 +201,11 @@ public class TabCompleterTest {
     public void complete_selectiveClearReleased_completesItsOptionsAndIds() {
         FeatureFlags.setSelectiveClearEnabled(true);
         try {
-            assertEquals(List.of("--id", "--from", "--to"), words("clearappt --"));
+            assertEquals(List.of("--from", "--to"), words("clearappt --"));
             assertEquals(List.of("--archived"), words("clear --a"));
             assertEquals(List.of("S1234567A", "S1999999C"), words("clearappt S1"));
-            assertEquals(List.of("S1234567A", "S1999999C"), words("clearappt --from 2026-10-01 --id S1"));
+            // the ID has no option of its own
+            assertEquals(List.of(), words("clearappt --id S1"));
         } finally {
             FeatureFlags.setSelectiveClearEnabled(false);
         }

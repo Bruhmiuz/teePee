@@ -3,7 +3,6 @@ package seedu.address.logic.commands;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_FROM;
-import static seedu.address.logic.parser.CliSyntax.PREFIX_ID;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TO;
 
 import java.time.LocalDateTime;
@@ -32,9 +31,8 @@ public class ClearAppointmentCommand extends Command implements Confirmable {
 
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Deletes every appointment, or with an ID, all "
             + "appointments of that patient, or every appointment from one date, or date and time, to another, of "
-            + "every patient, or with " + PREFIX_ID.toString().trim() + ", of one, after you confirm it.\n"
-            + "Parameters: [ID], or [" + PREFIX_ID + "ID] [" + PREFIX_FROM + "DATE_OR_DATETIME] [" + PREFIX_TO
-            + "DATE_OR_DATETIME]\n"
+            + "every patient, or with an ID, of one, after you confirm it.\n"
+            + "Parameters: [ID] [" + PREFIX_FROM + "DATE_OR_DATETIME] [" + PREFIX_TO + "DATE_OR_DATETIME]\n"
             + "Example: " + COMMAND_WORD + " S1234567A, or " + COMMAND_WORD + " " + PREFIX_FROM + "2026-10-01 "
             + PREFIX_TO + "2026-10-31 12:00";
 

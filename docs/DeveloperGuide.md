@@ -838,7 +838,7 @@ command box, so that it never covers the result of the last command. The team ch
 `TabCompleter` in the `Logic` component holds the rules, so `CommandBox` needs no knowledge of the command formats. It
 completes the first word to the longer command words that start with it, the word after `help` to what `help` can
 explain, a word that starts with `-` to the command's options that are not typed yet, and the word after `--id` in
-`viewappt` and `clearappt` to a patient ID. It does not complete the ID after `--id` in `find`, which searches for any part of an ID,
+`viewappt` to a patient ID. It does not complete the ID after `--id` in `find`, which searches for any part of an ID,
 or in `add`, which takes a new one. After `set`, it completes the setting names, then `on` or `off`. The word being completed matches ignoring case, but command words, options and
 `help` topics are completed in lowercase, the only case that the parsers accept. The words before it are matched
 exactly, as the parsers match them, so `EDIT S1234567A --PH` has nothing to complete. Its table of each command's options must be updated with the parser when a
@@ -1171,7 +1171,7 @@ The selective clearing of #217 is behind `FeatureFlags#isSelectiveClearEnabled()
 
 * `clear --archived` (`ClearCommand` with `isArchivedOnly`) deletes only archived patients. `clearappt`
   (`ClearAppointmentCommand`) deletes every appointment, all of one patient's appointments, or every appointment from
-  `--from` to `--to`, of every patient, or with `--id`, of one. The patients stay. A date without a time given to `--from` is the start of that day, and one
+  `--from` to `--to`, of every patient, or with an ID, of one. The patients stay. A date without a time given to `--from` is the start of that day, and one
   given to `--to` its end, and an appointment with no time counts as at the start of its day. A patient's remaining
   appointments are numbered again in date order.
 * These two and `delete` are `Confirmable`. When `LogicManager` parses one, it asks for `Confirmable#describeDeletion` and returns it with
