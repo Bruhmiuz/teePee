@@ -588,7 +588,7 @@ When LaiNurse launches, it loads its data as follows:
 | `lainurse.json` | `lainurse.backup.json` | LaiNurse starts with |
 |---|---|---|
 | Loads | Any | The data in `lainurse.json`. |
-| Missing | Any | The sample data. Delete `lainurse.json` to start again from the sample data. |
+| Missing | Any | The sample data. Delete `lainurse.json` to start again from the sample data. Any backup is first copied to `data/lainurse.previous.json`, replacing any earlier copy, and the result display says so. |
 | Cannot be loaded | Loads | The data in the backup, which is the data as LaiNurse last saved it. |
 | Cannot be loaded | Missing, or cannot be loaded | No data. |
 
@@ -608,7 +608,7 @@ mark as `done`, still loads.
 Do not edit `lainurse.backup.json`. LaiNurse cannot stop you from editing it, and it does not check it until it needs it. The backup protects you only in the cases in the table above.<br>
 If the backup is missing or cannot be loaded either, LaiNurse starts with no data, and the next command that succeeds, even `view`, `help` or `exit`, saves that empty data over both files. Your data is then only in `lainurse.corrupt.json`. To leave both files as they are, close the window with its close button instead.<br>
 LaiNurse keeps only one backup, and every save replaces it. If you edit `lainurse.json` and LaiNurse loads it, the next save writes your edits to the backup too, so the backup cannot undo an edit that loads but that you regret.<br>
-If `lainurse.json` is missing, LaiNurse loads the sample data even when there is a backup, and the next save replaces the backup with the sample data. To restore from the backup instead, close the window with its close button and copy `lainurse.backup.json` to `lainurse.json` first.<br>
+If `lainurse.json` is missing, LaiNurse loads the sample data even when there is a backup, and the next save replaces the backup with the sample data. So LaiNurse first copies the backup to `lainurse.previous.json`. To restore your data, close LaiNurse and copy `lainurse.previous.json` to `lainurse.json`.<br>
 Appointment dates and times in the file follow the formats above, and a file saved by an earlier version with a signed or wider year, such as `+12345-01-01` or `-2026-10-05`, also fails to load. Furthermore, certain edits can cause LaiNurse to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
 </div>
 

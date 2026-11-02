@@ -29,16 +29,18 @@ public class JsonLaiNurseStorage {
     private final Path filePath;
     private final Path backupFilePath;
     private final Path corruptFilePath;
+    private final Path previousFilePath;
 
     /**
-     * Creates a {@code JsonLaiNurseStorage} for the data file at {@code filePath}, with its backup and corrupt copy
-     * in the same folder.
+     * Creates a {@code JsonLaiNurseStorage} for the data file at {@code filePath}, with its backup, corrupt copy and
+     * previous backup in the same folder.
      */
     public JsonLaiNurseStorage(Path filePath) {
         requireNonNull(filePath);
         this.filePath = filePath;
         this.backupFilePath = withSuffix(filePath, "backup");
         this.corruptFilePath = withSuffix(filePath, "corrupt");
+        this.previousFilePath = withSuffix(filePath, "previous");
         // A save writes the data file and then the backup, so the backup must never be the data file itself
         assert !backupFilePath.equals(filePath) && !corruptFilePath.equals(filePath);
     }
@@ -149,6 +151,22 @@ public class JsonLaiNurseStorage {
      */
     public void keepCorruptLaiNurseFile() throws IOException {
         Files.copy(filePath, corruptFilePath, StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    /**
+     * Returns the file path that the backup is copied to when the data file is missing.
+     */
+    public Path getLaiNursePreviousFilePath() {
+        return previousFilePath;
+    }
+
+    /**
+     * Copies the backup to the previous backup, replacing any earlier copy, so that the next save does not destroy
+     * what was in it.
+     * @throws IOException if there was any problem copying the file.
+     */
+    public void keepLaiNurseBackup() throws IOException {
+        Files.copy(backupFilePath, previousFilePath, StandardCopyOption.REPLACE_EXISTING);
     }
 
 }

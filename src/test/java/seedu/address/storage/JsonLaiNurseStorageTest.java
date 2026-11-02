@@ -110,10 +110,11 @@ public class JsonLaiNurseStorageTest {
     }
 
     @Test
-    public void constructor_dataFile_backupAndCorruptCopyNextToIt() {
+    public void constructor_dataFile_backupAndCopiesNextToIt() {
         JsonLaiNurseStorage storage = new JsonLaiNurseStorage(Paths.get("data", "lainurse.json"));
         assertEquals(Paths.get("data", "lainurse.backup.json"), storage.getLaiNurseBackupFilePath());
         assertEquals(Paths.get("data", "lainurse.corrupt.json"), storage.getLaiNurseCorruptFilePath());
+        assertEquals(Paths.get("data", "lainurse.previous.json"), storage.getLaiNursePreviousFilePath());
     }
 
     @Test
@@ -190,5 +191,22 @@ public class JsonLaiNurseStorageTest {
     public void keepCorruptLaiNurseFile_missingDataFile_throwsIoException() {
         JsonLaiNurseStorage storage = new JsonLaiNurseStorage(testFolder.resolve("lainurse.json"));
         assertThrows(IOException.class, storage::keepCorruptLaiNurseFile);
+    }
+
+    @Test
+    public void keepLaiNurseBackup_earlierCopy_replaced() throws Exception {
+        JsonLaiNurseStorage storage = new JsonLaiNurseStorage(testFolder.resolve("lainurse.json"));
+        Files.writeString(storage.getLaiNursePreviousFilePath(), "earlier copy");
+        Files.writeString(storage.getLaiNurseBackupFilePath(), "the backup");
+
+        storage.keepLaiNurseBackup();
+        assertEquals("the backup", Files.readString(storage.getLaiNursePreviousFilePath()));
+        assertEquals("the backup", Files.readString(storage.getLaiNurseBackupFilePath()));
+    }
+
+    @Test
+    public void keepLaiNurseBackup_missingBackup_throwsIoException() {
+        JsonLaiNurseStorage storage = new JsonLaiNurseStorage(testFolder.resolve("lainurse.json"));
+        assertThrows(IOException.class, storage::keepLaiNurseBackup);
     }
 }

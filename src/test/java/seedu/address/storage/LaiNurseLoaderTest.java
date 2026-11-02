@@ -60,14 +60,52 @@ public class LaiNurseLoaderTest {
     }
 
     @Test
-    public void load_missingDataFile_sampleDataLoadedEvenWithBackup() throws Exception {
+    public void load_missingDataFileNoBackup_sampleDataLoadedWithoutMessage() throws Exception {
+        LaiNurseLoader.Result result = LaiNurseLoader.load(storage);
+        assertEquals(new LaiNurse(SampleDataUtil.getSampleLaiNurse()), new LaiNurse(result.data()));
+        assertEquals(Optional.empty(), result.message());
+        assertFalse(Files.exists(storage.getLaiNursePreviousFilePath()));
+    }
+
+    @Test
+    public void load_missingDataFileWithBackup_sampleDataLoadedAndBackupKept() throws Exception {
+        LaiNurse saved = getTypicalLaiNurse();
+        storage.saveLaiNurse(saved);
+        Files.delete(storage.getLaiNurseFilePath());
+
+        LaiNurseLoader.Result result = LaiNurseLoader.load(storage);
+        assertEquals(new LaiNurse(SampleDataUtil.getSampleLaiNurse()), new LaiNurse(result.data()));
+        assertEquals(Optional.of(String.format(LaiNurseLoader.MESSAGE_SAMPLE_DATA_BACKUP_KEPT,
+                storage.getLaiNurseFilePath(), storage.getLaiNursePreviousFilePath())), result.message());
+        assertFalse(Files.exists(storage.getLaiNurseCorruptFilePath()));
+
+        // the next save replaces the backup with the sample data, but the copy keeps the data
+        storage.saveLaiNurse(result.data());
+        assertEquals(new LaiNurse(SampleDataUtil.getSampleLaiNurse()),
+                new LaiNurse(storage.readLaiNurseBackup().orElseThrow()));
+        Files.copy(storage.getLaiNursePreviousFilePath(), storage.getLaiNurseFilePath(),
+                StandardCopyOption.REPLACE_EXISTING);
+        assertEquals(saved, new LaiNurse(LaiNurseLoader.load(storage).data()));
+    }
+
+    @Test
+    public void load_backupCopyFails_userTold() throws Exception {
+        // Inject a JsonLaiNurseStorage that cannot copy the backup
+        JsonLaiNurseStorage failingStorage = new JsonLaiNurseStorage(laiNurseStorage.getLaiNurseFilePath()) {
+            @Override
+            public void keepLaiNurseBackup() throws IOException {
+                throw new IOException("dummy IO exception");
+            }
+        };
+        storage = new StorageManager(failingStorage, new JsonUserPrefsStorage(testFolder.resolve("prefs.json")));
         storage.saveLaiNurse(getTypicalLaiNurse());
         Files.delete(storage.getLaiNurseFilePath());
 
         LaiNurseLoader.Result result = LaiNurseLoader.load(storage);
         assertEquals(new LaiNurse(SampleDataUtil.getSampleLaiNurse()), new LaiNurse(result.data()));
-        assertEquals(Optional.empty(), result.message());
-        assertFalse(Files.exists(storage.getLaiNurseCorruptFilePath()));
+        assertEquals(Optional.of(String.format(LaiNurseLoader.MESSAGE_SAMPLE_DATA_BACKUP_NOT_KEPT,
+                storage.getLaiNurseFilePath(), storage.getLaiNursePreviousFilePath(),
+                storage.getLaiNurseBackupFilePath())), result.message());
     }
 
     @Test
@@ -137,7 +175,7 @@ public class LaiNurseLoaderTest {
     public void messages_dataAtRisk_warnThatExitAlsoSaves() {
         // exit is a command that succeeds, so it saves too: only the window's close button leaves the files alone
         for (String message : List.of(LaiNurseLoader.MESSAGE_BACKUP_NOT_LOADED, LaiNurseLoader.MESSAGE_BACKUP_MISSING,
-                LaiNurseLoader.MESSAGE_CORRUPT_FILE_NOT_KEPT)) {
+                LaiNurseLoader.MESSAGE_CORRUPT_FILE_NOT_KEPT, LaiNurseLoader.MESSAGE_SAMPLE_DATA_BACKUP_NOT_KEPT)) {
             assertTrue(message.contains("even exit"), message);
             assertTrue(message.contains("close button"), message);
         }

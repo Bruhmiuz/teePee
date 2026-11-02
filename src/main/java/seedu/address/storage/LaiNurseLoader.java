@@ -3,6 +3,7 @@ package seedu.address.storage;
 import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -18,7 +19,8 @@ import seedu.address.model.util.SampleDataUtil;
  * file cannot be loaded.
  * <ul>
  * <li>If the data file loads, its data is used.</li>
- * <li>If the data file is missing, the sample data is used, even if there is a backup.</li>
+ * <li>If the data file is missing, the sample data is used, even if there is a backup. A backup is first copied to
+ * the previous backup, since the next save replaces it.</li>
  * <li>If the data file cannot be loaded, it is copied to the corrupt copy, and the backup's data is used, or no data
  * if the backup is missing or cannot be loaded either.</li>
  * </ul>
@@ -39,6 +41,12 @@ public class LaiNurseLoader {
     public static final String MESSAGE_CORRUPT_FILE_NOT_KEPT = "The file that could not be loaded could not be copied"
             + " to %1$s. To keep it, close the window with its close button now, without running any command, not"
             + " even exit, and copy the file somewhere else. The next command that succeeds overwrites it.";
+    public static final String MESSAGE_SAMPLE_DATA_BACKUP_KEPT = "%1$s is missing, so LaiNurse loaded the sample data."
+            + " Your last backup is kept at %2$s. To restore it, close LaiNurse, and copy it to %1$s.";
+    public static final String MESSAGE_SAMPLE_DATA_BACKUP_NOT_KEPT = "%1$s is missing, so LaiNurse loaded the sample"
+            + " data, and its backup could not be copied to %2$s. To keep the backup, close the window with its close"
+            + " button now, without running any command, not even exit, and copy %3$s somewhere else. The next command"
+            + " that succeeds overwrites it.";
 
     private static final Logger logger = LogsCenter.getLogger(LaiNurseLoader.class);
 
@@ -67,11 +75,11 @@ public class LaiNurseLoader {
 
         try {
             Optional<ReadOnlyLaiNurse> laiNurseOptional = storage.readLaiNurse();
-            if (laiNurseOptional.isEmpty()) {
-                logger.info("Creating a new data file " + storage.getLaiNurseFilePath()
-                        + " populated with sample data.");
+            if (laiNurseOptional.isPresent()) {
+                return new Result(laiNurseOptional.get(), Optional.empty());
             }
-            return new Result(laiNurseOptional.orElseGet(SampleDataUtil::getSampleLaiNurse), Optional.empty());
+            logger.info("Creating a new data file " + storage.getLaiNurseFilePath() + " populated with sample data.");
+            return new Result(SampleDataUtil.getSampleLaiNurse(), keepBackup(storage));
         } catch (DataLoadingException e) {
             logger.warning("Data file at " + storage.getLaiNurseFilePath() + " could not be loaded.");
         }
@@ -110,6 +118,27 @@ public class LaiNurseLoader {
         assert format.contains("%1$s") && format.contains("%2$s") : "The message must name both files.";
         return Optional.of(String.format(format, storage.getLaiNurseFilePath(), storage.getLaiNurseBackupFilePath())
                 + "\n" + corruptFileMessage);
+    }
+
+    /**
+     * Copies any backup to the previous backup, since the next save replaces it with the sample data, and returns the
+     * message that tells the user whether it was kept. Returns an empty {@code Optional} if there is no backup.
+     */
+    private static Optional<String> keepBackup(Storage storage) {
+        if (!Files.exists(storage.getLaiNurseBackupFilePath())) {
+            return Optional.empty();
+        }
+        try {
+            storage.keepLaiNurseBackup();
+            logger.warning("Data file is missing. Copied the backup to " + storage.getLaiNursePreviousFilePath());
+            return Optional.of(String.format(MESSAGE_SAMPLE_DATA_BACKUP_KEPT,
+                    storage.getLaiNurseFilePath(), storage.getLaiNursePreviousFilePath()));
+        } catch (IOException e) {
+            logger.warning("Failed to copy the backup to " + storage.getLaiNursePreviousFilePath() + " : "
+                    + StringUtil.getDetails(e));
+            return Optional.of(String.format(MESSAGE_SAMPLE_DATA_BACKUP_NOT_KEPT, storage.getLaiNurseFilePath(),
+                    storage.getLaiNursePreviousFilePath(), storage.getLaiNurseBackupFilePath()));
+        }
     }
 
     /**

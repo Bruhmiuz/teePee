@@ -74,6 +74,7 @@ public class StorageManagerTest {
          */
         assertEquals(getTempFilePath("lainurse.backup"), storageManager.getLaiNurseBackupFilePath());
         assertEquals(getTempFilePath("lainurse.corrupt"), storageManager.getLaiNurseCorruptFilePath());
+        assertEquals(getTempFilePath("lainurse.previous"), storageManager.getLaiNursePreviousFilePath());
 
         LaiNurse original = getTypicalLaiNurse();
         storageManager.saveLaiNurse(original);
@@ -82,6 +83,10 @@ public class StorageManagerTest {
         storageManager.keepCorruptLaiNurseFile();
         assertEquals(Files.readString(storageManager.getLaiNurseFilePath()),
                 Files.readString(storageManager.getLaiNurseCorruptFilePath()));
+
+        storageManager.keepLaiNurseBackup();
+        assertEquals(Files.readString(storageManager.getLaiNurseBackupFilePath()),
+                Files.readString(storageManager.getLaiNursePreviousFilePath()));
     }
 
 }

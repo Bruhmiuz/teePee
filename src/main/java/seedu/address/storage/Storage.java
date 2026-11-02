@@ -58,6 +58,11 @@ public interface Storage {
     Path getLaiNurseCorruptFilePath();
 
     /**
+     * Returns the file path that the backup is copied to when the LaiNurse data file is missing.
+     */
+    Path getLaiNursePreviousFilePath();
+
+    /**
      * Returns the LaiNurse data in the backup file as a {@link ReadOnlyLaiNurse}.
      * Returns {@code Optional.empty()} if the backup file is not found.
      *
@@ -77,5 +82,12 @@ public interface Storage {
      * @throws IOException if there was any problem copying the file.
      */
     void keepCorruptLaiNurseFile() throws IOException;
+
+    /**
+     * Copies the backup of the LaiNurse data file to {@link #getLaiNursePreviousFilePath()}, replacing any earlier
+     * copy.
+     * @throws IOException if there was any problem copying the file.
+     */
+    void keepLaiNurseBackup() throws IOException;
 
 }

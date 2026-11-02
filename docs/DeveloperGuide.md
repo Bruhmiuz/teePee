@@ -363,7 +363,8 @@ The `Storage` component,
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonLaiNurseStorage` and
   `JsonUserPrefsStorage` (one class per data file).
 * keeps a backup of the LaiNurse data file: `JsonLaiNurseStorage` writes every save to `data/lainurse.json` and then to
-  `data/lainurse.backup.json`, and can copy a data file that cannot be loaded to `data/lainurse.corrupt.json`.
+  `data/lainurse.backup.json`, can copy a data file that cannot be loaded to `data/lainurse.corrupt.json`, and can copy
+  the backup to `data/lainurse.previous.json` when the data file is missing.
 * decides, through `LaiNurseLoader`, which data the app starts with: that in the data file, the sample data, or that
   in the backup (see [Backing up the data file](#backing-up-the-data-file)).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects
@@ -836,7 +837,7 @@ Rather than hardcoding command names and usage strings inside `HelpCommand`:
 
 ### Backing up the data file
 
-`JsonLaiNurseStorage` keeps three files in the folder of the data file, all named after it by
+`JsonLaiNurseStorage` keeps four files in the folder of the data file, all named after it by
 `JsonLaiNurseStorage#withSuffix`:
 
 * the data file, `lainurse.json`, which the app loads and saves as before.
@@ -844,6 +845,8 @@ Rather than hardcoding command names and usage strings inside `HelpCommand`:
   the backup from the same data, so after every save that succeeds both hold the data as it was last saved. The
   overload that takes a path writes only that file, so tests and other callers can still write one file.
 * the corrupt copy, `lainurse.corrupt.json`. `JsonLaiNurseStorage#keepCorruptLaiNurseFile()` copies the data file there,
+  replacing any earlier copy.
+* the previous backup, `lainurse.previous.json`. `JsonLaiNurseStorage#keepLaiNurseBackup()` copies the backup there,
   replacing any earlier copy.
 
 `LogicManager` saves after every command that succeeds, as before, so it writes the backup without knowing about it.
@@ -874,7 +877,8 @@ the data file as usual.
 | Data file | Backup | Data | Message |
 |---|---|---|---|
 | Loads | Any | The data file's | None |
-| Missing | Any | The sample data | None |
+| Missing | Missing | The sample data | None |
+| Missing | Exists | The sample data | `MESSAGE_SAMPLE_DATA_BACKUP_KEPT` |
 | Cannot be loaded | Loads | The backup's | `MESSAGE_BACKUP_LOADED` |
 | Cannot be loaded | Missing | None | `MESSAGE_BACKUP_MISSING` |
 | Cannot be loaded | Cannot be loaded | None | `MESSAGE_BACKUP_NOT_LOADED` |
@@ -885,6 +889,10 @@ Without the copy, the next save would overwrite the file, and the user's edits i
 the message to `UiManager`, which shows it in the result display through `MainWindow#showFeedback` once the window
 opens. Before this, a data file that could not be loaded was only reported in the log.
 
+When the data file is missing and there is a backup, `LaiNurseLoader` calls `Storage#keepLaiNurseBackup()`, because the
+next save replaces the backup with the sample data. It copies the file without reading it, so the copy is kept whatever
+the backup holds. If the copy fails, the message is `MESSAGE_SAMPLE_DATA_BACKUP_NOT_KEPT`.
+
 The order of the two writes matters. The backup is written only after the data file has been, so if the app stops
 while writing the data file, the backup still holds the data saved before, and the next launch loads it.
 
@@ -893,7 +901,8 @@ while writing the data file, the backup still holds the data saved before, and t
 * **Alternative 1 (Current choice): Only when the data file cannot be loaded.**
     * *Pros:* A missing data file still loads the sample data, so deleting the file stays the way to start again,
       as the User Guide says.
-    * *Cons:* If the user deletes the data file by mistake, the next save replaces the backup with the sample data.
+    * *Cons:* If the user deletes the data file by mistake, they must restore the data themselves, from the copy of
+      the backup that `LaiNurseLoader` keeps.
 * **Alternative 2: Also when the data file is missing.**
     * *Pros:* Recovers from a data file deleted by mistake.
     * *Cons:* Deleting the data file no longer resets the app: the user would have to delete both files.
@@ -2768,8 +2777,9 @@ before you change any file in its `data` folder.
     1. Prerequisites: Both `data/lainurse.json` and `data/lainurse.backup.json` exist.
 
     1. Test case: Delete `data/lainurse.json`, and launch the app.<br>
-       Expected: The app starts with the sample patients, and the result display is empty. After `list`, both files
-       hold the sample data.
+       Expected: The app starts with the sample patients. The result display says that `data/lainurse.json` is missing,
+       and that the backup is kept at `data/lainurse.previous.json`. After `list`, both files hold the sample data, and
+       `data/lainurse.previous.json` still holds the data from before.
 
 1. Dealing with a corrupted data file
 
