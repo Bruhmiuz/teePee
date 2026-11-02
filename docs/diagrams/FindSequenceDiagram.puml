@@ -9,11 +9,6 @@ participant ":FindCommandParser" as FindCommandParser LOGIC_COLOR
 participant "command:FindCommand" as FindCommand LOGIC_COLOR
 end box
 
-box Model MODEL_COLOR_T1
-participant "predicate:PatientContainsSubstringsPredicate" as Predicate MODEL_COLOR
-participant "model:ModelManager" as ModelManager MODEL_COLOR
-end box
-
 [-> LogicManager : execute("find ~--name Alex ~--address Serangoon")
 activate LogicManager
 
@@ -30,15 +25,8 @@ deactivate FindCommandParser
 LaiNurseParser -> FindCommandParser : parse(" ~--name Alex ~--address Serangoon")
 activate FindCommandParser
 
-create Predicate
-FindCommandParser -> Predicate : PatientContainsSubstringsPredicate(...)
-activate Predicate
-
-Predicate --> FindCommandParser
-deactivate Predicate
-
 create FindCommand
-FindCommandParser -> FindCommand : FindCommand(predicate)
+FindCommandParser -> FindCommand : FindCommand(predicate, Optional.empty())
 activate FindCommand
 
 FindCommand --> FindCommandParser
@@ -46,9 +34,6 @@ deactivate FindCommand
 
 FindCommandParser --> LaiNurseParser : command
 deactivate FindCommandParser
-'Hidden arrow to position the destroy marker below the end of the activation bar.
-FindCommandParser -[hidden]-> LaiNurseParser
-destroy FindCommandParser
 
 LaiNurseParser --> LogicManager : command
 deactivate LaiNurseParser
@@ -56,19 +41,7 @@ deactivate LaiNurseParser
 LogicManager -> FindCommand : execute(model)
 activate FindCommand
 
-FindCommand -> ModelManager : updateFilteredPatientList(predicate, comparator)
-activate ModelManager
-
-ModelManager --> FindCommand
-deactivate ModelManager
-
-FindCommand -> ModelManager : getFilteredPatientList()
-activate ModelManager
-
-ModelManager --> FindCommand : patients
-deactivate ModelManager
-
-FindCommand --> LogicManager : searchResult
+FindCommand --> LogicManager : new CommandResult(...)\n.withNavigation(Navigation.toView(View.PATIENTS))
 deactivate FindCommand
 
 [<-- LogicManager : finalResult

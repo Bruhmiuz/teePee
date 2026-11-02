@@ -6,13 +6,8 @@ box Logic LOGIC_COLOR_T1
 participant ":LogicManager" as LogicManager LOGIC_COLOR
 participant ":LaiNurseParser" as LaiNurseParser LOGIC_COLOR
 participant ":DeleteAppointmentCommandParser" as DeleteAppointmentCommandParser LOGIC_COLOR
-participant "l:AppointmentLookup" as AppointmentLookup LOGIC_COLOR
-participant "d:DeleteAppointmentCommand" as DeleteAppointmentCommand LOGIC_COLOR
-participant "r:CommandResult" as CommandResult LOGIC_COLOR
-end box
-
-box Model MODEL_COLOR_T1
-participant "m:Model" as Model MODEL_COLOR
+participant "command:DeleteAppointmentCommand" as DeleteAppointmentCommand LOGIC_COLOR
+participant "AppointmentLookup" as AppointmentLookup <<utility>> LOGIC_COLOR
 end box
 
 [-> LogicManager : execute("deleteappt S1234567A 1")
@@ -22,68 +17,40 @@ LogicManager -> LaiNurseParser : parseCommand("deleteappt S1234567A 1")
 activate LaiNurseParser
 
 create DeleteAppointmentCommandParser
-LaiNurseParser -> DeleteAppointmentCommandParser
+LaiNurseParser -> DeleteAppointmentCommandParser : DeleteAppointmentCommandParser()
 activate DeleteAppointmentCommandParser
 
 DeleteAppointmentCommandParser --> LaiNurseParser
 deactivate DeleteAppointmentCommandParser
 
-LaiNurseParser -> DeleteAppointmentCommandParser : parse("S1234567A 1")
+LaiNurseParser -> DeleteAppointmentCommandParser : parse(" S1234567A 1")
 activate DeleteAppointmentCommandParser
 
 create DeleteAppointmentCommand
-DeleteAppointmentCommandParser -> DeleteAppointmentCommand : DeleteAppointmentCommand(S1234567A, 1)
+DeleteAppointmentCommandParser -> DeleteAppointmentCommand : DeleteAppointmentCommand(id, 1)
 activate DeleteAppointmentCommand
 
 DeleteAppointmentCommand --> DeleteAppointmentCommandParser
 deactivate DeleteAppointmentCommand
 
-DeleteAppointmentCommandParser --> LaiNurseParser : d
+DeleteAppointmentCommandParser --> LaiNurseParser : command
 deactivate DeleteAppointmentCommandParser
-'Hidden arrow to position the destroy marker below the end of the activation bar.
-DeleteAppointmentCommandParser -[hidden]-> LaiNurseParser
-destroy DeleteAppointmentCommandParser
 
-LaiNurseParser --> LogicManager : d
+LaiNurseParser --> LogicManager : command
 deactivate LaiNurseParser
 
-LogicManager -> DeleteAppointmentCommand : execute(m)
+LogicManager -> DeleteAppointmentCommand : execute(model)
 activate DeleteAppointmentCommand
 
-DeleteAppointmentCommand -> Model : findPatientById(S1234567A)
-activate Model
-
-Model --> DeleteAppointmentCommand : p
-deactivate Model
-
-DeleteAppointmentCommand -> AppointmentLookup : find(S1234567A, p.getSchedule(), target, COMMAND_WORD)
+DeleteAppointmentCommand -> AppointmentLookup : find(targetId, schedule,\ntargetAppointment, COMMAND_WORD)
 activate AppointmentLookup
 
 AppointmentLookup --> DeleteAppointmentCommand : foundAppointment
 deactivate AppointmentLookup
 
-DeleteAppointmentCommand -> DeleteAppointmentCommand : schedule.remove(foundAppointment)
-activate DeleteAppointmentCommand
-
-DeleteAppointmentCommand --> DeleteAppointmentCommand : editedSchedule
+DeleteAppointmentCommand --> LogicManager : new CommandResult(message)\n.withSelectionCleared()
 deactivate DeleteAppointmentCommand
 
-DeleteAppointmentCommand -> Model : setPatient(p, editedPatient)
-activate Model
-
-Model --> DeleteAppointmentCommand
-deactivate Model
-
-create CommandResult
-DeleteAppointmentCommand -> CommandResult
-activate CommandResult
-
-CommandResult --> DeleteAppointmentCommand
-deactivate CommandResult
-
-DeleteAppointmentCommand --> LogicManager : r
-deactivate DeleteAppointmentCommand
-
-[<--LogicManager
+[<-- LogicManager : finalResult
 deactivate LogicManager
 @enduml
