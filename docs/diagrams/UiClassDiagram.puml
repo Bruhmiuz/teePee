@@ -57,6 +57,7 @@ StatusBarFooter --|> UiPart
 HelpWindow --|> UiPart
 
 PatientRow ..> Model
+AppointmentRow ..> Model
 UiManager -right-> Logic
 MainWindow -left-> Logic
 
