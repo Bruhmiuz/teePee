@@ -395,7 +395,7 @@ Examples:
 
 ### Deleting many appointments: `clearappt`
 
-Deletes every appointment, all appointments of one patient, or every appointment in a range of dates. The patients stay. You confirm the deletion first.
+Deletes every appointment, all appointments of one patient, or every appointment in a range of dates. The patients stay. You confirm the deletion first: LaiNurse says what it would delete, and you type `confirm` to go ahead. Anything else cancels. See the caution under [`clear`](#deleting-many-patients-clear).
 
 Format: `clearappt [ID]`, or `clearappt [--id ID] [--from DATE_OR_DATETIME] [--to DATE_OR_DATETIME]`
 
