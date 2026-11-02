@@ -2015,13 +2015,13 @@ testers are expected to do more *exploratory* testing.
     1. Test case: `list`<br>
        Expected: All six patients are shown, in the name order above.
 
-    1. Test case: `add --id S0245678G --name Zara Lim --phone 98765432 --address "Blk 123 Clementi Ave 3, #05-12"`<br>
+    1. Test case: `add --id S0245678G --name Zara Lim --phone 98765432 --address Blk 123 Clementi Ave 3, #05-12`<br>
        Expected: The list shows all patients again, and Zara Lim is last, after Roy Balakrishnan.
 
     1. Test case: `edit S0245678G --name Aaron Tan`<br>
        Expected: Aaron Tan moves to the top of the list, above Alex Yeoh.
 
-    1. Test case: `add --id S0356789H --name aaron tan --phone 91234567 --address "Blk 456 Bedok Ave 2"`<br>
+    1. Test case: `add --id S0356789H --name aaron tan --phone 91234567 --address Blk 456 Bedok Ave 2`<br>
        Expected: Two rows read `AARON TAN`, adjacent at the top: `S0245678G` above `S0356789H`, because the patient
        ID breaks the tie.
 
