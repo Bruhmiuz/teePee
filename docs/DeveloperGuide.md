@@ -799,10 +799,11 @@ Rather than hardcoding command names and usage strings inside `HelpCommand`:
     * Empty lines flush pending paragraphs but do not terminate loose list counting.
 * **Callout & Icon Normalization**:
     * Collapses Jekyll/GitHub callout icon clusters (e.g., `[:exclamation: ... ] **Caution:**`) into unified badge components (`⚠ Caution:` in NUS Orange, `ℹ Note:` in Blue).
+    * Wraps Jekyll/GitHub alert blocks (`<div markdown="…" class="alert …">` … `</div>`) in tinted cards with a colored left border (orange for cautions, blue for notes). The div boundaries are pre-processed into unique sentinels, and every construct that can appear inside a callout renders into the active card, so tables, bullets and paragraphs keep their source order.
     * Wraps blockquote lines (`> ...`) in styled callout cards with an NUS Orange left border.
 * **Table Layout**: Groups contiguous piped lines (`|`) into a JavaFX `GridPane` with fixed column constraints (28% label / 72% description) and dark theme styling.
 * **Inline Markup & Hyperlinks**:
-    * Uses regex pattern matching to format bold text (`**`), inline code (`` ` ``), and keyboard keys (`<kbd>`).
+    * Uses regex pattern matching to format bold text (`**`), italics (`_`, outside words), inline code (`` ` ``), and keyboard keys (`<kbd>`).
     * Parses links `[text](url)` so that clicking an external URL copies it to the system clipboard and toggles the link label to `(Copied!)` for 1.5 seconds via a JavaFX `PauseTransition`, eliminating OS browser dependencies in headless testing environments.
 * **HTML `<br>` Sanitization**: Trailing `<br>` tags are stripped to eliminate excessive vertical padding, while consecutive internal `<br>` breaks are collapsed to a single `\n`.
 
