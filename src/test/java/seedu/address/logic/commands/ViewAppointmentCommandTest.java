@@ -250,7 +250,7 @@ public class ViewAppointmentCommandTest {
         Model expectedRelativeModel = new ModelManager(laiNurse, new UserPrefs());
         ViewAppointmentCommand command = new ViewAppointmentCommand(
                 Optional.empty(), Optional.empty(), FIXED_CLOCK);
-        String expectedMessage = ViewAppointmentCommand.MESSAGE_VIEW_APPOINTMENT_ALL_LISTED;
+        String expectedMessage = "Showing this week's appointments of patients who are not archived.";
         // No range, so the appointment view shows the weekly view of this week, and the next appointment from now
         CommandResult expectedResult = new CommandResult(expectedMessage).withAppointmentScope(PatientScope.DEFAULT)
                 .withNavigation(Navigation.toView(View.APPOINTMENTS));
@@ -265,7 +265,7 @@ public class ViewAppointmentCommandTest {
         Clock sundayClock = Clock.fixed(Instant.parse("2026-10-18T10:00:00Z"), ZoneOffset.UTC);
 
         ViewAppointmentCommand command = new ViewAppointmentCommand(Optional.empty(), Optional.empty(), sundayClock);
-        String expectedMessage = ViewAppointmentCommand.MESSAGE_VIEW_APPOINTMENT_ALL_LISTED;
+        String expectedMessage = ViewAppointmentCommand.MESSAGE_VIEW_APPOINTMENT_THIS_WEEK;
         assertCommandSuccess(command, relativeModel, new CommandResult(expectedMessage)
                 .withAppointmentScope(PatientScope.DEFAULT).withNavigation(Navigation.toView(View.APPOINTMENTS)),
                 expectedRelativeModel);
@@ -276,11 +276,11 @@ public class ViewAppointmentCommandTest {
         Model archiveModel = new ModelManager(new LaiNurseBuilder().withPatient(BENSON.withArchived(true)).build(),
                 new UserPrefs());
         Optional<LocalDate> none = Optional.empty();
-        assertEquals(new CommandResult(ViewAppointmentCommand.MESSAGE_VIEW_APPOINTMENT_ALL_WITH_ARCHIVED_LISTED)
+        assertEquals(new CommandResult(ViewAppointmentCommand.MESSAGE_VIEW_APPOINTMENT_THIS_WEEK_WITH_ARCHIVED)
                 .withAppointmentScope(PatientScope.ALL).withNavigation(Navigation.toView(View.APPOINTMENTS)),
                 executeOrFail(new ViewAppointmentCommand(none, none, Optional.empty(), PatientScope.ALL),
                         archiveModel));
-        assertEquals(ViewAppointmentCommand.MESSAGE_VIEW_APPOINTMENT_ARCHIVED_LISTED,
+        assertEquals(ViewAppointmentCommand.MESSAGE_VIEW_APPOINTMENT_THIS_WEEK_ARCHIVED,
                 executeOrFail(new ViewAppointmentCommand(none, none, Optional.empty(), PatientScope.ARCHIVED),
                         archiveModel).getFeedbackToUser());
     }

@@ -2112,7 +2112,7 @@ testers are expected to do more *exploratory* testing.
     1. Test case: `viewappt`, with no date and no options<br>
        Expected: The weekly view of this week is shown, marked `This week`, with the arrow buttons above the list. Its
        next appointment from now is selected, or nothing if the week has none. The status message says
-       `Listed all appointments of patients who are not archived.`
+       `Showing this week's appointments of patients who are not archived.`
        To see the appointments from today onwards instead, use `viewappt --from` with today's
        date.
 

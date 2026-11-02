@@ -305,7 +305,7 @@ Format: `viewappt [DATE]` or `viewappt [--from START_DATE] [--to END_DATE]`, eac
 * All dates must be real dates, in the appointment date format described in the notes about the command format above.
 * `viewappt DATE` looks for appointments on `DATE`.
 * With `--from` and `--to`, the range includes both dates. Give one of them or both, in any order, each at most once.
-* Without `--from`, the range starts today. Without `--to`, the range has no end. A plain `viewappt`, with no date and no options, shows the weekly view of this week, and says `Listed all appointments of patients who are not archived.`; with `--all` or `--archived`, it says which appointments it lists instead. To see the appointments from today onwards, give `--from` with today's date.
+* Without `--from`, the range starts today. Without `--to`, the range has no end. A plain `viewappt`, with no date and no options, shows the weekly view of this week, and says `Showing this week's appointments of patients who are not archived.`; with `--all` or `--archived`, it says which appointments it shows instead. To see the appointments from today onwards, give `--from` with today's date.
 * "Today" is the current date on your computer, in its time zone. If your computer is set to a different time zone from where you visit patients, "today" can be a day off near midnight.
 * The `--from` date must not be later than the `--to` date. With only `--to`, the date must not be before today. To see past appointments, give `--from` too.
 * `DATE` cannot be combined with `--from` or `--to`, and comes before the options.
