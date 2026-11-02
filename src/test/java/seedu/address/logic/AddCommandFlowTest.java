@@ -21,6 +21,7 @@ import static seedu.address.testutil.TypicalPatients.BOB;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.CommandResult;
+import seedu.address.logic.commands.CommandResult.Navigation;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.LaiNurse;
@@ -88,6 +90,26 @@ public class AddCommandFlowTest {
         assertAddedPatientPersisted(AddCommand.COMMAND_WORD + ADDRESS_DESC_BOB
                 + NAME_DESC_BOB + MEDICAL_HISTORY_DESC_BOB + PHONE_DESC_BOB + ID_DESC_BOB
                 + " --notes Dislikes loud noises", expectedPatient);
+    }
+
+    @Test
+    public void execute_sameNameAsHiddenArchivedPatient_warnsAndPersistsBoth() throws Exception {
+        Patient archived = new PatientBuilder(AMY).withArchived(true)
+                .withAppointment("2026-11-30 09:00", "Checkup").build();
+        model.addPatient(archived);
+        logic.execute("find --name nobody");
+        Patient toAdd = new PatientBuilder().withId("NEW1").withName("amy bee").build();
+
+        CommandResult result = logic.execute("add --id NEW1 --name amy   bee --phone 85355255"
+                + " --address 123, Jurong West Ave 6, #08-111");
+
+        assertEquals(String.format(AddCommand.MESSAGE_SUCCESS, Messages.format(toAdd))
+                + "\nWarning: this name is also used by AMY BEE (S1111111A) [archived]. Check the patient IDs.",
+                result.getFeedbackToUser());
+        assertEquals(Optional.of(Navigation.toPatient(toAdd.getId())), result.getNavigation());
+        assertEquals(List.of(archived, toAdd), model.getLaiNurse().getPatientList());
+        assertEquals(List.of(toAdd), model.getFilteredPatientList());
+        assertEquals(model.getLaiNurse(), storage.readLaiNurse().orElseThrow());
     }
 
     @Test

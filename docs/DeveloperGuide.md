@@ -464,6 +464,20 @@ joined text is checked and normalized like any other value. Adding to an empty f
 * **Joining added text: `; ` (chosen), a space or `, `.** Values are one line, so a line break is not possible. `; `
   reads as a list of separate entries, which suits a medical history, and commas often appear inside one entry.
 
+### Warning about shared patient names
+
+After adding or editing a patient, `AddCommand` and `EditCommand` pass the complete stored patient list and the
+resulting patient to `Messages#formatSameNameWarning`. It compares names with `Name#equals`, reusing the existing
+normalization, and excludes the resulting patient's ID. All other matches are included, even when archived or hidden
+by the current scope or filter. Matches follow `PatientNameComparator` order, with archived matches labeled
+`[archived]`. Partial names do not match.
+
+The helper returns an empty string when there are no matches, or a warning without a leading newline. Commands append
+a nonempty warning through `CommandResult#withNoteAppended`, preserving navigation to the added or edited patient.
+Every successful patient edit checks the resulting name, including edits to other fields and edits that leave the
+name unchanged. Patient identity remains ID-based: sharing a name does not block the command or require confirmation.
+The normal save and rollback behavior still applies, and a backup warning can follow the shared-name warning.
+
 ### Storing multiple appointments
 
 Each patient holds an `AppointmentSchedule`, an immutable list of `Appointment` objects. `add` always creates a
@@ -1193,6 +1207,13 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case ends.
 
+* 3a. Another patient has the same normalized name, including an archived patient or one hidden by a filter.
+
+    * 3a1. LaiNurse keeps the added patient and appends a warning naming the other patients and their IDs, marking
+      archived matches. No confirmation is required.
+
+      Use case ends.
+
 **Use case: UC02 - Find a patient**
 
 **MSS**
@@ -1322,6 +1343,14 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
     * 2h1. LaiNurse shows an error message saying that the two options cannot be given together.
 
       Use case resumes at step 2.
+
+* 4a. The resulting name matches another patient's normalized name, including an archived patient or one hidden by a
+  filter. The name may have been left unchanged.
+
+    * 4a1. LaiNurse keeps the edit and appends a warning naming the other patients and their IDs, marking archived
+      matches. No confirmation is required.
+
+      Use case ends.
 
 **Use case: UC05 - View appointments**
 
@@ -2060,15 +2089,16 @@ testers are expected to do more *exploratory* testing.
     1. Test case: `view`<br>
        Expected: All six patients are shown, in the name order above.
 
-    1. Test case: `add --id S0245678G --name Zara Lim --phone 98765432 --address "Blk 123 Clementi Ave 3, #05-12"`<br>
+    1. Test case: `add --id S0245678G --name Zara Lim --phone 98765432 --address Blk 123 Clementi Ave 3, #05-12`<br>
        Expected: The list shows all patients again, and Zara Lim is last, after Roy Balakrishnan.
 
     1. Test case: `edit S0245678G --name Aaron Tan`<br>
        Expected: Aaron Tan moves to the top of the list, above Alex Yeoh.
 
-    1. Test case: `add --id S0356789H --name aaron tan --phone 91234567 --address "Blk 456 Bedok Ave 2"`<br>
+    1. Test case: `add --id S0356789H --name aaron tan --phone 91234567 --address Blk 456 Bedok Ave 2`<br>
        Expected: Two rows read `AARON TAN`, adjacent at the top: `S0245678G` above `S0356789H`, because the patient
-       ID breaks the tie.
+       ID breaks the tie. The add succeeds, and its result ends with `Warning: this name is also used by AARON TAN
+       (S0245678G). Check the patient IDs.`
 
 ### Viewing appointments by date in the appointment view
 
@@ -2201,8 +2231,8 @@ testers are expected to do more *exploratory* testing.
     1. Other incorrect commands to try: `viewappt --id MON S1234567A`, an ID value that ends in an ID rather
        than a date, `viewappt --id 123 456`, a digit-only ID typed with a stray space, `viewappt --id` (missing
        ID), `viewappt --id S1234567A --id S2345678B` (repeated option)<br>
-       Expected: The list is unchanged. The status message shows the patient ID constraints or a duplicate-option
-       error.
+       Expected: The list is unchanged. The status message shows `No patient has the ID ...` for the first two, the
+       patient ID constraints for the missing ID, and a duplicate-option error for the repeated option.
 
 1. Viewing a date-only appointment next to a timed one on the same day
 
@@ -2353,6 +2383,19 @@ testers are expected to do more *exploratory* testing.
        Expected: No patient is added. The status message shows `JOHN DOE (T0123456B) already exists in LaiNurse.` The
        selection does not change.
 
+1. Adding a patient with a name shared by a hidden patient
+
+    1. Prerequisites: Start with the sample data. No patient has the ID `SHARED1`.
+
+    1. Test case: `find --name bernice`, then
+       `add --id SHARED1 --name alex   yeoh --phone 98765432 --address Clementi`<br>
+       Expected: The patient is added and selected immediately, and the list shows both patients named `ALEX YEOH`.
+       The result ends with `Warning: this name is also used by ALEX YEOH (S1234567A). Check the patient IDs.` No
+       confirmation is requested, even though Alex was hidden by the filter.
+
+    1. Test case: Restart LaiNurse, then enter `view SHARED1`<br>
+       Expected: Both patients are still stored, and the newly added patient's details are shown.
+
 ### Editing a patient
 
 1. Editing a patient's details by ID
@@ -2398,6 +2441,27 @@ testers are expected to do more *exploratory* testing.
     1. Test case: `edit S1234567A --phone 91234567`<br>
        Expected: Only the phone number changes. Both appointments keep their date and time, and the Monday
        appointment keeps its details.
+
+1. Editing a patient whose name is shared
+
+    1. Prerequisites: Start with the sample data. Add another patient with
+       `add --id SHARED1 --name Other Patient --phone 98765432 --address Clementi`.
+
+    1. Test case: `edit SHARED1 --name alex   yeoh`<br>
+       Expected: The edit succeeds and selects `SHARED1`. The result ends with `Warning: this name is also used by
+       ALEX YEOH (S1234567A). Check the patient IDs.`
+
+    1. Test case: `archive S1234567A`, then `find --name bernice`, then `edit SHARED1 --notes Morning visits`<br>
+       Expected: The notes change and `SHARED1` is selected. The result ends with `Warning: this name is also used by
+       ALEX YEOH (S1234567A) [archived]. Check the patient IDs.`, although the name was unchanged and the matching
+       patient was archived and hidden.
+
+    1. Test case: `edit S1234567A --phone 91234567`<br>
+       Expected: The phone number changes, Alex stays archived, and the result warns about `ALEX YEOH (SHARED1)`.
+       Alex's appointments keep their dates, details and completion status.
+
+    1. Test case: `edit SHARED1 --name Unique Name`<br>
+       Expected: The edit succeeds with no shared-name warning. Restarting LaiNurse keeps the new name and notes.
 
 ### Editing an appointment
 

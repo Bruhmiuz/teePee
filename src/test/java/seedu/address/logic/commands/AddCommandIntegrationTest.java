@@ -42,6 +42,39 @@ public class AddCommandIntegrationTest {
     }
 
     @Test
+    public void execute_sameNameAsFilteredOutPatient_warnsAndAddsPatient() {
+        Patient existing = model.getLaiNurse().getPatientList().get(0);
+        Patient toAdd = new PatientBuilder().withName(existing.getName().fullName).build();
+        model.updateFilteredPatientList(patient -> false);
+
+        Model expectedModel = new ModelManager(model.getLaiNurse(), new UserPrefs());
+        expectedModel.addPatient(toAdd);
+        CommandResult expectedResult = new CommandResult(
+                String.format(AddCommand.MESSAGE_SUCCESS, Messages.format(toAdd))
+                + "\nWarning: this name is also used by " + existing.getName() + " (" + existing.getId()
+                + "). Check the patient IDs.").withNavigation(Navigation.toPatient(toAdd.getId()));
+
+        assertCommandSuccess(new AddCommand(toAdd), model, expectedResult, expectedModel);
+    }
+
+    @Test
+    public void execute_sameNameAsArchivedPatient_warnsAndAddsPatient() {
+        Patient existing = model.getLaiNurse().getPatientList().get(0);
+        Patient archived = existing.withArchived(true);
+        model.setPatient(existing, archived);
+        Patient toAdd = new PatientBuilder().withName(archived.getName().fullName).build();
+
+        Model expectedModel = new ModelManager(model.getLaiNurse(), new UserPrefs());
+        expectedModel.addPatient(toAdd);
+        CommandResult expectedResult = new CommandResult(
+                String.format(AddCommand.MESSAGE_SUCCESS, Messages.format(toAdd))
+                + "\nWarning: this name is also used by " + archived.getName() + " (" + archived.getId()
+                + ") [archived]. Check the patient IDs.").withNavigation(Navigation.toPatient(toAdd.getId()));
+
+        assertCommandSuccess(new AddCommand(toAdd), model, expectedResult, expectedModel);
+    }
+
+    @Test
     public void execute_duplicatePatient_throwsCommandException() {
         Patient patientInList = model.getLaiNurse().getPatientList().get(0);
         assertCommandFailure(new AddCommand(patientInList), model,

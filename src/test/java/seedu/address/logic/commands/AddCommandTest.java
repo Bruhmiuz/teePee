@@ -53,6 +53,22 @@ public class AddCommandTest {
     }
 
     @Test
+    public void execute_sameNameWithDifferentId_warnsAndAddsPatient() throws Exception {
+        ModelStubAcceptingPatientAdded modelStub = new ModelStubAcceptingPatientAdded();
+        Patient existing = new PatientBuilder().withId("S1").withName("Alex Yeoh").build();
+        modelStub.addPatient(existing);
+        Patient toAdd = new PatientBuilder().withId("S2").withName("  alex   yeoh  ").build();
+
+        CommandResult result = new AddCommand(toAdd).execute(modelStub);
+
+        assertEquals(String.format(AddCommand.MESSAGE_SUCCESS, Messages.format(toAdd))
+                + "\nWarning: this name is also used by ALEX YEOH (S1). Check the patient IDs.",
+                result.getFeedbackToUser());
+        assertEquals(Optional.of(Navigation.toPatient(toAdd.getId())), result.getNavigation());
+        assertEquals(List.of(existing, toAdd), modelStub.patientsAdded);
+    }
+
+    @Test
     public void execute_duplicatePatient_throwsCommandException() {
         Patient validPatient = new PatientBuilder().build();
         AddCommand addCommand = new AddCommand(validPatient);
@@ -268,7 +284,9 @@ public class AddCommandTest {
 
         @Override
         public ReadOnlyLaiNurse getLaiNurse() {
-            return new LaiNurse();
+            LaiNurse laiNurse = new LaiNurse();
+            laiNurse.setPatients(patientsAdded);
+            return laiNurse;
         }
     }
 
