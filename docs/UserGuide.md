@@ -20,7 +20,9 @@ LaiNurse is a **desktop application that gives home nurses fast access to patien
 1. Copy the file to the folder you want to use as the _home folder_ for LaiNurse.
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar lainurse.jar`.<br>
-   LaiNurse keeps its data in the folder you launch it from, so always launch it from this folder.<br>
+   LaiNurse keeps its data in the folder you launch it from, so always launch it from this folder, rather than by double-clicking the JAR file.<br>
+   Use a folder that you can write to, as LaiNurse cannot save its data in a write-protected folder.<br>
+   **Mac users:** other windows, such as the Help window, may not behave as expected while LaiNurse is in fullscreen.<br>
    A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data: the sample appointments fall on the Monday, Tuesday and Wednesday of the week you first launch the app in, and Alex Yeoh has another one four weeks later.<br>
    ![Patients view](images/Ui.png)
 
