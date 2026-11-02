@@ -71,12 +71,6 @@ activate Model
 Model --> ViewAppointmentCommand : p
 deactivate Model
 
-ViewAppointmentCommand -> Model : updateFilteredPatientList(...)
-activate Model
-
-Model --> ViewAppointmentCommand
-deactivate Model
-
 create CommandResult
 ViewAppointmentCommand -> CommandResult : CommandResult(..., AppointmentRange(start, end, i))
 activate CommandResult
