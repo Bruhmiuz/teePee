@@ -802,7 +802,8 @@ Shift+Down and typed text do there:
 * Tab moves the focus between the tabs and the list. The appointment list always takes the focus, so that Left and
   Right can leave an empty week.
 * Shift+Up and Shift+Down scroll the details beside the list, with `PatientDetailPanel#scroll`, as the details never
-  take the focus.
+  take the focus. Their vertical scroll bar always shows. A bar that comes and goes changes the width of the text, and
+  so where it wraps and how tall the details are, which at some sizes makes the bar flip on and off in every frame.
 * Shift+Tab does nothing, also in the command box. `MainWindow` consumes it, or JavaFX would move the focus to another
   node.
 
