@@ -120,6 +120,24 @@ public class TabCompleterTest {
     }
 
     @Test
+    public void complete_afterSet_givesSettingsThenOnOrOff() {
+        boolean wasEnabled = FeatureFlags.isSettingsEnabled();
+        FeatureFlags.setSettingsEnabled(true);
+        try {
+            assertEquals(List.of("mark-noclash", "mark-past", "past-clash", "archived-clash"), words("set "));
+            assertEquals(List.of("set mark-noclash", "set mark-past"), texts("set mark"));
+            assertEquals(List.of("set past-clash"), texts("set PAST"));
+            assertEquals(List.of("set past-clash on", "set past-clash off"), texts("set past-clash "));
+            assertEquals(List.of("off"), words("set past-clash of"));
+            // a whole word, or a command with both words, has nothing left to complete
+            assertEquals(List.of(), words("set past-clash"));
+            assertEquals(List.of(), words("set past-clash on "));
+        } finally {
+            FeatureFlags.setSettingsEnabled(wasEnabled);
+        }
+    }
+
+    @Test
     public void complete_helpTarget_givesCommandWordsAndWindow() {
         assertEquals(List.of("add", "addappt"), words("help ad"));
         assertEquals(List.of("help window"), texts("help w"));

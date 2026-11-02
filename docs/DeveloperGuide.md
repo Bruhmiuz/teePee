@@ -838,7 +838,7 @@ command box, so that it never covers the result of the last command. The team ch
 completes the first word to the longer command words that start with it, the word after `help` to what `help` can
 explain, a word that starts with `-` to the command's options that are not typed yet, and the word after `--id` in
 `viewappt` and `clearappt` to a patient ID. It does not complete the ID after `--id` in `find`, which searches for any part of an ID,
-or in `add`, which takes a new one. The word being completed matches ignoring case, but command words, options and
+or in `add`, which takes a new one. After `set`, it completes the setting names, then `on` or `off`. The word being completed matches ignoring case, but command words, options and
 `help` topics are completed in lowercase, the only case that the parsers accept. The words before it are matched
 exactly, as the parsers match them, so `EDIT S1234567A --PH` has nothing to complete. Its table of each command's options must be updated with the parser when a
 command gets a new option. Otherwise it passes the text to `IdCompleter`, which completes the ID that a command takes
@@ -2035,6 +2035,9 @@ testers are expected to do more *exploratory* testing.
     1. Test case: make the window short enough that the details do not fit, then, with the focus in the list, press
        Shift+Down, then Shift+Up<br>
        Expected: The details scroll down, then back up. The selection in the list does not move.
+
+    1. Test case: type `set mark`, then press Tab twice<br>
+       Expected: The command box shows `set mark-noclash`, then `set mark-past`.
 
     1. Test case: with the focus in the list, type `l`<br>
        Expected: The focus moves to the command box, which now shows `abcl`, with the caret at the end. Enter instead of
