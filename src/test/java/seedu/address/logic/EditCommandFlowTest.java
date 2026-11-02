@@ -82,6 +82,48 @@ public class EditCommandFlowTest {
     }
 
     @Test
+    public void execute_nameMatchesHiddenArchivedPatient_warnsAndPersistsEdit() throws Exception {
+        Patient archived = patient(CHARLOTTE_ID).withArchived(true);
+        model.setPatient(patient(CHARLOTTE_ID), archived);
+        logic.execute("find --name nobody");
+        Patient original = patient(ALEX_ID);
+        Patient expected = new PatientBuilder(original).withName("Charlotte Oliveiro").build();
+        LaiNurse expectedLaiNurse = new LaiNurse(model.getLaiNurse());
+        expectedLaiNurse.setPatient(original, expected);
+
+        CommandResult result = logic.execute("edit " + ALEX_ID + " --name charlotte   oliveiro");
+
+        assertEquals(String.format(EditCommand.MESSAGE_EDIT_PATIENT_SUCCESS, Messages.format(expected))
+                + "\nWarning: this name is also used by CHARLOTTE OLIVEIRO (T0123456C) [archived]. "
+                + "Check the patient IDs.", result.getFeedbackToUser());
+        assertEquals(Optional.of(Navigation.toPatient(expected.getId())), result.getNavigation());
+        assertEquals(original.getSchedule(), patient(ALEX_ID).getSchedule());
+        assertEquals(expectedLaiNurse, model.getLaiNurse());
+        assertTrue(model.getFilteredPatientList().contains(expected));
+        assertEquals(expectedLaiNurse, storage.readLaiNurse().orElseThrow());
+    }
+
+    @Test
+    public void execute_notesOnlyWithSharedName_warnsAndPersistsEdit() throws Exception {
+        Patient original = patient(ALEX_ID);
+        Patient other = new PatientBuilder(original).withId("SHARED1").build();
+        model.addPatient(other);
+        Patient expected = new PatientBuilder(original).withNotes("Prefers morning visits").build();
+        LaiNurse expectedLaiNurse = new LaiNurse(model.getLaiNurse());
+        expectedLaiNurse.setPatient(original, expected);
+
+        CommandResult result = logic.execute("edit " + ALEX_ID + " --notes Prefers morning visits");
+
+        assertEquals(String.format(EditCommand.MESSAGE_EDIT_PATIENT_SUCCESS, Messages.format(expected))
+                + "\nWarning: this name is also used by ALEX YEOH (SHARED1). Check the patient IDs.",
+                result.getFeedbackToUser());
+        assertEquals(Optional.of(Navigation.toPatient(expected.getId())), result.getNavigation());
+        assertEquals(original.getSchedule(), patient(ALEX_ID).getSchedule());
+        assertEquals(expectedLaiNurse, model.getLaiNurse());
+        assertEquals(expectedLaiNurse, storage.readLaiNurse().orElseThrow());
+    }
+
+    @Test
     public void execute_addMedicalHistoryToPatientWithout_persisted() throws Exception {
         Patient expected = new PatientBuilder(patient(CHARLOTTE_ID)).withMedicalHistory("Asthma").build();
         assertEditPersisted("edit T0123456C --medical-history Asthma", CHARLOTTE_ID, expected);

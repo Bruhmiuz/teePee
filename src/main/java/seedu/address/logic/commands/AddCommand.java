@@ -9,7 +9,9 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_NOTES;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
 
 import java.util.Optional;
+import java.util.logging.Logger;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.CommandResult.Navigation;
@@ -45,6 +47,8 @@ public class AddCommand extends Command {
     public static final String MESSAGE_DUPLICATE_ARCHIVED_PATIENT = "%1$s (%2$s) already exists in LaiNurse, and is "
             + "archived. To unarchive them: 'unarchive %2$s'";
 
+    private static final Logger logger = LogsCenter.getLogger(AddCommand.class);
+
     private final Patient toAdd;
 
     /**
@@ -67,9 +71,14 @@ public class AddCommand extends Command {
         }
 
         model.addPatient(toAdd);
+        assert model.findPatientById(toAdd.getId()).filter(toAdd::equals).isPresent()
+                : "The added patient must be stored with all their details.";
         model.showInPatientList(toAdd);
-        return new CommandResult(String.format(MESSAGE_SUCCESS, Messages.format(toAdd)))
+        String warning = Messages.formatSameNameWarning(model.getLaiNurse().getPatientList(), toAdd);
+        logger.fine("Added patient " + toAdd.getId() + (warning.isEmpty() ? "." : " with a same-name warning."));
+        CommandResult result = new CommandResult(String.format(MESSAGE_SUCCESS, Messages.format(toAdd)))
                 .withNavigation(Navigation.toPatient(toAdd.getId()));
+        return warning.isEmpty() ? result : result.withNoteAppended(warning);
     }
 
     @Override
