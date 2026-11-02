@@ -27,7 +27,7 @@ import seedu.address.model.patient.PatientNameComparator;
 /**
  * Finds and lists patients whose fields contain any of the supplied substrings.
  * Matching ignores case and repeated whitespace. Patients matching more fields appear first, but archived patients
- * always come last.
+ * always come last. Phone matching compares digits only.
  */
 public class FindCommand extends Command {
 
@@ -41,6 +41,7 @@ public class FindCommand extends Command {
             + "[" + PREFIX_PHONE + "PHONE] [" + PREFIX_MEDICAL_HISTORY + "HISTORY] [" + PREFIX_NOTES + "NOTES] "
             + "[" + PREFIX_ALL.toString().trim() + " or " + PREFIX_ARCHIVED.toString().trim() + "]\n"
             + "Supply at least one non-blank value. Double quotes around values are optional.\n"
+            + "Phone searches compare digits only and require at least one digit.\n"
             + "Searches the patients in the scope that the patient list shows, or, with "
             + PREFIX_ALL.toString().trim() + ", all patients, or, with " + PREFIX_ARCHIVED.toString().trim()
             + ", only archived ones, which the list then shows.\n"

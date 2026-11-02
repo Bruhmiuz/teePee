@@ -51,6 +51,25 @@ public class FindCommandParserTest {
     }
 
     @Test
+    public void parse_phoneFormattingDifferences_returnsEquivalentCommand() {
+        FindCommand expectedCommand = command(null, null, "6598765432", null, null);
+        for (String value : List.of("6598765432", "+65 9876-5432", "\"(65) 9876.5432\"", "“65 / 9876 / 5432”",
+                "\"  +65\t 98-76  5432  \"")) {
+            assertParseSuccess(parser, "--phone " + value, expectedCommand);
+        }
+        assertParseSuccess(parser, "--phone 00-1", command(null, null, "001", null, null));
+    }
+
+    @Test
+    public void parse_phoneWithoutDigits_throwsParseException() {
+        String expectedMessage = "Phone search values must contain at least one digit.";
+        for (String value : List.of("+-()", "abc", "\" + - () \"", "“abc”", "\uFF11\uFF12\uFF13")) {
+            assertParseFailure(parser, "--phone " + value, expectedMessage);
+            assertParseFailure(parser, "--name Mary --phone " + value + " --all", expectedMessage);
+        }
+    }
+
+    @Test
     public void parse_allOptionsInDifferentOrders_returnsSameCommand() {
         FindCommand expectedCommand = command("123", "Mary Jane", "65", "Marina Bay", "Type 2", "Enjoys gardening");
         assertParseSuccess(parser, "--id 123 --name Mary Jane --phone 65 --address Marina Bay"
@@ -136,7 +155,8 @@ public class FindCommandParserTest {
     public void parse_reservedOptionsInsideValues_failure() {
         for (String arguments : List.of("--name \"Mary --unknown value\"", "--name \"--unknown\"",
                 "--name “--id”", "--name \"Mary --address Jurong\"", "--name Mary\t--unknown\tvalue",
-                "--notes \"Enjoys --unknown gardening\"", "--notes “--name”")) {
+                "--notes \"Enjoys --unknown gardening\"", "--notes “--name”",
+                "--phone \"9876 --unknown 5432\"")) {
             assertParseFailure(parser, arguments, INVALID_FORMAT_MESSAGE);
         }
     }

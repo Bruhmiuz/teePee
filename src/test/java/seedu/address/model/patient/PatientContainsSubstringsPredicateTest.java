@@ -46,6 +46,17 @@ public class PatientContainsSubstringsPredicateTest {
     }
 
     @Test
+    public void constructor_phoneWithoutDigits_throwsIllegalArgumentException() {
+        String expectedMessage = "Phone search values must contain at least one digit.";
+        for (String value : List.of("+-()", "abc", ".*", "\uFF11\uFF12\uFF13")) {
+            assertThrows(IllegalArgumentException.class, expectedMessage, () ->
+                    predicate(null, null, value, null, null));
+            assertThrows(IllegalArgumentException.class, expectedMessage, () ->
+                    predicate(null, "Mary", value, null, null));
+        }
+    }
+
+    @Test
     public void test_eachFieldContainsSubstring_returnsTrue() {
         List<PatientContainsSubstringsPredicate> predicates = List.of(
                 predicate("041", null, null, null, null),
@@ -79,9 +90,9 @@ public class PatientContainsSubstringsPredicateTest {
     @Test
     public void countMatchingFields_repeatedOccurrences_countsEachFieldOnce() {
         Patient repeatedValues = new PatientBuilder().withId("123123").withName("Mary Mary Mary")
-                .withPhone("123123").withAddress("Bay Bay").withMedicalHistory("diabetes diabetes").build();
+                .withPhone("123-123").withAddress("Bay Bay").withMedicalHistory("diabetes diabetes").build();
         assertEquals(1, predicate(null, "Mary", null, null, null).countMatchingFields(repeatedValues));
-        assertEquals(5, predicate("123", "Mary", "123", "Bay", "diabetes").countMatchingFields(repeatedValues));
+        assertEquals(5, predicate("123", "Mary", "1-2 3", "Bay", "diabetes").countMatchingFields(repeatedValues));
     }
 
     @Test
@@ -169,9 +180,34 @@ public class PatientContainsSubstringsPredicateTest {
     }
 
     @Test
-    public void test_phoneMatchesStoredText() {
-        assertTrue(predicate(null, null, "9876-54", null, null).test(patient));
-        assertFalse(predicate(null, null, "987654", null, null).test(patient));
+    public void test_phoneFormattingDifferences_matchesDigitsOnly() {
+        for (String storedPhone : List.of("+65 9876-5432", "+6-5 98 765 432", "6598765432")) {
+            Patient formattedPatient = new PatientBuilder(patient).withPhone(storedPhone).build();
+            for (String search : List.of("987654", "9876-54", "9.8/76 (54)", "+65 9876-5432", "6598765432",
+                    "  +65\t 9876 54 ", "4", "phone: 987654")) {
+                PatientContainsSubstringsPredicate predicate = predicate(null, null, search, null, null);
+                assertTrue(predicate.test(formattedPatient), storedPhone + " searched with " + search);
+                assertEquals(1, predicate.countMatchingFields(formattedPatient));
+            }
+        }
+    }
+
+    @Test
+    public void test_phoneLeadingZeros_preservesDigits() {
+        Patient leadingZeros = new PatientBuilder(patient).withPhone("0012-0345").build();
+        assertTrue(predicate(null, null, "00-12", null, null).test(leadingZeros));
+        assertTrue(predicate(null, null, "0 3", null, null).test(leadingZeros));
+        assertFalse(predicate(null, null, "00012", null, null).test(leadingZeros));
+        assertFalse(predicate(null, null, "12345", null, null).test(leadingZeros));
+    }
+
+    @Test
+    public void test_phoneDifferentDigits_returnsFalse() {
+        for (String search : List.of("1111", "98-54", "123987654", "+44 9876-5432")) {
+            PatientContainsSubstringsPredicate predicate = predicate(null, null, search, null, null);
+            assertFalse(predicate.test(patient), search);
+            assertEquals(0, predicate.countMatchingFields(patient));
+        }
     }
 
     @Test
@@ -189,10 +225,11 @@ public class PatientContainsSubstringsPredicateTest {
     public void equals() {
         PatientContainsSubstringsPredicate firstPredicate = predicate("T04", "Mary Jane", "9876", "Marina Bay",
                 "diabetes", "gardening");
-        PatientContainsSubstringsPredicate normalizedCopy = predicate("t04", " mary\t jane ", "9876", "marina bay",
+        PatientContainsSubstringsPredicate normalizedCopy = predicate("t04", " mary\t jane ", "98-76", "marina bay",
                 "DIABETES", " GARDENING ");
         assertTrue(firstPredicate.equals(firstPredicate));
         assertTrue(firstPredicate.equals(normalizedCopy));
+        assertTrue(normalizedCopy.equals(firstPredicate));
         assertEquals(firstPredicate.hashCode(), normalizedCopy.hashCode());
         assertFalse(firstPredicate.equals(null));
         assertFalse(firstPredicate.equals(1));

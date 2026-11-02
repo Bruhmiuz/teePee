@@ -14,9 +14,12 @@ import seedu.address.commons.util.ToStringBuilder;
 
 /**
  * Tests whether any specified patient field contains its corresponding substring.
- * Matching ignores case and repeated whitespace.
+ * Matching ignores case and repeated whitespace. Phone matching compares digits only.
  */
 public final class PatientContainsSubstringsPredicate implements Predicate<Patient> {
+    public static final String MESSAGE_PHONE_SEARCH_CONSTRAINTS =
+            "Phone search values must contain at least one digit.";
+
     private final Optional<String> id;
     private final Optional<String> name;
     private final Optional<String> phone;
@@ -28,7 +31,8 @@ public final class PatientContainsSubstringsPredicate implements Predicate<Patie
      * Creates a predicate with at least one non-blank search criterion.
      *
      * @throws NullPointerException if any optional is null.
-     * @throws IllegalArgumentException if no criterion is supplied or any supplied criterion is blank.
+     * @throws IllegalArgumentException if no criterion is supplied, any supplied criterion is blank,
+     *     or the phone criterion contains no digits.
      */
     public PatientContainsSubstringsPredicate(Optional<String> id, Optional<String> name, Optional<String> phone,
             Optional<String> address, Optional<String> medicalHistory, Optional<String> notes) {
@@ -37,7 +41,10 @@ public final class PatientContainsSubstringsPredicate implements Predicate<Patie
                 .anyMatch(Optional::isPresent), "At least one search criterion must be supplied.");
         this.id = normalizeCriterion(id);
         this.name = normalizeCriterion(name);
-        this.phone = normalizeCriterion(phone);
+        this.phone = normalizeCriterion(phone).map(value -> value.replaceAll("[^0-9]", ""));
+        checkArgument(this.phone.filter(String::isEmpty).isEmpty(), MESSAGE_PHONE_SEARCH_CONSTRAINTS);
+        assert this.phone.map(value -> value.matches("[0-9]+")).orElse(true)
+                : "Phone search criteria must contain only digits.";
         this.address = normalizeCriterion(address);
         this.medicalHistory = normalizeCriterion(medicalHistory);
         this.notes = normalizeCriterion(notes);
@@ -63,7 +70,7 @@ public final class PatientContainsSubstringsPredicate implements Predicate<Patie
         if (matches(name, patient.getName().fullName)) {
             matchCount++;
         }
-        if (matches(phone, patient.getPhone().value)) {
+        if (matches(phone, patient.getPhone().value.replaceAll("[^0-9]", ""))) {
             matchCount++;
         }
         if (matches(address, patient.getAddress().value)) {

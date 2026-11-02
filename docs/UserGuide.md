@@ -271,10 +271,10 @@ Format: `find [--id ID] [--name NAME] [--address ADDRESS] [--phone PHONE] [--med
 * Parameters may appear in any order. Separate options and values using spaces or tabs; values may contain spaces.
 * Values may be unquoted or enclosed in matching straight double quotes (`"Mary"`) or curly double quotes (`“Mary”`). Quotes must surround the complete value; missing or mismatched closing quotes and text after a closing quote are rejected.
 * Matching ignores case and repeated whitespace. For example, `--name han` matches `Hans`, and `--address "marina   bay"` matches `Marina Bay`.
-* Each value is one contiguous substring of its corresponding field. For example, `--address "Marina Bay"` matches that phrase, while `--address "Bay Marina"` does not match `Marina Bay`.
+* Each value is one contiguous substring of its corresponding field, using digits only for phone numbers. For example, `--address "Marina Bay"` matches that phrase, while `--address "Bay Marina"` does not match `Marina Bay`.
 * Patients matching **any** supplied option are returned (an `OR` search). For example, `--name John --address "Marina Bay"` finds patients whose name contains `John` **or** whose address contains `Marina Bay`. Each patient appears once.
 * Patients matching more supplied fields appear first. For example, a patient matching both name and address appears before one matching only name or only address. Each field counts once, even if the substring occurs several times. Patients matching the same number of fields are in name order, so a single-field search shows its results in name order. With `--all`, archived patients come after all the others, even those that match fewer fields.
-* Phone searches match the stored text, so partial values such as `--phone 123` are accepted. Phone punctuation remains significant: `9876-54` does not contain `987654`.
+* Phone searches compare digits only, ignoring spaces, punctuation and every other non-digit character in both the search value and stored number. For example, `--phone 987654` and `--phone "(9876)-54"` both match `+65 9876-5432`. Partial values such as `--phone 123` or `--phone 5` are accepted. Leading zeros and country-code digits are preserved. A phone search must contain at least one digit (`0–9`); values such as `"+-()"` or `abc` are rejected, even when another search option is supplied.
 * Patients without medical history do not match a `--medical-history` search, but may match another supplied option.
 * `--notes` searches the patient's personal notes. Patients without notes do not match this option, but may match another supplied option.
 * Whitespace-delimited words beginning with `--` are reserved for options, including within quoted values. Unknown options, misspellings, and `--name=value` syntax are rejected. Text such as `Anne--Marie` is accepted.
@@ -288,6 +288,7 @@ Examples:
 * `find --name Irfan --id 1234567` on the sample data shows Irfan Ibrahim before Alex Yeoh, because Irfan matches both fields while Alex matches only ID.
 * `find --id “T04”` finds patients whose ID contains `T04`.
 * `find --id "123"` finds patients whose ID contains `123`.
+* `find --phone "(43)-88"` on the sample data finds Alex Yeoh, whose phone number is `87438807`.
 * `find --medical-history penicillin --name tan` finds patients whose medical history contains `penicillin` or whose name contains `tan`.
 * `find --notes "enjoys gardening"` finds patients whose notes contain that phrase.
 * `find --notes morning --name tan` finds patients whose notes contain `morning` or whose name contains `tan`.

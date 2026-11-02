@@ -396,12 +396,18 @@ options, including inside quoted values.
 `PatientContainsSubstringsPredicate` stores six optional string criteria normalized by
 `TextNormalizer#normalizeText`, which like the command parser replaces horizontal spaces such as the non-breaking space
 with plain spaces before collapsing repeated whitespace, and first removes invisible characters, as the free-text fields
-do. Each criterion
-is a literal, contiguous substring of its corresponding stored field. `countMatchingFields()` counts each matching
+do. Phone criteria then keep only ASCII digits (`0–9`), and phone matching removes every non-digit character from
+the stored number before checking for a contiguous substring. This preserves leading zeros and country-code digits
+without changing stored or displayed numbers. Other criteria remain literal, contiguous substrings of their
+corresponding stored fields. `countMatchingFields()` counts each matching
 supplied field once, and `test()` includes a patient when this count exceeds zero, preserving the OR search. Repeated
 occurrences of a substring in one field contribute only one match. Missing medical history or notes contributes no
 match for that field. Phone criteria are substrings rather than complete phone numbers, so the parser does not apply
-the validation used when adding a patient. `find` does not search appointments. `viewappt` handles every appointment
+the validation used when adding a patient. It rejects phone criteria with no ASCII digits using a `ParseException`
+and the predicate's shared `MESSAGE_PHONE_SEARCH_CONSTRAINTS`; the predicate constructor also rejects them with an
+`IllegalArgumentException` and asserts that normalized phone criteria contain only digits. The parser logs accepted
+and rejected phone searches at `FINE` level without recording search values. `find` does not search appointments.
+`viewappt` handles every appointment
 search, as described in [Viewing appointments by date](#viewing-appointments-by-date).
 
 `FindCommand` passes the predicate and a comparator to `Model#updateFilteredPatientList(predicate, comparator)` and
@@ -1954,6 +1960,9 @@ testers are expected to do more *exploratory* testing.
     1. Test case: `find --phone 4388`<br>
        Expected: Only Alex Yeoh is shown, because their phone number contains `4388`.
 
+    1. Test case: `find --phone "(43)-88"`<br>
+       Expected: Only Alex Yeoh is shown again. Punctuation in the search value is ignored.
+
     1. Test case: `find --medical-history penicillin`<br>
        Expected: Only Bernice Yu is shown. Patients without medical history do not match this criterion.
 
@@ -1985,6 +1994,15 @@ testers are expected to do more *exploratory* testing.
        Expected: All six sample patients are shown again. Alex Yeoh, the first, is selected, and the panel shows their
        details.
 
+1. Ignoring punctuation in stored phone numbers
+
+    1. Prerequisites: Start with the sample data, then enter `edit S1234567A --phone +65 8743-8807`.
+
+    1. Test cases: `find --phone 4388` and `find --phone "(+65) 8743.8807"`<br>
+       Expected: Only Alex Yeoh is shown in both cases. The patient details still show `+65 8743-8807`.
+
+    1. Enter `edit S1234567A --phone 87438807` to restore the sample phone number before continuing.
+
 1. Rejecting invalid commands
 
     1. Prerequisites: Enter `find --name Alex`, so only Alex Yeoh is shown.
@@ -2002,6 +2020,10 @@ testers are expected to do more *exploratory* testing.
 
     1. Test case: `find --notes dog --notes morning`<br>
        Expected: The same duplicate-option error is shown, and nothing changes.
+
+    1. Test cases: `find --phone "+-()"` and `find --name Alex --phone abc --all`<br>
+       Expected: The displayed list, its scope and patient records are unchanged. The status message shows
+       `Phone search values must contain at least one digit.`
 
     1. Enter `list` after testing to show all patients again.
 

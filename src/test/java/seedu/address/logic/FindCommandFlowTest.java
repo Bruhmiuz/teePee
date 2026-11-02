@@ -23,6 +23,7 @@ import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.LaiNurse;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
+import seedu.address.model.PatientScope;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.patient.Patient;
 import seedu.address.model.patient.PatientAppointment;
@@ -47,6 +48,46 @@ public class FindCommandFlowTest {
 
         execute("find --address tokyo --name Fiona --id T");
         assertEquals(List.of(FIONA, ELLE), model.getFilteredPatientList());
+    }
+
+    @Test
+    public void execute_phoneFormattingDifferences_findsPatientsWithoutChangingStoredData() throws Exception {
+        Patient formattedBenson = new PatientBuilder(BENSON).withPhone("+65 9876-5432").build();
+        model.setPatient(BENSON, formattedBenson);
+        LaiNurse expectedLaiNurse = new LaiNurse(model.getLaiNurse());
+        List<PatientAppointment> appointments = List.copyOf(model.getAppointmentList());
+
+        for (String search : List.of("987654", "\"(9876).54\"", "“+65 9876-5432”")) {
+            CommandResult result = execute("find --phone " + search);
+            assertEquals(List.of(formattedBenson), model.getFilteredPatientList());
+            assertEquals(String.format(Messages.MESSAGE_PATIENTS_LISTED_OVERVIEW, 1), result.getFeedbackToUser());
+        }
+
+        execute("find --phone \"(9876)-5432\" --name Alice");
+        assertEquals(List.of(ALICE, formattedBenson), model.getFilteredPatientList());
+        execute("find --phone 987654 --name Meier");
+        assertEquals(List.of(formattedBenson, DANIEL), model.getFilteredPatientList());
+        assertEquals(expectedLaiNurse, model.getLaiNurse());
+        assertEquals(appointments, model.getAppointmentList());
+        assertEquals("+65 9876-5432", formattedBenson.getPhone().value);
+    }
+
+    @Test
+    public void execute_phoneWithoutDigits_preservesRecordsFilterAndScope() throws Exception {
+        Patient archivedElle = ELLE.withArchived(true);
+        model.setPatient(ELLE, archivedElle);
+        execute("find --name Elle --archived");
+        LaiNurse expectedLaiNurse = new LaiNurse(model.getLaiNurse());
+        List<PatientAppointment> appointments = List.copyOf(model.getAppointmentList());
+
+        for (String command : List.of("find --phone \"+-()\"", "find --name Alice --phone abc --all")) {
+            assertThrows(ParseException.class, "Phone search values must contain at least one digit.", () ->
+                    execute(command));
+            assertEquals(expectedLaiNurse, model.getLaiNurse());
+            assertEquals(List.of(archivedElle), model.getFilteredPatientList());
+            assertEquals(PatientScope.ARCHIVED, model.getPatientListScope().getValue());
+            assertEquals(appointments, model.getAppointmentList());
+        }
     }
 
     @Test
