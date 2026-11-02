@@ -20,7 +20,7 @@ title: Developer Guide
 * AI Use Declaration from Jaydon: "I used Codex and OpenCode to review and generate code.
   Based on the given levels of AI use in coding tasks, this ranges between AI-2 and AI-6".
 
-* AI Use Declaration from Yuhao: "I used Claude Code to write code, tests and documentation, and I review and test the results. AI levels between AI-5 and AI-6"
+* AI Use Declaration from Yuhao: "I used Claude Code, with Claude Opus 5.5, to write code, tests and documentation. I used Codex, with ChatGPT 6 Astra, and Claude Opus 5.5 to review them, and I review and test the results. AI levels between AI-5 and AI-6"
 
 * AI Use Declaration from Yong Kang: "I used Gemini and OpenCode GLM/DeepSeek to write and review code, tests and documentation. No full automation is done and I go back and forth consistently with AI to ensure I am still largely in charge of the process; AI still asks for permission. AI levels range between AI-1 and AI-5/6, depending on the situation."
 
@@ -149,8 +149,8 @@ An appointment has passed once its time today has gone by, or once its day is ov
 
 * A patient's row filters out done visits, then shows their first appointment that has not passed, from
   `AppointmentFormatter#findFirstNotPassed`. Completion does not affect the other date-based rules below.
-* `DetailAppointments` picks the appointments that the details list: every one that has not passed, and the latest ten
-  that have, plus a marked older one.
+* `DetailAppointments` picks the appointments that the details list: every one that has not passed, and every one that
+  has, latest first.
 * The appointment list greys out the appointments that have passed.
 
 Each of these decides what has passed, and which day is today, when it is drawn. So that they stay right while the
@@ -651,7 +651,7 @@ its punctuation keeps from being a patient ID, the parser reports that a `DATE` 
 rather than failing the ID. A value that ends in anything else, such as a digit-only ID typed with a stray space
 (`--id 123 456`), fails as an ID. When the command runs, it looks the patient up by ID,
 and if none matches, fails with the invalid-patient-ID error and leaves the page as it was. Otherwise
-it counts that patient's appointments in the range for the status message, so a patient seen twice on the day reads "2 appointment(s)", where the all-patients
+it counts that patient's appointments in the range for the status message, so a patient seen twice on the day reads "2 appointments", where the all-patients
 messages count patients. The `AppointmentRange` also carries the ID, and `AppointmentListPanel` filters the page's
 appointments by it, so the page shows only that patient's until Esc or another `viewappt` replaces the range.
 
@@ -772,6 +772,7 @@ Every key below works without the mouse. Where a key is handled depends on which
 | Focus | Keys | Handled by |
 | --- | --- | --- |
 | Command box | Enter, Tab, Esc, Up and Down | `CommandBox`, which runs the command, or calls [Tab completion](#tab-completion), `MainWindow` or the [command history](#command-history) |
+| Command box | Shift+Up and Shift+Down | `MainWindow`, which scrolls the result display with `ResultDisplay#scroll` |
 | View tabs | Left and Right, Down, Up | `MainWindow` |
 | A list | Up and Down, Ctrl+Up and Ctrl+Down, Page Up, Page Down, Home and End | The list's panel, `PatientListPanel` or `AppointmentListPanel` |
 | The appointment list | Left and Right | `AppointmentListPanel`, which shows the previous or next week |
@@ -842,8 +843,8 @@ command box, so that it never covers the result of the last command. The team ch
 `TabCompleter` in the `Logic` component holds the rules, so `CommandBox` needs no knowledge of the command formats. It
 completes the first word to the longer command words that start with it, the word after `help` to what `help` can
 explain, a word that starts with `-` to the command's options that are not typed yet, and the word after `--id` in
-`viewappt` and `clearappt` to a patient ID. It does not complete the ID after `--id` in `find`, which searches for any part of an ID,
-or in `add`, which takes a new one. The word being completed matches ignoring case, but command words, options and
+`viewappt` to a patient ID. It does not complete the ID after `--id` in `find`, which searches for any part of an ID,
+or in `add`, which takes a new one. After `set`, it completes the setting names, then `on` or `off`. The word being completed matches ignoring case, but command words, options and
 `help` topics are completed in lowercase, the only case that the parsers accept. The words before it are matched
 exactly, as the parsers match them, so `EDIT S1234567A --PH` has nothing to complete. Its table of each command's options must be updated with the parser when a
 command gets a new option. Otherwise it passes the text to `IdCompleter`, which completes the ID that a command takes
@@ -1175,7 +1176,7 @@ The selective clearing of #217 is behind `FeatureFlags#isSelectiveClearEnabled()
 
 * `clear --archived` (`ClearCommand` with `isArchivedOnly`) deletes only archived patients. `clearappt`
   (`ClearAppointmentCommand`) deletes every appointment, all of one patient's appointments, or every appointment from
-  `--from` to `--to`, of every patient, or with `--id`, of one. The patients stay. A date without a time given to `--from` is the start of that day, and one
+  `--from` to `--to`, of every patient, or with an ID, of one. The patients stay. A date without a time given to `--from` is the start of that day, and one
   given to `--to` its end, and an appointment with no time counts as at the start of its day. A patient's remaining
   appointments are numbered again in date order.
 * These two and `delete` are `Confirmable`. When `LogicManager` parses one, it asks for `Confirmable#describeDeletion` and returns it with
@@ -1914,6 +1915,17 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 --------------------------------------------------------------------------------------------------------------------
 
+## **Appendix: Proposed enhancements**
+
+The UG lists these as `Coming soon`. They are proposals, and this version does not include them.
+
+* **Stable appointment numbers:** add a switch to `Settings`, off by default. While it is on, save each appointment's number in `JsonAdaptedAppointment`, and give a new appointment the next free number. While it is off, LaiNurse numbers a patient's appointments in date order when they load, as it does now, and ignores any saved numbers.
+* **Timestamped backups:** have `JsonLaiNurseStorage` write each backup under a name with the date and time, and delete the oldest beyond a limit, in place of replacing the single `lainurse.backup.json`.
+* **Other lengths for the weekly view:** generalize `AppointmentWeek` to a period with a start and a length, which `AppointmentPage#ofWeek` and the panel's arrows then use.
+* **Suggestion lists:** show the `Completion`s of `TabCompleter` in a small list, in place of the status bar, with a label on each row and the row that Tab fills in highlighted. For patient IDs, `IdCompleter` already gives the matches. The list sits under the command box, and the label is the patient's name. For appointment numbers, `TabCompleter` needs a new case that lists the appointments of the ID already typed. The list floats below the caret, and the label is the appointment's date and details.
+
+------------------------------------------------------------------------------------------
+
 ## **Appendix: Instructions for manual testing**
 
 Given below are instructions to test the app manually.
@@ -1946,7 +1958,7 @@ testers are expected to do more *exploratory* testing.
     1. Prerequisites: Start with the sample data, which includes a patient with the ID `S1234567A`.
 
     1. Test case: `view S1234567A`<br>
-       Expected: The **Patients** tab is selected. The panel beside the list shows the patient's name, ID, phone number, address, medical history and notes, then their appointments that have not passed, then up to ten that have, dimmed. Each appointment shows its details beside its time, or under it if the window is narrow. Their row in the list is highlighted. The status message names the patient.
+       Expected: The **Patients** tab is selected. The panel beside the list shows the patient's name, ID, phone number, address, medical history and notes, then their appointments that have not passed, then those that have, dimmed. Each appointment shows its details beside its time, or under it if the window is narrow. Their row in the list is highlighted. The status message names the patient.
 
     1. Test case: `find --name bernice`, then `view S1234567A`<br>
        Expected: The list shows all patients again, the row of the patient with the ID `S1234567A` is highlighted, and the panel shows their details.
@@ -2041,6 +2053,13 @@ testers are expected to do more *exploratory* testing.
        Shift+Down, then Shift+Up<br>
        Expected: The details scroll down, then back up. The selection in the list does not move.
 
+    1. Test case: enter `edit S1234567A --notes` with notes long enough to fill more than four lines of the result
+       display, then press Shift+Down and Shift+Up<br>
+       Expected: The result display scrolls down, then back up. The focus stays in the command box.
+
+    1. Test case: type `set mark`, then press Tab twice<br>
+       Expected: The command box shows `set mark-noclash`, then `set mark-past`.
+
     1. Test case: with the focus in the list, type `l`<br>
        Expected: The focus moves to the command box, which now shows `abcl`, with the caret at the end. Enter instead of
        `l` also moves the focus to the command box, without adding anything.
@@ -2072,7 +2091,7 @@ testers are expected to do more *exploratory* testing.
     1. Prerequisites: Start with the sample data, which includes a patient with the ID `S1234567A`.
 
     1. Test case: `delete S2345678B`, then `yes`<br>
-       Expected: The status message says `This deletes BERNICE YU (S2345678B) and their 1 appointment(s).`, with the
+       Expected: The status message says `This deletes BERNICE YU (S2345678B) and their 1 appointment.`, with the
        confirmation prompt, and then `Cancelled. Nothing was deleted.` The patient stays.
 
     1. Test case: `delete S1234567A`, then `confirm`<br>
@@ -2250,15 +2269,15 @@ testers are expected to do more *exploratory* testing.
        2026`, with no arrow buttons. The
        list shows only Irfan Ibrahim's appointment at 14:00, which is selected, and the
        panel beside the list shows their details with that appointment marked. The status message shows
-       `1 patient(s) with appointments on WED`. The **Patients** tab still lists all patients.
+       `1 patient with appointments on WED`. The **Patients** tab still lists all patients.
 
     1. Test case: `viewappt BLOOD`, the date of Alex Yeoh's second appointment<br>
        Expected: Only Alex Yeoh's appointment on that Monday is shown, and it is selected. The status message shows
-       `1 patient(s) with appointments on BLOOD`, because every appointment of each patient is checked.
+       `1 patient with appointments on BLOOD`, because every appointment of each patient is checked.
 
     1. Test case: `viewappt SAT`, a date on which no patient has an appointment<br>
        Expected: The list says `No appointments in this range.`, and nothing is selected. The status message shows
-       `0 patient(s) with appointments on SAT`.
+       `0 patients with appointments on SAT`.
 
     1. Test case: `viewappt 2026-02-30`, an impossible date<br>
        Expected: The list is unchanged. The status message shows the date format error, as for
@@ -2290,18 +2309,18 @@ testers are expected to do more *exploratory* testing.
        Expected: Above the list is the heading for the range, e.g. `Mon 5 Oct – Sat 10 Oct 2026`. The list shows the
        three sample appointments, each day under its own heading, with the next appointment from now selected, or the
        first on the page if all three have passed. The status message shows
-       `3 patient(s) with appointments from MON to SAT`.
+       `3 patients with appointments from MON to SAT`.
 
     1. Test case: `viewappt --to TUE --from TUE`<br>
        Expected: Bernice Yu's appointment is selected. The
        options may be in any order, and a one-day range is the same as `viewappt TUE`, including the status
-       message `1 patient(s) with appointments on TUE`.
+       message `1 patient with appointments on TUE`.
 
     1. Test case: `viewappt --from WED`<br>
        Expected: Above the list is the heading for the open range, e.g. `From Wed 7 Oct 2026`. The list shows Irfan
        Ibrahim's appointment and Alex Yeoh's blood test. The next appointment from now is selected: Alex Yeoh's if
        today is on or before that date and Irfan Ibrahim's has passed, and otherwise Irfan Ibrahim's, the first on the
-       page. The status message shows `2 patient(s) with appointments on or after WED`.
+       page. The status message shows `2 patients with appointments on or after WED`.
 
     1. Test case: `viewappt --to 2099-12-31`<br>
        Expected: Only appointments from today onwards are shown. The range in
@@ -2329,21 +2348,21 @@ testers are expected to do more *exploratory* testing.
        `S1234567A, Mon 5 Oct – Mon 2 Nov 2026`. The page shows both of Alex Yeoh's
        appointments, past and upcoming, and the next one from now is selected: the insulin review on `MON` if it has
        not passed yet, and otherwise the one on `BLOOD`. The
-       status message shows `2 appointment(s) of ALEX YEOH`.
+       status message shows `2 appointments of ALEX YEOH`.
 
     1. Test case: `viewappt --id S1234567A --from MON --to SAT`<br>
        Expected: Above the list is the heading for the range with the ID, e.g. `S1234567A, Mon 5 Oct – Sat 10 Oct 2026`.
        The list shows only Alex Yeoh's
        appointment at 09:30 on the Monday, which is selected. The status message shows
-       `1 appointment(s) of ALEX YEOH from MON to SAT`.
+       `1 appointment of ALEX YEOH from MON to SAT`.
 
     1. Test case: `viewappt MON --id S1234567A`, a date before the option<br>
        Expected: The same page as `viewappt MON` gives, but the status message says
-       `1 appointment(s) of ALEX YEOH on MON`. A date combines with `--id` when it comes before the options.
+       `1 appointment of ALEX YEOH on MON`. A date combines with `--id` when it comes before the options.
 
     1. Test case: `viewappt --id S1234567A --from BLOOD`<br>
        Expected: Only Alex Yeoh's blood-test appointment is shown, and the status message shows
-       `1 appointment(s) of ALEX YEOH on or after BLOOD`.
+       `1 appointment of ALEX YEOH on or after BLOOD`.
 
     1. Test case: `viewappt --id s1234567a`, the ID in lowercase<br>
        Expected: The same as `viewappt --id S1234567A` gives. IDs are case-insensitive.
@@ -2351,7 +2370,7 @@ testers are expected to do more *exploratory* testing.
     1. Test case: `viewappt --id S1234567A --from AFTER`, a range without appointments, where `AFTER` is any date after
        `BLOOD`, such as the day after it<br>
        Expected: The list says `No appointments in this range.`, and nothing is selected. The status message shows
-       `0 appointment(s) of ALEX YEOH on or after` the date.
+       `0 appointments of ALEX YEOH on or after` the date.
 
     1. Test case: `viewappt --id S9999999Z`, an ID that no patient has<br>
        Expected: The list is unchanged. The status message shows `No patient has the ID S9999999Z.`
@@ -2376,7 +2395,7 @@ testers are expected to do more *exploratory* testing.
        Expected: Under Tuesday's heading, e.g. `Tue 6 Oct`, Bernice Yu's appointment comes first and shows `‒‒:‒‒`,
        then Eve Tan's at 15:00.
        Bernice Yu's appointment is selected. The status message shows
-       `2 patient(s) with appointments on TUE`.
+       `2 patients with appointments on TUE`.
 
     1. Test case: `find --name alex`, then `viewappt TUE`, then click the **Patients** tab<br>
        Expected: The patient list still shows only Alex Yeoh, as `find` left it. `viewappt` does not change the
@@ -2860,10 +2879,10 @@ testers are expected to do more *exploratory* testing.
     1. Test case: `clear --archived`<br>
        Expected: `There are no archived patients to delete.`, and nothing is asked or deleted.
     1. Test case: `archive S2345678B`, then `clear --archived`<br>
-       Expected: `This deletes 1 archived patient(s) and their 1 appointment(s).`, followed by
+       Expected: `This deletes 1 archived patient and their 1 appointment.`, followed by
        `Type "confirm" to confirm, or anything else to cancel.` Nothing is deleted yet.
     1. Test case: then `confirm`<br>
-       Expected: `Deleted 1 archived patient(s).` Bernice Yu is gone, also after `view --all`, and the other 5
+       Expected: `Deleted 1 archived patient.` Bernice Yu is gone, also after `view --all`, and the other 5
        patients stay.
     1. Test cases: `clear --archived yes`, `clear extra`, `clear --archived --archived`<br>
        Expected: The command format error, the command format error, and the error that `--archived` is given more
@@ -2873,7 +2892,7 @@ testers are expected to do more *exploratory* testing.
 
     1. Prerequisites: Start with the sample data.
     1. Test case: `clear`<br>
-       Expected: `This deletes 6 patient(s) and their 4 appointment(s).`, followed by the confirmation prompt.
+       Expected: `This deletes 6 patients and their 4 appointments.`, followed by the confirmation prompt.
     1. Test case: then `view S1234567A`<br>
        Expected: `Cancelled. Nothing was deleted.` The `view` command does not run, so the selection stays.
     1. Test case: `clear`, then `CONFIRM`<br>
@@ -2883,13 +2902,13 @@ testers are expected to do more *exploratory* testing.
 
     1. Prerequisites: Start with the sample data. Use its Monday and Tuesday dates for `MON` and `TUE`.
     1. Test case: `clearappt`, then any other input<br>
-       Expected: `This deletes 4 appointment(s) of 3 patient(s).` and the prompt, then the cancellation.
+       Expected: `This deletes 4 appointments of 3 patients.` and the prompt, then the cancellation.
     1. Test case: `clearappt --from MON 10:00 --to TUE`, then `confirm`<br>
-       Expected: `This deletes 1 appointment(s) of 1 patient(s).`, then `Deleted 1 appointment(s).` Bernice Yu's
+       Expected: `This deletes 1 appointment of 1 patient.`, then `Deleted 1 appointment.` Bernice Yu's
        date-only Tuesday appointment is gone, as it counts as at the start of Tuesday. Alex Yeoh's Monday 09:30
        appointment stays, as it is before `MON 10:00`.
     1. Test case: `clearappt S1234567A --to MON`, then `confirm`<br>
-       Expected: `This deletes 1 appointment(s) of ALEX YEOH (S1234567A).`, then `Deleted 1 appointment(s).` Alex's
+       Expected: `This deletes 1 appointment of ALEX YEOH (S1234567A).`, then `Deleted 1 appointment.` Alex's
        monthly blood test becomes #1.
     1. Test case: `clearappt S4567890F`<br>
        Expected: `No appointments match, so there is nothing to delete.`, as Roy Balakrishnan has none.

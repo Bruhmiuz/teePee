@@ -52,7 +52,7 @@ public class DeleteCommandTest {
                 .withAppointments("2026-10-05", "2026-10-06").build();
         model.addPatient(patient);
 
-        assertEquals("This deletes TEST NAME (D1) and their 2 appointment(s).",
+        assertEquals("This deletes TEST NAME (D1) and their 2 appointments.",
                 new DeleteCommand(patient.getId()).describeDeletion(model));
         assertTrue(model.hasPatient(patient));
     }

@@ -24,7 +24,7 @@ public class DeleteCommand extends Command implements Confirmable {
             + "Example: " + COMMAND_WORD + " T0123456B";
 
     public static final String MESSAGE_DELETE_PATIENT_SUCCESS = "Deleted patient: %1$s";
-    public static final String MESSAGE_DELETES = "This deletes %1$s (%2$s) and their %3$d appointment(s).";
+    public static final String MESSAGE_DELETES = "This deletes %1$s (%2$s) and their %3$s.";
 
     private final PatientId targetId;
 
@@ -50,7 +50,7 @@ public class DeleteCommand extends Command implements Confirmable {
         requireNonNull(model);
         Patient patientToDelete = findPatientToDelete(model);
         return String.format(MESSAGE_DELETES, patientToDelete.getName(), patientToDelete.getId(),
-                patientToDelete.getSchedule().asList().size());
+                Messages.formatCount(patientToDelete.getSchedule().asList().size(), "appointment"));
     }
 
     private Patient findPatientToDelete(Model model) throws CommandException {

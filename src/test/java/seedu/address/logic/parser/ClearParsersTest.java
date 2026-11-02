@@ -47,7 +47,7 @@ public class ClearParsersTest {
                 new ClearAppointmentCommand(Optional.of(ALEX), Optional.empty(), Optional.empty()));
         assertParseSuccess(clearApptParser, "--to 2026-10-31 12:00 --from 2026-10-01",
                 new ClearAppointmentCommand(Optional.empty(), at("2026-10-01"), at("2026-10-31 12:00")));
-        assertParseSuccess(clearApptParser, "--from 2026-10-01 --id s1234567a",
+        assertParseSuccess(clearApptParser, "s1234567a --from 2026-10-01",
                 new ClearAppointmentCommand(Optional.of(ALEX), at("2026-10-01"), Optional.empty()));
         assertParseSuccess(clearApptParser, "S1234567A --to 2026-10-31",
                 new ClearAppointmentCommand(Optional.of(ALEX), Optional.empty(), at("2026-10-31")));
@@ -56,6 +56,7 @@ public class ClearParsersTest {
     @Test
     public void parseClearAppointment_invalid() {
         assertParseFailure(clearApptParser, "S1234567A --id S1234567A", CLEARAPPT_FORMAT);
+        assertParseFailure(clearApptParser, "--id S1234567A", CLEARAPPT_FORMAT);
         assertParseFailure(clearApptParser, "--from 2026-10-02 --to 2026-10-01",
                 ClearAppointmentCommand.MESSAGE_FROM_AFTER_TO);
         assertParseFailure(clearApptParser, "--from 2026-02-30", Appointment.MESSAGE_CONSTRAINTS);

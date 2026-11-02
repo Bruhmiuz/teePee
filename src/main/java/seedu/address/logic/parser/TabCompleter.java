@@ -33,8 +33,10 @@ import seedu.address.logic.commands.EditAppointmentCommand;
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
+import seedu.address.logic.commands.SetCommand;
 import seedu.address.logic.commands.ViewAppointmentCommand;
 import seedu.address.logic.commands.ViewCommand;
+import seedu.address.model.Settings;
 import seedu.address.model.patient.PatientId;
 
 /**
@@ -50,6 +52,13 @@ public class TabCompleter {
     /** What {@code help} can explain, in alphabetical order with the help window last. */
     private static final List<String> HELP_TARGETS = Stream.concat(COMMAND_WORDS.stream(),
             Stream.of(HelpCommand.TARGET_WINDOW)).toList();
+
+    /** The settings that {@code set} can change, in the order of its usage message. */
+    private static final List<String> SETTING_WORDS = Arrays.stream(Settings.Key.values())
+            .map(Settings.Key::getWord).toList();
+
+    /** What {@code set} can turn a setting to. */
+    private static final List<String> SETTING_VALUES = List.of(SetCommand.WORD_ON, SetCommand.WORD_OFF);
 
     /** The options of each command that takes options, in the order of its usage message. */
     private static final Map<String, List<String>> OPTIONS = Map.of(
@@ -129,9 +138,14 @@ public class TabCompleter {
         if (commandWord.equals(HelpCommand.COMMAND_WORD) && earlierWords.size() == 1) {
             return completeWord(before, word, HELP_TARGETS);
         }
-        boolean isIdOption = COMMANDS_WITH_ID_OPTION.contains(commandWord) || FeatureFlags.isSelectiveClearEnabled()
-                && commandWord.equals(ClearAppointmentCommand.COMMAND_WORD);
-        if (isIdOption && previousWord.equals(PREFIX_ID.getPrefix().strip())) {
+        if (FeatureFlags.isSettingsEnabled() && commandWord.equals(SetCommand.COMMAND_WORD)) {
+            return switch (earlierWords.size()) {
+                case 1 -> completeWord(before, word, SETTING_WORDS);
+                case 2 -> completeWord(before, word, SETTING_VALUES);
+                default -> List.of();
+            };
+        }
+        if (COMMANDS_WITH_ID_OPTION.contains(commandWord) && previousWord.equals(PREFIX_ID.getPrefix().strip())) {
             String partialId = word.toUpperCase(Locale.ROOT);
             return ids.stream()
                     .map(id -> id.value)
@@ -183,7 +197,7 @@ public class TabCompleter {
     private static List<String> optionsOf(String commandWord) {
         if (FeatureFlags.isSelectiveClearEnabled()) {
             if (commandWord.equals(ClearAppointmentCommand.COMMAND_WORD)) {
-                return options(PREFIX_ID, PREFIX_FROM, PREFIX_TO);
+                return options(PREFIX_FROM, PREFIX_TO);
             }
             if (commandWord.equals(ClearCommand.COMMAND_WORD)) {
                 return options(PREFIX_ARCHIVED);

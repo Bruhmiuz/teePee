@@ -3,7 +3,6 @@ package seedu.address.logic.commands;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_FROM;
-import static seedu.address.logic.parser.CliSyntax.PREFIX_ID;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TO;
 
 import java.time.LocalDateTime;
@@ -32,15 +31,14 @@ public class ClearAppointmentCommand extends Command implements Confirmable {
 
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Deletes every appointment, or with an ID, all "
             + "appointments of that patient, or every appointment from one date, or date and time, to another, of "
-            + "every patient, or with " + PREFIX_ID.toString().trim() + ", of one, after you confirm it.\n"
-            + "Parameters: [ID], or [" + PREFIX_ID + "ID] [" + PREFIX_FROM + "DATE_OR_DATETIME] [" + PREFIX_TO
-            + "DATE_OR_DATETIME]\n"
+            + "every patient, or with an ID, of one, after you confirm it.\n"
+            + "Parameters: [ID] [" + PREFIX_FROM + "DATE_OR_DATETIME] [" + PREFIX_TO + "DATE_OR_DATETIME]\n"
             + "Example: " + COMMAND_WORD + " S1234567A, or " + COMMAND_WORD + " " + PREFIX_FROM + "2026-10-01 "
             + PREFIX_TO + "2026-10-31 12:00";
 
-    public static final String MESSAGE_SUCCESS = "Deleted %1$d appointment(s).";
-    public static final String MESSAGE_DELETES = "This deletes %1$d appointment(s) of %2$d patient(s).";
-    public static final String MESSAGE_DELETES_OF_PATIENT = "This deletes %1$d appointment(s) of %2$s (%3$s).";
+    public static final String MESSAGE_SUCCESS = "Deleted %1$s.";
+    public static final String MESSAGE_DELETES = "This deletes %1$s of %2$s.";
+    public static final String MESSAGE_DELETES_OF_PATIENT = "This deletes %1$s of %2$s (%3$s).";
     public static final String MESSAGE_NO_APPOINTMENTS = "No appointments match, so there is nothing to delete.";
     public static final String MESSAGE_FROM_AFTER_TO = "The " + PREFIX_FROM.toString().trim()
             + " date and time must not be after the " + PREFIX_TO.toString().trim() + " date and time.";
@@ -91,7 +89,8 @@ public class ClearAppointmentCommand extends Command implements Confirmable {
             count += patient.getSchedule().asList().size() - kept.size();
             model.setPatient(patient, patient.withSchedule(new AppointmentSchedule(kept)));
         }
-        return new CommandResult(String.format(MESSAGE_SUCCESS, count)).withSelectionCleared();
+        return new CommandResult(String.format(MESSAGE_SUCCESS, Messages.formatCount(count, "appointment")))
+                .withSelectionCleared();
     }
 
     @Override
@@ -106,9 +105,11 @@ public class ClearAppointmentCommand extends Command implements Confirmable {
         }
         if (patientId.isPresent()) {
             Patient patient = patients.get(0);
-            return String.format(MESSAGE_DELETES_OF_PATIENT, count, patient.getName(), patient.getId());
+            return String.format(MESSAGE_DELETES_OF_PATIENT, Messages.formatCount(count, "appointment"),
+                    patient.getName(), patient.getId());
         }
-        return String.format(MESSAGE_DELETES, count, patients.size());
+        return String.format(MESSAGE_DELETES, Messages.formatCount(count, "appointment"),
+                Messages.formatCount(patients.size(), "patient"));
     }
 
     /**

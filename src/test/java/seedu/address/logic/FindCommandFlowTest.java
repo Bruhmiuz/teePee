@@ -42,7 +42,8 @@ public class FindCommandFlowTest {
         List<PatientAppointment> appointments = List.copyOf(model.getAppointmentList());
         CommandResult result = execute("find --id T --name Fiona --address tokyo");
         assertEquals(List.of(FIONA, ELLE), model.getFilteredPatientList());
-        assertEquals(String.format(Messages.MESSAGE_PATIENTS_LISTED_OVERVIEW, 2), result.getFeedbackToUser());
+        assertEquals(String.format(Messages.MESSAGE_PATIENTS_LISTED_OVERVIEW, "2 patients"),
+                result.getFeedbackToUser());
         assertEquals(getTypicalPatients(), model.getLaiNurse().getPatientList());
         assertEquals(appointments, model.getAppointmentList());
 
@@ -60,7 +61,8 @@ public class FindCommandFlowTest {
         for (String search : List.of("987654", "\"(9876).54\"", "“+65 9876-5432”")) {
             CommandResult result = execute("find --phone " + search);
             assertEquals(List.of(formattedBenson), model.getFilteredPatientList());
-            assertEquals(String.format(Messages.MESSAGE_PATIENTS_LISTED_OVERVIEW, 1), result.getFeedbackToUser());
+            assertEquals(String.format(Messages.MESSAGE_PATIENTS_LISTED_OVERVIEW, "1 patient"),
+                    result.getFeedbackToUser());
         }
 
         execute("find --phone \"(9876)-5432\" --name Alice");
@@ -178,7 +180,8 @@ public class FindCommandFlowTest {
         executeRankedSearch();
         CommandResult result = execute("find --name Nobody");
         assertEquals(List.of(), model.getFilteredPatientList());
-        assertEquals(String.format(Messages.MESSAGE_PATIENTS_LISTED_OVERVIEW, 0), result.getFeedbackToUser());
+        assertEquals(String.format(Messages.MESSAGE_PATIENTS_LISTED_OVERVIEW, "0 patients"),
+                result.getFeedbackToUser());
 
         execute("view");
         assertEquals(getTypicalPatients(), model.getFilteredPatientList());

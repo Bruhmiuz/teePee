@@ -356,14 +356,21 @@ public class MainWindow extends UiPart<Stage> {
 
     /**
      * Handles the keys that move the focus, reset the view or scroll the details. In the command box, only
-     * Shift+Tab is handled here, because the command box uses the other keys itself, such as Tab to complete
-     * an ID.
+     * Shift+Tab, and Shift+Up and Shift+Down, which scroll the result display there, are handled here, because the
+     * command box uses the other keys itself, such as Tab to complete an ID.
      */
     private void handleKeyPressed(KeyEvent event) {
         boolean isShortcutDown = event.isControlDown() || event.isAltDown() || event.isMetaDown();
         Optional<BrowseKeys.Action> action = BrowseKeys.actionFor(event.getCode(), event.isShiftDown(),
                 isShortcutDown);
         boolean isIgnored = action.equals(Optional.of(BrowseKeys.Action.IGNORE));
+        boolean isScrollUp = action.equals(Optional.of(BrowseKeys.Action.SCROLL_DETAILS_UP));
+        boolean isScrollDown = action.equals(Optional.of(BrowseKeys.Action.SCROLL_DETAILS_DOWN));
+        if (commandBox.isFocused() && (isScrollUp || isScrollDown)) {
+            resultDisplay.scroll(isScrollUp ? -1 : 1);
+            event.consume();
+            return;
+        }
         if (action.isEmpty() || commandBox.isFocused() && !isIgnored) {
             return;
         }

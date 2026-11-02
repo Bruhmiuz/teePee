@@ -120,6 +120,24 @@ public class TabCompleterTest {
     }
 
     @Test
+    public void complete_afterSet_givesSettingsThenOnOrOff() {
+        boolean wasEnabled = FeatureFlags.isSettingsEnabled();
+        FeatureFlags.setSettingsEnabled(true);
+        try {
+            assertEquals(List.of("mark-noclash", "mark-past", "past-clash", "archived-clash"), words("set "));
+            assertEquals(List.of("set mark-noclash", "set mark-past"), texts("set mark"));
+            assertEquals(List.of("set past-clash"), texts("set PAST"));
+            assertEquals(List.of("set past-clash on", "set past-clash off"), texts("set past-clash "));
+            assertEquals(List.of("off"), words("set past-clash of"));
+            // a whole word, or a command with both words, has nothing left to complete
+            assertEquals(List.of(), words("set past-clash"));
+            assertEquals(List.of(), words("set past-clash on "));
+        } finally {
+            FeatureFlags.setSettingsEnabled(wasEnabled);
+        }
+    }
+
+    @Test
     public void complete_helpTarget_givesCommandWordsAndWindow() {
         assertEquals(List.of("add", "addappt"), words("help ad"));
         assertEquals(List.of("help window"), texts("help w"));
@@ -183,10 +201,11 @@ public class TabCompleterTest {
     public void complete_selectiveClearReleased_completesItsOptionsAndIds() {
         FeatureFlags.setSelectiveClearEnabled(true);
         try {
-            assertEquals(List.of("--id", "--from", "--to"), words("clearappt --"));
+            assertEquals(List.of("--from", "--to"), words("clearappt --"));
             assertEquals(List.of("--archived"), words("clear --a"));
             assertEquals(List.of("S1234567A", "S1999999C"), words("clearappt S1"));
-            assertEquals(List.of("S1234567A", "S1999999C"), words("clearappt --from 2026-10-01 --id S1"));
+            // the ID has no option of its own
+            assertEquals(List.of(), words("clearappt --id S1"));
         } finally {
             FeatureFlags.setSelectiveClearEnabled(false);
         }

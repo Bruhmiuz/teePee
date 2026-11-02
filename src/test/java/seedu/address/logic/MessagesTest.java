@@ -107,4 +107,11 @@ public class MessagesTest {
     private static PatientAppointment entry(Patient patient, int number) {
         return new PatientAppointment(patient, patient.getSchedule().findByNumber(number).orElseThrow());
     }
+
+    @Test
+    public void formatCount_oneIsSingular_othersArePlural() {
+        assertEquals("1 patient", Messages.formatCount(1, "patient"));
+        assertEquals("0 patients", Messages.formatCount(0, "patient"));
+        assertEquals("2 archived patients", Messages.formatCount(2, "archived patient"));
+    }
 }

@@ -89,8 +89,8 @@ LaiNurse shows one view at a time. The tabs under the result display switch betw
   * A header above the list says whether it shows `All patients` or `Filtered patients`, such as after `find`, and how many: `12`, or `3 of 12` when filtered. It says `Filtered patients` whenever a filter is set, even one that every patient matches, such as `12 of 12`, so that you can tell that Esc will remove it. An empty list says why: `No patients yet.`, `No patients match the filter.`, `No archived patients.` or `Every patient is archived. To see them: view --all`.
   * The list hides [archived](#archiving-a-patient-archive) patients, and the header counts only the others, such as `12`. `view --all` shows archived patients too, at the bottom of the list and greyed out, and the header counts them in brackets: `12 (2)`. `view --archived` shows only them, under `Archived patients`, with `(2)`. When the list is filtered, each count shows how many of each kind it shows, such as `3 of 12 (1 of 2)`. This choice is the list's **scope**. It stays until you choose another, and goes back to the default, which hides archived patients, when LaiNurse restarts.
   * The next appointment of a patient is their first **undone** appointment that has not passed.
-  * The details list every upcoming appointment of the patient, in time order, and their last ten past appointments, dimmed.
-* **Appointments**: the appointments, day by day, and beside them the details of the selected appointment's patient, with that appointment highlighted. If it is older than the patient's last ten past appointments, the details list it under **Past** as well. Each day has a heading with its number of appointments, and the appointments are numbered from 1 down the page. Each row also shows `#N` in a small box after the patient ID:
+  * The details list every upcoming appointment of the patient, in time order, and all their past appointments, latest first and dimmed.
+* **Appointments**: the appointments, day by day, and beside them the details of the selected appointment's patient, with that appointment highlighted. Each day has a heading with its number of appointments, and the appointments are numbered from 1 down the page. Each row also shows `#N` in a small box after the patient ID:
   this is the appointment's number within that patient, used by `editappt`, `deleteappt`, `markappt` and `unmarkappt`. A patient's
   appointments are numbered from 1 in date order. The details panel shows the same number, dimmed, before each date.
   * An appointment with no time shows `‒‒:‒‒` in the list, and `Unspecified` in the details, in the color of its row. It comes first in its day, except today: there it comes after the appointments that have passed, right above the next one.
@@ -139,6 +139,7 @@ Enter | Runs the command.
 Tab | Finishes the word you are typing: a command word, an option such as `--phone`, or a patient ID. While you type, the status bar at the bottom of the window shows what Tab can fill in. See below. With nothing to finish, such as in an empty command box, it does nothing.
 Up and Down | Go back and forth through the commands you entered since LaiNurse started, including ones that failed. Down after the newest command gives back what you were typing.
 Esc | Moves to the list of the view that is shown, or to the tabs if the patient list is empty. What you typed stays in the command box.
+Shift+Up and Shift+Down | Scroll the result display, for a message too long to show at once.
 
 **On the view tabs:**
 
@@ -173,10 +174,11 @@ Esc | In the patient view, removes the filter of `find`, and keeps the scope, su
 * Tab finishes these words:
   * **Command words.** For example, `dele` gives `delete`, then `deleteappt`. `view` gives `viewappt`, so type a space after `view` to finish a patient ID instead. When there is only one match, the next Tab goes on to the patient ID if the command takes one, so `addap` gives `addappt`, and the next Tab `addappt S1234567A`.
   * **Options.** Type `-` or the start of an option. For example, `edit S1234567A --ph` gives `edit S1234567A --phone`. Tab offers only the options of that command, and skips the ones you have already typed, and the ones that cannot be given with them: `--all` and `--archived` exclude each other, and in `view` and `viewappt`, a patient ID excludes both.
-  * **Patient IDs** after `view`, `delete`, `archive`, `unarchive`, `edit`, `addappt`, `editappt`, `deleteappt`, `markappt`, `unmarkappt` or `clearappt`, and after `--id` in `viewappt` and `clearappt`. Type the first few characters of the ID, or none. Patients in the displayed list come first, and archived patients last. For example, `view s12` gives `view S1234567A`.<br>
+  * **Patient IDs** after `view`, `delete`, `archive`, `unarchive`, `edit`, `addappt`, `editappt`, `deleteappt`, `markappt`, `unmarkappt` or `clearappt`, and after `--id` in `viewappt`. Type the first few characters of the ID, or none. Patients in the displayed list come first, and archived patients last. For example, `view s12` gives `view S1234567A`.<br>
     With `edit`, `addappt`, `editappt`, `deleteappt`, `markappt` and `unmarkappt`, Tab also works after you have typed the remaining arguments, and keeps them. For example, `edit s12 --phone 91234567` becomes `edit S1234567A --phone 91234567`, and `markappt s12 2` becomes `markappt S1234567A 2`.
   * **Help topics** after `help`. For example, `help ad` gives `help add`, then `help addappt`. `help w` gives `help window`.
-* Tab matches what you type in any case, but fills in command words, options and help topics in lowercase, as LaiNurse expects them. For example, `DELE` gives `delete`, then `deleteappt`, and `--PH` gives `--phone`. A whole word in the wrong case, such as `VIEW`, gives the lowercase word first, then the longer ones: `view`, then `viewappt`. The command word and options before the word you complete must already be in lowercase, so `EDIT S1234567A --PH` and `HELP W` give nothing to fill in.
+  * **Settings** after `set`. For example, `set mark` gives `set mark-noclash`, then `set mark-past`, and `set past-clash ` gives `set past-clash on`, then `set past-clash off`.
+* Tab matches what you type in any case, but fills in command words, options, help topics and settings in lowercase, as LaiNurse expects them. For example, `DELE` gives `delete`, then `deleteappt`, and `--PH` gives `--phone`. A whole word in the wrong case, such as `VIEW`, gives the lowercase word first, then the longer ones: `view`, then `viewappt`. The command word and options before the word you complete must already be in lowercase, so `EDIT S1234567A --PH` and `HELP W` give nothing to fill in.
 * The command box supports the usual editing keys. For example, Shift+Left and Shift+Right select text, and Ctrl+C, Ctrl+X, Ctrl+V and Ctrl+A copy, cut, paste and select all (Cmd instead of Ctrl on macOS).
 
 ### Viewing help: `help`
@@ -312,7 +314,7 @@ Format: `viewappt [DATE]` or `viewappt [--from START_DATE] [--to END_DATE]`, eac
 * The ID is case-insensitive, as in [`view`](#listing-patients-and-viewing-a-patients-details-view), and must belong to a patient. If no patient has it, LaiNurse shows an error, and the appointment page stays as it was.
 * LaiNurse switches to the **Appointments** view, and shows the appointments in the range on one page, in place of the weekly view. With `--id`, the header above the list starts with the patient's ID. The next appointment from now is selected, and its patient's details are shown: on a page that includes today, the first that has not passed, and otherwise the first on the page. If no appointment is in the range, the page says `No appointments in this range.`
 * To go back to the weekly view, press Esc with the focus in the appointment list. The weekly view shows the week of the selected appointment, which stays selected, or this week if none is selected. See [The patient and appointment views](#the-patient-and-appointment-views).
-* The patient list, on the **Patients** tab, stays as it was: `viewappt` does not change which patients it shows. Without `--id`, the status message says how many patients have an appointment in the range, such as `3 patient(s) with appointments on 2026-10-15`, and with `--id`, how many appointments that patient has in it.
+* The patient list, on the **Patients** tab, stays as it was: `viewappt` does not change which patients it shows. Without `--id`, the status message says how many patients have an appointment in the range, such as `3 patients with appointments on 2026-10-15`, and with `--id`, how many appointments that patient has in it.
 * Only dates are compared, so an appointment earlier today still counts.
 * Without `--id`, `viewappt` shows the appointments of patients who are not archived. `--all` shows archived patients' appointments too, and `--archived` only theirs. They take no value, and cannot be given together, or with `--id`, which shows that patient's appointments whether they are archived or not. The header then counts them as it would among everyone's: `3`, or `(3)` for an archived patient. Like the dates, the option applies to this `viewappt` only: the next `viewappt` without it hides archived patients' appointments again.
 
@@ -398,10 +400,10 @@ Examples:
 
 Deletes every appointment, all appointments of one patient, or every appointment in a range of dates. The patients stay. You confirm the deletion first: LaiNurse says what it would delete, and you type `confirm` to go ahead. Anything else cancels. See the caution under [`clear`](#deleting-many-patients-clear).
 
-Format: `clearappt [ID]`, or `clearappt [--id ID] [--from DATE_OR_DATETIME] [--to DATE_OR_DATETIME]`
+Format: `clearappt [ID] [--from DATE_OR_DATETIME] [--to DATE_OR_DATETIME]`
 
 * With no parameters, `clearappt` deletes every appointment of every patient.
-* With an `ID`, it deletes only that patient's appointments. The ID can come first, or after `--id`, but not both. The patient does not have to be in the list shown.
+* With an `ID`, it deletes only that patient's appointments. The ID comes first, before any option. The patient does not have to be in the list shown.
 * `--from` and `--to` limit the deletion to the appointments from one date, or date and time, to another, both included. Either can be left out, for no limit on that side. A date without a time is the start of that day after `--from`, and the end of that day after `--to`. An appointment with no time counts as at the start of its day: `--from 2026-10-05 10:00` keeps a date-only appointment on `2026-10-05`.
 * `--from` must not be after `--to`.
 * It deletes the appointments of every patient, also patients hidden by a filter, and archived patients.
@@ -411,7 +413,7 @@ Format: `clearappt [ID]`, or `clearappt [--id ID] [--from DATE_OR_DATETIME] [--t
 Examples:
 * `clearappt S1234567A` deletes both of Alex Yeoh's appointments, after you confirm it.
 * `clearappt --to 2026-10-04` deletes every appointment up to the end of 4 October 2026, such as the visits of last month that you no longer need.
-* `clearappt --id G1234567E --from 2026-10-01 --to 2026-10-31 12:00` deletes Irfan Ibrahim's appointments from 1 October 2026 to noon on 31 October 2026.
+* `clearappt G1234567E --from 2026-10-01 --to 2026-10-31 12:00` deletes Irfan Ibrahim's appointments from 1 October 2026 to noon on 31 October 2026.
 
 ### Marking an appointment as done: `markappt`
 
@@ -471,7 +473,7 @@ Format: `view [--all]`, `view [--archived]` or `view ID`
 * `view ID` takes no `--all` or `--archived`, since it shows the patient whether they are archived or not.
 * If no patient has that ID, LaiNurse shows an error, and the panel keeps showing what it showed before.
 * LaiNurse switches to the **Patients** view.
-* The panel shows the patient's name, ID, phone number, address, medical history, notes and appointments. Notes appear below medical history, with `None recorded` when no notes have been supplied. Under **Appointments**, it lists every appointment that has not passed, in time order. Under **Past**, it lists the last ten that have passed, latest first and dimmed, including any earlier today. An appointment today or tomorrow shows `Today` or `Tomorrow`, and one with no time shows `Unspecified`. A patient with no appointment left shows `None upcoming`. If the details do not fit, press Shift+Down with the focus in the view, or scroll down the panel.
+* The panel shows the patient's name, ID, phone number, address, medical history, notes and appointments. Notes appear below medical history, with `None recorded` when no notes have been supplied. Under **Appointments**, it lists every appointment that has not passed, in time order. Under **Past**, it lists those that have passed, latest first and dimmed, including any earlier today. An appointment today or tomorrow shows `Today` or `Tomorrow`, and one with no time shows `Unspecified`. A patient with no appointment left shows `None upcoming`. If the details do not fit, press Shift+Down with the focus in the view, or scroll down the panel.
 * The panel stays up to date. After you edit the patient, it shows the new details. After you delete the patient, or delete them with `clear`, it goes back to its starting message.
 * You can also click a patient in the list to see their details, or press Esc and move to them with Up and Down. See [Using the keyboard](#using-the-keyboard).
 
@@ -518,7 +520,7 @@ Format: `delete ID`
 * Deletes the patient with the specified `ID`. IDs are case-insensitive, so `s1234567a` and `S1234567A` refer to the same patient.
 * The patient does not need to be in the displayed list, because `delete` searches all patients.
 * If no patient has that ID, LaiNurse shows an error and deletes nothing.
-* LaiNurse first says what it would delete, such as `This deletes ALEX YEOH (S1234567A) and their 2 appointment(s).`, and waits. Type `confirm` to go ahead. Anything else cancels. See the caution under [`clear`](#deleting-many-patients-clear).
+* LaiNurse first says what it would delete, such as `This deletes ALEX YEOH (S1234567A) and their 2 appointments.`, and waits. Type `confirm` to go ahead. Anything else cancels. See the caution under [`clear`](#deleting-many-patients-clear).
 * The displayed list keeps its current filter, so the list numbers of the patients below the deleted one go down by one.
 * After a patient is deleted, no patient is selected, and the details beside the list show their starting message. This is so in both views.
 
@@ -536,7 +538,7 @@ Format: `clear [--archived]`
 * LaiNurse keeps the view that is shown, and selects nothing.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-`clear`, `clearappt` and `delete` delete much at once, and cannot be undone. So they first say what they would delete, such as `This deletes 2 archived patient(s) and their 1 appointment(s).`, and wait. Type `confirm` exactly, in lower case, to confirm. Anything else, even another command, cancels: LaiNurse says `Cancelled. Nothing was deleted.`, and does not run what you typed. When there is nothing to delete, the command says so at once, and there is nothing to confirm.
+`clear`, `clearappt` and `delete` delete much at once, and cannot be undone. So they first say what they would delete, such as `This deletes 2 archived patients and their 1 appointment.`, and wait. Type `confirm` exactly, in lower case, to confirm. Anything else, even another command, cancels: LaiNurse says `Cancelled. Nothing was deleted.`, and does not run what you typed. When there is nothing to delete, the command says so at once, and there is nothing to confirm.
 </div>
 
 Examples:
@@ -620,6 +622,18 @@ Certain edits can cause LaiNurse to behave in unexpected ways (e.g., if a value 
 **Q**: How do I transfer my data to another computer?<br>
 **A**: Install LaiNurse on the other computer. Then copy `data/lainurse.json` from your old LaiNurse home folder into a `data` folder next to the JAR file on the new computer, replacing the file there if there is one.
 
+**Q**: Where is my data saved?<br>
+**A**: In `data/lainurse.json`, inside the folder you launched LaiNurse from. LaiNurse saves after every command, so you never need to save. See [Editing the data file](#editing-the-data-file).
+
+**Q**: Can I undo a deletion?<br>
+**A**: No. LaiNurse has no undo. `delete`, `clear` and `clearappt` say what they would delete and wait for you to type `confirm`, but `deleteappt` deletes at once, so check the appointment number first. See the caution under [`clear`](#deleting-many-patients-clear).
+
+**Q**: Why is my text in capitals?<br>
+**A**: LaiNurse stores names, addresses, medical history, notes and appointment details in uppercase, whatever case you typed. See [Known issues](#known-issues).
+
+**Q**: Can two patients have appointments at the same time?<br>
+**A**: Yes. LaiNurse keeps both, warns you when you add or change one, and marks both with a red boxed `!`. [`set`](#changing-settings-set) decides which appointments can clash.
+
 --------------------------------------------------------------------------------------------------------------------
 
 ## Known issues
@@ -630,6 +644,25 @@ Certain edits can cause LaiNurse to behave in unexpected ways (e.g., if a value 
 3. **In a very narrow window**, the note and the count in a list's header, such as `This week` and the number of appointments, can be cut short. The remedy is to widen the window.
 4. **Text is stored in uppercase.** Names, addresses, medical history, notes and appointment details are stored and shown in uppercase, whatever case you typed, and the original case cannot be recovered.
 5. **Appointment numbers can change.** A patient's appointments are numbered in date order, so adding, moving or deleting an appointment can change the numbers of that patient's later appointments. The remedy is to check the number shown before you use it in `editappt`, `deleteappt`, `markappt` or `unmarkappt`.
+6. **The result display has a fixed height.** A long message does not fit. The remedy is to scroll it, with Shift+Up and Shift+Down in the command box.
+7. **Grey has two meanings.** Both an archived patient in the patient list and an appointment that has passed are greyed out.
+8. **LaiNurse keeps one backup.** Every save replaces `data/lainurse.backup.json`. The remedy, to keep an older copy, is to copy the file elsewhere yourself.
+
+--------------------------------------------------------------------------------------------------------------------
+
+## Coming soon
+
+These are not in this version. We plan to add them in a future version.
+
+* **Recurring appointments**, so that a weekly visit does not have to be added one at a time.
+* **Searching appointments by their details.** Today, `find` searches only patient fields.
+* **Finding patients with no upcoming appointments**, to see who to schedule next.
+* **Stable appointment numbers**, as a setting, so that a number does not change when another appointment changes.
+* **Timestamped backups**, so that older backups are kept.
+* **Other lengths for the weekly view**, such as two weeks or a month.
+* **A suggestion list for patient IDs**, under the command box, with each matching patient's ID and name.
+* **Hints for appointment numbers**, in a small window just below the text cursor, with the number, date and details of each of that patient's appointments.
+* **A hint for Esc**, as what it does depends on where the focus is and what the view shows.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -641,7 +674,7 @@ Action | Format, Examples
 **AddAppt** | `addappt ID --date DATE_OR_DATETIME [--details DETAILS]`<br> e.g., `addappt S1234567A --date 2026-12-01 10:00 --details Bring insulin pen`
 **Archive** | `archive ID`<br> e.g., `archive S2345678B`
 **Clear** | `clear [--archived]`, then `confirm` to confirm<br> e.g., `clear --archived`
-**ClearAppt** | `clearappt [ID]` or `clearappt [--id ID] [--from DATE_OR_DATETIME] [--to DATE_OR_DATETIME]`, then `confirm` to confirm<br> e.g., `clearappt S1234567A`, `clearappt --to 2026-10-04`
+**ClearAppt** | `clearappt [ID] [--from DATE_OR_DATETIME] [--to DATE_OR_DATETIME]`, then `confirm` to confirm<br> e.g., `clearappt S1234567A`, `clearappt --to 2026-10-04`
 **Delete** | `delete ID`, then `confirm` to confirm<br> e.g., `delete T0123456B`
 **DeleteAppt** | `deleteappt ID NUMBER`<br> e.g., `deleteappt S1234567A 1`
 **Edit** | `edit ID [--name NAME] [--phone PHONE] [--address ADDRESS] [--medical-history [MEDICAL_HISTORY]] [--add-medical-history MORE_HISTORY] [--notes [NOTES]] [--add-notes MORE_NOTES]`<br> e.g., `edit S1234567A --notes Walks every morning`, `edit S1234567A --add-medical-history Asthma`
