@@ -1,0 +1,49 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+
+box UI UI_COLOR_T1
+participant ":MainWindow" as MainWindow UI_COLOR
+participant ":AppointmentListPanel" as AppointmentListPanel UI_COLOR
+participant ":PatientDetailPanel" as PatientDetailPanel UI_COLOR
+end box
+
+box Logic LOGIC_COLOR_T1
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+end box
+
+[-> MainWindow : executeCommand("addappt ...")
+activate MainWindow
+
+MainWindow -> LogicManager : execute("addappt ...")
+activate LogicManager
+
+LogicManager -> LogicManager : run the command
+note right of LogicManager : The command returns r, with\nNavigation.toAppointment(entry)
+
+LogicManager -> LogicManager : checkNavigation(r, m)
+
+LogicManager --> MainWindow : r
+deactivate LogicManager
+
+MainWindow -> MainWindow : showView(APPOINTMENTS)
+
+MainWindow -> MainWindow : navigate(navigation, range)
+
+MainWindow -> AppointmentListPanel : showAppointment(entry)
+activate AppointmentListPanel
+
+AppointmentListPanel -> MainWindow : onAppointmentChosen(entry)
+
+MainWindow -> PatientDetailPanel : show(id, appointment)
+activate PatientDetailPanel
+
+PatientDetailPanel --> MainWindow
+deactivate PatientDetailPanel
+
+AppointmentListPanel --> MainWindow
+deactivate AppointmentListPanel
+
+[<-- MainWindow
+deactivate MainWindow
+@enduml

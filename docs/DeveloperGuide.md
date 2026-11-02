@@ -734,6 +734,10 @@ After a command, the window goes to what the command was about, so that the nurs
 section describes how a command chooses that. [Patient and appointment views](#patient-and-appointment-views) describes
 how it chooses the view.
 
+The sequence diagram below shows this for `addappt`, which selects the appointment that it adds.
+
+<img src="images/AutomaticNavigationSequenceDiagram.png" width="800" />
+
 A command chooses the entry to select by adding a `CommandResult.Navigation` with
 `CommandResult#withNavigation`. `Navigation.toPatient(id)` selects that patient in the patient view, and
 `Navigation.toAppointment(entry)` selects that appointment in the appointment view. If the result has no range, the
@@ -854,6 +858,10 @@ and keeps later options or appointment numbers. A whole command word that no oth
 
 `Logic#getCompletions` gives `TabCompleter` the patient IDs in the order that Tab goes through them: the patients in the
 displayed list first, then those hidden by a filter, with archived patients last.
+
+The activity diagram below shows how `TabCompleter` chooses the completions.
+
+<img src="images/TabCompletionActivityDiagram.png" width="900" />
 
 ### Command history
 
