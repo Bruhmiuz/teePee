@@ -7,7 +7,7 @@
   }, {
     "id": "S2345678B",
     "name": "Patient With Invalid Phone Field",
-    "phone": "948asdf2424",
+    "phone": "94asf",
     "address": "4th street"
   } ]
 }

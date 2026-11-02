@@ -7,19 +7,23 @@ import seedu.address.commons.util.TextNormalizer;
 
 /**
  * Represents a Patient's phone number in LaiNurse.
- * The number is stored with leading, trailing and repeated whitespace removed.
+ * The number is stored in upper case, with leading, trailing and repeated whitespace removed.
  * Guarantees: immutable; is valid as declared in {@link #isValidPhone(String)}
  */
 public class Phone {
 
 
     public static final String MESSAGE_CONSTRAINTS =
-            "Phone numbers must contain only digits, spaces, '+' and '-', and must have at least 3 digits.";
+            "Phone numbers accept any non-blank text containing at least three digits, and cannot contain "
+                    + "common invisible characters such as the zero-width space.";
 
     /*
-     * Checked against the normalized number. The lookahead requires at least 3 digits anywhere in it.
+     * The first lookahead requires at least three ASCII digits anywhere in the value. The rest accepts any visible
+     * character, so that annotated numbers such as "1234 5678 (HP) 1111-3333" are accepted. Format characters
+     * (which include the invisible characters that pasted text can carry, such as the zero-width space) and
+     * control characters are rejected.
      */
-    public static final String VALIDATION_REGEX = "(?=(?:\\D*\\d){3})[\\d+\\- ]+";
+    public static final String VALIDATION_REGEX = "(?=(?:\\D*\\d){3})(?:(?!\\p{Cf}|\\p{Cc}).)+";
     public final String value;
 
     /**

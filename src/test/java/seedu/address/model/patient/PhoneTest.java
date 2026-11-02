@@ -30,10 +30,9 @@ public class PhoneTest {
         assertFalse(Phone.isValidPhone(" ")); // spaces only
         assertFalse(Phone.isValidPhone("91")); // less than 3 numbers
         assertFalse(Phone.isValidPhone("+6-5")); // less than 3 numbers, with symbols
-        assertFalse(Phone.isValidPhone("phone")); // non-numeric
-        assertFalse(Phone.isValidPhone("9011p041")); // alphabets within digits
-        assertFalse(Phone.isValidPhone("(65) 9312")); // brackets not allowed
-        assertFalse(Phone.isValidPhone("9312.1534")); // dots not allowed
+        assertFalse(Phone.isValidPhone("phone")); // no digits
+        assertFalse(Phone.isValidPhone("９３１２")); // full-width digits are not ASCII digits
+        assertFalse(Phone.isValidPhone("9312\u200B1534")); // invisible characters are not allowed
 
         // valid phone numbers
         assertTrue(Phone.isValidPhone("911")); // exactly 3 numbers
@@ -42,11 +41,17 @@ public class PhoneTest {
         assertTrue(Phone.isValidPhone("9312 1534")); // spaces within digits
         assertTrue(Phone.isValidPhone("+65 9312-1534")); // country code and hyphen
         assertTrue(Phone.isValidPhone(" 93121534 ")); // surrounding whitespace is ignored
+        assertTrue(Phone.isValidPhone("9011p041")); // letters alongside three digits
+        assertTrue(Phone.isValidPhone("(65) 9312")); // brackets are allowed
+        assertTrue(Phone.isValidPhone("9312.1534")); // dots are allowed
+        assertTrue(Phone.isValidPhone("#9312 1534")); // other symbols are allowed
+        assertTrue(Phone.isValidPhone("1234 5678 (HP) 1111-3333")); // annotations are allowed
     }
 
     @Test
     public void constructor_normalizesValue() {
         assertEquals("+65 9312-1534", new Phone("  +65   9312-1534 ").value);
+        assertEquals("1234 (HP)", new Phone("1234 (hp)").value); // letters are stored in upper case
     }
 
     @Test
