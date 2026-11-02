@@ -1910,6 +1910,17 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 --------------------------------------------------------------------------------------------------------------------
 
+## **Appendix: Proposed enhancements**
+
+The UG lists these as `Coming soon`. They are proposals, and this version does not include them.
+
+* **Stable appointment numbers:** save each appointment's number in `JsonAdaptedAppointment`, and give a new appointment the next free number, in place of numbering a patient's appointments in date order when they load.
+* **Timestamped backups:** have `JsonLaiNurseStorage` write each backup under a name with the date and time, and delete the oldest beyond a limit, in place of replacing the single `lainurse.backup.json`.
+* **Other lengths for the weekly view:** generalize `AppointmentWeek` to a period with a start and a length, which `AppointmentPage#ofWeek` and the panel's arrows then use.
+* **Suggestion lists:** show the `Completion`s of `TabCompleter` in a small list, in place of the status bar, with a label on each row and the row that Tab fills in highlighted. For patient IDs, `IdCompleter` already gives the matches. The list sits under the command box, and the label is the patient's name. For appointment numbers, `TabCompleter` needs a new case that lists the appointments of the ID already typed. The list floats below the caret, and the label is the appointment's date and details.
+
+------------------------------------------------------------------------------------------
+
 ## **Appendix: Instructions for manual testing**
 
 Given below are instructions to test the app manually.

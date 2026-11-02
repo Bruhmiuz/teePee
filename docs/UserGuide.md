@@ -644,6 +644,26 @@ Certain edits can cause LaiNurse to behave in unexpected ways (e.g., if a value 
 3. **In a very narrow window**, the note and the count in a list's header, such as `This week` and the number of appointments, can be cut short. The remedy is to widen the window.
 4. **Text is stored in uppercase.** Names, addresses, medical history, notes and appointment details are stored and shown in uppercase, whatever case you typed, and the original case cannot be recovered.
 5. **Appointment numbers can change.** A patient's appointments are numbered in date order, so adding, moving or deleting an appointment can change the numbers of that patient's later appointments. The remedy is to check the number shown before you use it in `editappt`, `deleteappt`, `markappt` or `unmarkappt`.
+6. **The result display has a fixed height.** A long message does not fit. The remedy is to scroll it, with Shift+Up and Shift+Down in the command box.
+7. **Grey has two meanings.** Both an archived patient in the patient list and an appointment that has passed are greyed out.
+8. **LaiNurse keeps one backup.** Every save replaces `data/lainurse.backup.json`. The remedy, to keep an older copy, is to copy the file elsewhere yourself.
+9. **The details list only the last ten past appointments of a patient.** The remedy is `viewappt --id ID`, which shows all of that patient's appointments.
+
+--------------------------------------------------------------------------------------------------------------------
+
+## Coming soon
+
+These are not in this version. We plan to add them in a future version.
+
+* **Recurring appointments**, so that a weekly visit does not have to be added one at a time.
+* **Searching appointments by their details.** Today, `find` searches only patient fields.
+* **Finding patients with no upcoming appointments**, to see who to schedule next.
+* **Stable appointment numbers**, as a setting, so that a number does not change when another appointment changes.
+* **Timestamped backups**, so that older backups are kept.
+* **Other lengths for the weekly view**, such as two weeks or a month.
+* **A suggestion list for patient IDs**, under the command box, with each matching patient's ID and name.
+* **Hints for appointment numbers**, in a small window just below the text cursor, with the number, date and details of each of that patient's appointments.
+* **A hint for Esc**, as what it does depends on where the focus is and what the view shows.
 
 --------------------------------------------------------------------------------------------------------------------
 
