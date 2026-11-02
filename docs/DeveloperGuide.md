@@ -2831,7 +2831,7 @@ before you change any file in its `data` folder.
     1. Launch the app in an empty folder, and run `view`.<br>
        Expected: `data/lainurse.json` and `data/lainurse.backup.json` are created, and hold the same data.
 
-    1. Test case: `delete` a patient, then close the app.<br>
+    1. Test case: `delete` a patient, then `confirm`, then close the app.<br>
        Expected: Both files no longer hold that patient.
 
 1. Saving when a file cannot be written

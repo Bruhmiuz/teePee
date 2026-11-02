@@ -20,7 +20,7 @@ public final class BrowseKeys {
         /** Moves the focus back to the command box, keeping the text in it. */
         RETURN_TO_COMMAND_BOX,
         /**
-         * Resets the current view: shows all patients again, as the {@code list} command does, or goes back to the
+         * Resets the current view: shows all patients again, as {@code view} without an ID does, or goes back to the
          * weekly view of the appointments, or to this week.
          */
         RESET_VIEW,
