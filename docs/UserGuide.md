@@ -585,6 +585,8 @@ Format: `exit`
 
 LaiNurse saves your data automatically after every command that succeeds. You do not need to save manually.
 
+Your data, including patients' details, is saved as plain text, with no password or encryption, so anyone who can open the folder can read it. Keep the folder where only you can access it.
+
 Each save writes your data to two files in the `data` folder: the data file, `lainurse.json`, and then a backup of it, `lainurse.backup.json`. Both hold the same data: the data as LaiNurse last saved it.
 
 If LaiNurse cannot save the data file, for example because it is read-only, the command shows an error and changes nothing, so you can run it again once the file can be written. If only the backup cannot be saved, the command still takes effect, as the data file holds it, and its message ends with a warning that the data could not be backed up.
