@@ -29,6 +29,7 @@ public class JsonSerializableLaiNurseTest {
     private static final Path DUPLICATE_PATIENT_FILE = TEST_DATA_FOLDER.resolve("duplicatePatientLaiNurse.json");
     private static final Path NOTES_AND_DETAILS_FILE = TEST_DATA_FOLDER.resolve("notesAndDetailsLaiNurse.json");
     private static final Path PERSONS_KEY_FILE = TEST_DATA_FOLDER.resolve("personsKeyLaiNurse.json");
+    private static final Path NULL_PATIENT_FILE = TEST_DATA_FOLDER.resolve("nullPatientLaiNurse.json");
 
     @Test
     public void toModelType_typicalPatientsFile_success() throws Exception {
@@ -44,6 +45,14 @@ public class JsonSerializableLaiNurseTest {
         JsonSerializableLaiNurse dataFromFile = JsonUtil.readJsonFile(INVALID_PATIENT_FILE,
                 JsonSerializableLaiNurse.class).get();
         assertThrows(IllegalValueException.class, dataFromFile::toModelType);
+    }
+
+    @Test
+    public void toModelType_nullPatient_throwsIllegalValueException() throws Exception {
+        JsonSerializableLaiNurse dataFromFile = JsonUtil.readJsonFile(NULL_PATIENT_FILE,
+                JsonSerializableLaiNurse.class).get();
+        assertThrows(IllegalValueException.class, JsonSerializableLaiNurse.MESSAGE_NULL_PATIENT,
+                dataFromFile::toModelType);
     }
 
     @Test

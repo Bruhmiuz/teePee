@@ -21,6 +21,7 @@ class JsonSerializableLaiNurse {
 
     public static final String MESSAGE_DUPLICATE_PATIENT = "Patients list contains duplicate patient(s).";
     public static final String MESSAGE_MISSING_PATIENTS = "The data file has no \"patients\" list.";
+    public static final String MESSAGE_NULL_PATIENT = "Patients list contains a null entry.";
 
     // Jackson uses the field name as the key in the data file. Null if the file has no "patients" key.
     private final List<JsonAdaptedPatient> patients;
@@ -55,6 +56,9 @@ class JsonSerializableLaiNurse {
         }
         LaiNurse laiNurse = new LaiNurse();
         for (JsonAdaptedPatient jsonAdaptedPatient : patients) {
+            if (jsonAdaptedPatient == null) {
+                throw new IllegalValueException(MESSAGE_NULL_PATIENT);
+            }
             Patient patient = jsonAdaptedPatient.toModelType();
             if (laiNurse.hasPatient(patient)) {
                 throw new IllegalValueException(MESSAGE_DUPLICATE_PATIENT);

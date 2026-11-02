@@ -363,7 +363,8 @@ The `Storage` component,
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonLaiNurseStorage` and
   `JsonUserPrefsStorage` (one class per data file).
 * keeps a backup of the LaiNurse data file: `JsonLaiNurseStorage` writes every save to `data/lainurse.json` and then to
-  `data/lainurse.backup.json`, and can copy a data file that cannot be loaded to `data/lainurse.corrupt.json`.
+  `data/lainurse.backup.json`, can copy a data file that cannot be loaded to `data/lainurse.corrupt.json`, and can copy
+  the backup to `data/lainurse.previous.json` when the data file is missing.
 * decides, through `LaiNurseLoader`, which data the app starts with: that in the data file, the sample data, or that
   in the backup (see [Backing up the data file](#backing-up-the-data-file)).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects
@@ -850,7 +851,7 @@ Rather than hardcoding command names and usage strings inside `HelpCommand`:
 
 ### Backing up the data file
 
-`JsonLaiNurseStorage` keeps three files in the folder of the data file, all named after it by
+`JsonLaiNurseStorage` keeps four files in the folder of the data file, all named after it by
 `JsonLaiNurseStorage#withSuffix`:
 
 * the data file, `lainurse.json`, which the app loads and saves as before.
@@ -858,6 +859,8 @@ Rather than hardcoding command names and usage strings inside `HelpCommand`:
   the backup from the same data, so after every save that succeeds both hold the data as it was last saved. The
   overload that takes a path writes only that file, so tests and other callers can still write one file.
 * the corrupt copy, `lainurse.corrupt.json`. `JsonLaiNurseStorage#keepCorruptLaiNurseFile()` copies the data file there,
+  replacing any earlier copy.
+* the previous backup, `lainurse.previous.json`. `JsonLaiNurseStorage#keepLaiNurseBackup()` copies the backup there,
   replacing any earlier copy.
 
 `LogicManager` saves after every command that succeeds, as before, so it writes the backup without knowing about it.
@@ -888,7 +891,8 @@ the data file as usual.
 | Data file | Backup | Data | Message |
 |---|---|---|---|
 | Loads | Any | The data file's | None |
-| Missing | Any | The sample data | None |
+| Missing | Missing | The sample data | None |
+| Missing | Exists | The sample data | `MESSAGE_SAMPLE_DATA_BACKUP_KEPT` |
 | Cannot be loaded | Loads | The backup's | `MESSAGE_BACKUP_LOADED` |
 | Cannot be loaded | Missing | None | `MESSAGE_BACKUP_MISSING` |
 | Cannot be loaded | Cannot be loaded | None | `MESSAGE_BACKUP_NOT_LOADED` |
@@ -899,6 +903,10 @@ Without the copy, the next save would overwrite the file, and the user's edits i
 the message to `UiManager`, which shows it in the result display through `MainWindow#showFeedback` once the window
 opens. Before this, a data file that could not be loaded was only reported in the log.
 
+When the data file is missing and there is a backup, `LaiNurseLoader` calls `Storage#keepLaiNurseBackup()`, because the
+next save replaces the backup with the sample data. It copies the file without reading it, so the copy is kept whatever
+the backup holds. If the copy fails, the message is `MESSAGE_SAMPLE_DATA_BACKUP_NOT_KEPT`.
+
 The order of the two writes matters. The backup is written only after the data file has been, so if the app stops
 while writing the data file, the backup still holds the data saved before, and the next launch loads it.
 
@@ -907,7 +915,8 @@ while writing the data file, the backup still holds the data saved before, and t
 * **Alternative 1 (Current choice): Only when the data file cannot be loaded.**
     * *Pros:* A missing data file still loads the sample data, so deleting the file stays the way to start again,
       as the User Guide says.
-    * *Cons:* If the user deletes the data file by mistake, the next save replaces the backup with the sample data.
+    * *Cons:* If the user deletes the data file by mistake, they must restore the data themselves, from the copy of
+      the backup that `LaiNurseLoader` keeps.
 * **Alternative 2: Also when the data file is missing.**
     * *Pros:* Recovers from a data file deleted by mistake.
     * *Cons:* Deleting the data file no longer resets the app: the user would have to delete both files.
@@ -1086,9 +1095,9 @@ The selective clearing of #217 is behind `FeatureFlags#isSelectiveClearEnabled()
 
 **Aspect: How a clear is confirmed**
 
-* **Alternative 1 (Current choice):** The next input must be a fixed phrase.
+* **Alternative 1 (Current choice):** The next input must be the word `confirm`.
     * Pros: The user cannot confirm by reflex, as by pressing Up and Enter to run the same command again.
-    * Cons: The user must type the phrase exactly, and `LogicManager` keeps state between inputs.
+    * Cons: The user must type the word exactly, and `LogicManager` keeps state between inputs.
 * **Alternative 2:** Run the same command again to confirm it.
     * Pros: Nothing new to type.
     * Cons: Up and Enter repeats the command, so it confirms as easily as by mistake.
@@ -2694,8 +2703,8 @@ testers are expected to do more *exploratory* testing.
        Expected: `There are no archived patients to delete.`, and nothing is asked or deleted.
     1. Test case: `archive S2345678B`, then `clear --archived`<br>
        Expected: `This deletes 1 archived patient(s) and their 1 appointment(s).`, followed by
-       `Type "I LOVE 2103T" to confirm, or anything else to cancel.` Nothing is deleted yet.
-    1. Test case: then `I LOVE 2103T`<br>
+       `Type "confirm" to confirm, or anything else to cancel.` Nothing is deleted yet.
+    1. Test case: then `confirm`<br>
        Expected: `Deleted 1 archived patient(s).` Bernice Yu is gone, also after `view --all`, and the other 5
        patients stay.
     1. Test cases: `clear --archived yes`, `clear extra`, `clear --archived --archived`<br>
@@ -2709,19 +2718,19 @@ testers are expected to do more *exploratory* testing.
        Expected: `This deletes 6 patient(s) and their 4 appointment(s).`, followed by the confirmation prompt.
     1. Test case: then `view S1234567A`<br>
        Expected: `Cancelled. Nothing was deleted.` The `view` command does not run, so the selection stays.
-    1. Test case: `clear`, then `i love 2103t`<br>
-       Expected: `Cancelled. Nothing was deleted.`, as the phrase must be in capitals.
+    1. Test case: `clear`, then `CONFIRM`<br>
+       Expected: `Cancelled. Nothing was deleted.`, as the word must be in lower case.
 
 1. Deleting appointments
 
     1. Prerequisites: Start with the sample data. Use its Monday and Tuesday dates for `MON` and `TUE`.
     1. Test case: `clearappt`, then any other input<br>
        Expected: `This deletes 4 appointment(s) of 3 patient(s).` and the prompt, then the cancellation.
-    1. Test case: `clearappt --from MON 10:00 --to TUE`, then `I LOVE 2103T`<br>
+    1. Test case: `clearappt --from MON 10:00 --to TUE`, then `confirm`<br>
        Expected: `This deletes 1 appointment(s) of 1 patient(s).`, then `Deleted 1 appointment(s).` Bernice Yu's
        date-only Tuesday appointment is gone, as it counts as at the start of Tuesday. Alex Yeoh's Monday 09:30
        appointment stays, as it is before `MON 10:00`.
-    1. Test case: `clearappt S1234567A --to MON`, then `I LOVE 2103T`<br>
+    1. Test case: `clearappt S1234567A --to MON`, then `confirm`<br>
        Expected: `This deletes 1 appointment(s) of ALEX YEOH (S1234567A).`, then `Deleted 1 appointment(s).` Alex's
        monthly blood test becomes #1.
     1. Test case: `clearappt S4567890F`<br>
@@ -2832,8 +2841,9 @@ before you change any file in its `data` folder.
     1. Prerequisites: Both `data/lainurse.json` and `data/lainurse.backup.json` exist.
 
     1. Test case: Delete `data/lainurse.json`, and launch the app.<br>
-       Expected: The app starts with the sample patients, and the result display is empty. After `list`, both files
-       hold the sample data.
+       Expected: The app starts with the sample patients. The result display says that `data/lainurse.json` is missing,
+       and that the backup is kept at `data/lainurse.previous.json`. After `list`, both files hold the sample data, and
+       `data/lainurse.previous.json` still holds the data from before.
 
 1. Dealing with a corrupted data file
 

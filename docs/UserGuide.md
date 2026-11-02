@@ -219,6 +219,7 @@ Format: `add --id ID --name NAME --phone PHONE --address ADDRESS [--medical-hist
 * Parameters may appear in any order. Each option may appear only once. Separate options and values using spaces or tabs; values may contain spaces.
 * IDs contain 1 to 10 letters or digits. IDs are case-insensitive, and a patient with an existing ID cannot be added again. LaiNurse then names the patient who has that ID, such as `ALEX YEOH (S1234567A) already exists in LaiNurse.` If that patient is archived, it says so, and how to unarchive them: `ALEX YEOH (S1234567A) already exists in LaiNurse, and is archived. To unarchive them: 'unarchive S1234567A'`
 * Names, addresses, medical history and notes accept any non-blank text. IDs and these text fields are stored in uppercase, with repeated whitespace collapsed.
+* Unlike in `find`, quotes are not removed: they are stored as part of the value. For example, `--notes "Likes tea"` stores `"LIKES TEA"`, with the quotes, so leave them out.
 * Patients with different IDs may share a name. The patient is added and saved as usual, and a warning below the success
   message names every other patient with the same complete name, including archived patients and those hidden by a
   filter. Matching ignores case and repeated whitespace. For example: `Warning: this name is also used by ALEX YEOH
@@ -244,6 +245,7 @@ Format: `edit ID [--name NAME] [--phone PHONE] [--address ADDRESS] [--medical-hi
 
 * Edits the patient with the given `ID`, which is the patient ID shown in their row, not their position in the list. The patient does not have to be in the list currently shown.
 * `ID` must come first; the other parameters may appear in any order. Separate options and values using spaces or tabs.
+* As in `add`, quotes are stored as part of the value, so leave them out.
 * As in `add`, whitespace-delimited words beginning with `--` are reserved for options. Unknown options, misspellings, and `--id` are rejected with the command usage instructions.
 * The ID itself cannot be edited. To correct a wrong ID, delete the patient and add them again. Deleting a patient also deletes their appointments, so note them down first with [`viewappt --id ID`](#viewing-appointments-viewappt), and add them again with [`addappt`](#adding-an-appointment-addappt).
 * At least one of the optional parameters must be provided.
@@ -402,7 +404,7 @@ Examples:
 
 ### Deleting many appointments: `clearappt`
 
-Deletes every appointment, all appointments of one patient, or every appointment in a range of dates. The patients stay. You confirm the deletion first.
+Deletes every appointment, all appointments of one patient, or every appointment in a range of dates. The patients stay. You confirm the deletion first: LaiNurse says what it would delete, and you type `confirm` to go ahead. Anything else cancels. See the caution under [`clear`](#deleting-many-patients-clear).
 
 Format: `clearappt [ID]`, or `clearappt [--id ID] [--from DATE_OR_DATETIME] [--to DATE_OR_DATETIME]`
 
@@ -542,12 +544,12 @@ Format: `clear [--archived]`
 * LaiNurse keeps the view that is shown, and selects nothing.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-`clear` and `clearappt` delete much at once, and cannot be undone. So they first say what they would delete, such as `This deletes 2 archived patient(s) and their 1 appointment(s).`, and wait. Type `I LOVE 2103T` exactly, in capitals, to confirm. Anything else, even another command, cancels: LaiNurse says `Cancelled. Nothing was deleted.`, and does not run what you typed. When there is nothing to delete, the command says so at once, and there is nothing to confirm.
+`clear` and `clearappt` delete much at once, and cannot be undone. So they first say what they would delete, such as `This deletes 2 archived patient(s) and their 1 appointment(s).`, and wait. Type `confirm` exactly, in lower case, to confirm. Anything else, even another command, cancels: LaiNurse says `Cancelled. Nothing was deleted.`, and does not run what you typed. When there is nothing to delete, the command says so at once, and there is nothing to confirm.
 </div>
 
 Examples:
-* `clear --archived`, then `I LOVE 2103T`, deletes every archived patient.
-* `clear`, then `I LOVE 2103T`, deletes every patient. To start again from the sample data instead, see [Editing the data file](#editing-the-data-file).
+* `clear --archived`, then `confirm`, deletes every archived patient.
+* `clear`, then `confirm`, deletes every patient. To start again from the sample data instead, see [Editing the data file](#editing-the-data-file).
 
 ### Changing settings: `set`
 
@@ -595,7 +597,7 @@ When LaiNurse launches, it loads its data as follows:
 | `lainurse.json` | `lainurse.backup.json` | LaiNurse starts with |
 |---|---|---|
 | Loads | Any | The data in `lainurse.json`. |
-| Missing | Any | The sample data. Delete `lainurse.json` to start again from the sample data. |
+| Missing | Any | The sample data. Delete `lainurse.json` to start again from the sample data. Any backup is first copied to `data/lainurse.previous.json`, replacing any earlier copy, and the result display says so. |
 | Cannot be loaded | Loads | The data in the backup, which is the data as LaiNurse last saved it. |
 | Cannot be loaded | Missing, or cannot be loaded | No data. |
 
@@ -615,7 +617,7 @@ mark as `done`, still loads.
 Do not edit `lainurse.backup.json`. LaiNurse cannot stop you from editing it, and it does not check it until it needs it. The backup protects you only in the cases in the table above.<br>
 If the backup is missing or cannot be loaded either, LaiNurse starts with no data, and the next command that succeeds, even `view`, `help` or `exit`, saves that empty data over both files. Your data is then only in `lainurse.corrupt.json`. To leave both files as they are, close the window with its close button instead.<br>
 LaiNurse keeps only one backup, and every save replaces it. If you edit `lainurse.json` and LaiNurse loads it, the next save writes your edits to the backup too, so the backup cannot undo an edit that loads but that you regret.<br>
-If `lainurse.json` is missing, LaiNurse loads the sample data even when there is a backup, and the next save replaces the backup with the sample data. To restore from the backup instead, close the window with its close button and copy `lainurse.backup.json` to `lainurse.json` first.<br>
+If `lainurse.json` is missing, LaiNurse loads the sample data even when there is a backup, and the next save replaces the backup with the sample data. So LaiNurse first copies the backup to `lainurse.previous.json`. To restore your data, close LaiNurse and copy `lainurse.previous.json` to `lainurse.json`.<br>
 Appointment dates and times in the file follow the formats above, and a file saved by an earlier version with a signed or wider year, such as `+12345-01-01` or `-2026-10-05`, also fails to load. Furthermore, certain edits can cause LaiNurse to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
 </div>
 
@@ -644,8 +646,8 @@ Action | Format, Examples
 **Add** | `add --id ID --name NAME --phone PHONE --address ADDRESS [--medical-history MEDICAL_HISTORY] [--notes NOTES]` <br> e.g., `add --id S3333333C --name James Ho --phone 22224444 --address 123, Clementi Rd, 1234665 --notes Enjoys gardening`
 **AddAppt** | `addappt ID --date DATE_OR_DATETIME [--details DETAILS]`<br> e.g., `addappt S1234567A --date 2026-12-01 10:00 --details Bring insulin pen`
 **Archive** | `archive ID`<br> e.g., `archive S2345678B`
-**Clear** | `clear [--archived]`, then `I LOVE 2103T` to confirm<br> e.g., `clear --archived`
-**ClearAppt** | `clearappt [ID]` or `clearappt [--id ID] [--from DATE_OR_DATETIME] [--to DATE_OR_DATETIME]`, then `I LOVE 2103T` to confirm<br> e.g., `clearappt S1234567A`, `clearappt --to 2026-10-04`
+**Clear** | `clear [--archived]`, then `confirm` to confirm<br> e.g., `clear --archived`
+**ClearAppt** | `clearappt [ID]` or `clearappt [--id ID] [--from DATE_OR_DATETIME] [--to DATE_OR_DATETIME]`, then `confirm` to confirm<br> e.g., `clearappt S1234567A`, `clearappt --to 2026-10-04`
 **Delete** | `delete ID`<br> e.g., `delete T0123456B`
 **DeleteAppt** | `deleteappt ID NUMBER`<br> e.g., `deleteappt S1234567A 1`
 **Edit** | `edit ID [--name NAME] [--phone PHONE] [--address ADDRESS] [--medical-history [MEDICAL_HISTORY]] [--add-medical-history MORE_HISTORY] [--notes [NOTES]] [--add-notes MORE_NOTES]`<br> e.g., `edit S1234567A --notes Walks every morning`, `edit S1234567A --add-medical-history Asthma`
