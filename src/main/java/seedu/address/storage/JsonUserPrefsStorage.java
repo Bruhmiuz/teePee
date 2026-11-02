@@ -1,5 +1,7 @@
 package seedu.address.storage;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -40,7 +42,13 @@ public class JsonUserPrefsStorage {
      * @throws DataLoadingException if the file format is not as expected.
      */
     public Optional<UserPrefs> readUserPrefs(Path prefsFilePath) throws DataLoadingException {
-        return JsonUtil.readJsonFile(prefsFilePath, UserPrefs.class);
+        requireNonNull(prefsFilePath);
+        try {
+            return JsonUtil.readJsonFile(prefsFilePath, UserPrefs.class).map(UserPrefs::new);
+        } catch (NullPointerException e) {
+            // The copy rejects a null value in the file, such as "settings": null, which would crash LaiNurse later
+            throw new DataLoadingException(e);
+        }
     }
 
     /**

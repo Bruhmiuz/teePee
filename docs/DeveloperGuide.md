@@ -1138,7 +1138,8 @@ The settings of #216 decide how marks, past clashes and archived patients behave
 
 * `Settings` in `model` holds four switches: `isMarkStoppingClashes`, `isMarkCountedAsDone`, `isPastClashing` and
   `isArchivedClashing`. Its defaults are how LaiNurse behaves without settings. `UserPrefs` saves it in
-  `preferences.json` with the window settings, and a file without it loads the defaults.
+  `preferences.json` with the window settings, and a file without it loads the defaults. A file with `null` for
+  either one fails to load, as a file with a value of the wrong type does, so LaiNurse uses the default preferences.
 * `ModelManager#getSettings()` gives the settings that apply as an `ObservableValue`: the user's once the feature is
   released, and the defaults before. `set` (`SetCommand`) shows the settings, or turns one on or off with
   `Model#setSettings`. `LogicManager` saves the user preferences after any command that changes them, so a changed
