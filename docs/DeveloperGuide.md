@@ -494,6 +494,8 @@ timed one. Both commands and UI use this query. Clashes never reject commands or
 stored as flags. Add/edit/unmark success messages include every conflicting patient and appointment number. In the
 appointment list and the details, `ClashMark` puts a red boxed `!` before the time of each clashing appointment, so
 that a clash does not show by color alone. Day headings do not mark clashes, so that today's heading stays orange.
+Done visits are left out only under the default settings: [Settings](#settings) can let done, past or archived
+appointments clash too, but never a date-only one.
 
 **Time zones.** An `Appointment` holds a `LocalDate` and an optional `LocalTime`, with no time zone or offset, and is
 saved as text such as `2026-10-05 09:30`. This assumes that the nurse and their patients are in one time zone, which
