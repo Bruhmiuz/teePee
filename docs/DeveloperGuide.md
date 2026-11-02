@@ -1416,20 +1416,20 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
     * Use case ends.
 
 * 1b. Nurse requests to open the full offline User Guide window (`help window`, press <kbd>F1</kbd>, or select **Help** > **Help**).
-    * 1b1. LaiNurse opens the Help Window containing the complete offline User Guide rendered using native JavaFX components.
+    * 1b1. LaiNurse opens the Help Window containing the complete offline User Guide.
     * Use case ends.
 
 * 1c. Nurse enters an unrecognized command target (e.g., `help nonexistent`) or the discontinued flag form (e.g., `help --add`).
-    * 1c1. LaiNurse displays an invalid command format error that shows `HelpCommand.MESSAGE_USAGE` and lists all valid targets.
+    * 1c1. LaiNurse displays an invalid command format error with the usage of `help` and lists all valid targets.
     * Use case ends.
 
 * 1d. Nurse provides a malformed help argument (e.g., `help -- add`, `help --`, or multiple tokens such as `help add patient`).
-    * 1d1. LaiNurse displays an invalid command format error displaying `HelpCommand.MESSAGE_USAGE`.
+    * 1d1. LaiNurse displays an invalid command format error with the usage of `help`.
     * Use case ends.
 
 * 1e. Nurse enters the target command with mixed or uppercase letters (e.g., `help VIEW`).
-    * 1e1. LaiNurse rejects the target as unknown, since command syntax is lowercase-only, and displays an invalid
-      command format error that shows `HelpCommand.MESSAGE_USAGE` and lists all valid targets.
+    * 1e1. LaiNurse rejects the target as unknown and displays an invalid command format error with the usage of
+      `help` and lists all valid targets.
     * Use case ends.
 
 **Use case: UC08 - Edit an appointment**
