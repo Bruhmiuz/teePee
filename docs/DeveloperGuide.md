@@ -1857,7 +1857,7 @@ testers are expected to do more *exploratory* testing.
        the command box: the status bar shows `delete · deleteappt` again.
 
     1. Test case: type `delete S`, then press Tab several times<br>
-       Expected: Each Tab shows the next ID that starts with `S`, in the order of the list, and then starts again from the first.
+       Expected: Each Tab shows the next ID that starts with `S`, and then starts again from the first. Patients in the list come first, then patients hidden by a filter, with archived patients last.
 
     1. Test case: type `edit s23 --phone 91234567`, then press Tab<br>
        Expected: The command box shows `edit S2345678B --phone 91234567`. The options are kept.
