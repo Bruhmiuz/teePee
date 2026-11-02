@@ -13,8 +13,10 @@
 <StackPane styleClass="patient-detail" alignment="TOP_LEFT" xmlns="http://javafx.com/javafx/17"
            xmlns:fx="http://javafx.com/fxml/1">
   <Label fx:id="placeholder" styleClass="patient-detail-placeholder" wrapText="true" />
-  <!-- Long details scroll down; they are never cut off, and never scroll sideways. -->
-  <ScrollPane fx:id="details" fitToWidth="true" hbarPolicy="NEVER">
+  <!-- Long details scroll down; they are never cut off, and never scroll sideways. The vertical scroll bar always
+       shows, so that the width of the text does not depend on it: a bar that comes and goes changes where the text
+       wraps, and so whether the details need the bar, which makes the panel flicker at some sizes. -->
+  <ScrollPane fx:id="details" fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="ALWAYS">
     <VBox spacing="20">
       <padding>
         <Insets top="20" right="24" bottom="20" left="24" />

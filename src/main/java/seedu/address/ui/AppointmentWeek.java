@@ -7,12 +7,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import seedu.address.commons.util.DateUtil;
 
 /**
- * One week of the appointment view, from Monday to Sunday, as {@link DateUtil#getStartOfWeek} gives.
+ * One week of the appointment view, from Monday to Sunday, as {@link DateUtil#getStartOfWeek} gives. The weeks
+ * stop at {@link DateUtil#EARLIEST_DATE} and {@link DateUtil#LATEST_DATE}, so the first and last weeks have only
+ * the days from those dates on, or up to them.
  * Guarantees: immutable.
  */
 public final class AppointmentWeek {
@@ -23,6 +24,7 @@ public final class AppointmentWeek {
     private static final DateTimeFormatter WEEKDAY_DAY_MONTH_YEAR =
             DateTimeFormatter.ofPattern("EEE d MMM uuuu", Locale.ENGLISH);
 
+    /** The Monday of this week, which can be before {@link DateUtil#EARLIEST_DATE}. */
     private final LocalDate monday;
 
     private AppointmentWeek(LocalDate monday) {
@@ -38,24 +40,25 @@ public final class AppointmentWeek {
     }
 
     /**
-     * Returns the Monday that starts this week.
+     * Returns the first day of this week: its Monday, or {@link DateUtil#EARLIEST_DATE} in the first week.
      */
     public LocalDate getStart() {
-        return monday;
+        return monday.isBefore(DateUtil.EARLIEST_DATE) ? DateUtil.EARLIEST_DATE : monday;
     }
 
     /**
-     * Returns the Sunday that ends this week.
+     * Returns the last day of this week: its Sunday, or {@link DateUtil#LATEST_DATE} in the last week.
      */
     public LocalDate getEnd() {
-        return DateUtil.getEndOfWeek(monday);
+        LocalDate sunday = DateUtil.getEndOfWeek(monday);
+        return sunday.isAfter(DateUtil.LATEST_DATE) ? DateUtil.LATEST_DATE : sunday;
     }
 
     /**
-     * Returns the seven days of this week, from Monday to Sunday.
+     * Returns the days of this week, in order: from Monday to Sunday, except in the first and last weeks.
      */
     public List<LocalDate> getDays() {
-        return Stream.iterate(monday, day -> day.plusDays(1)).limit(DateUtil.DAYS_IN_WEEK).toList();
+        return getStart().datesUntil(getEnd().plusDays(1)).toList();
     }
 
     /**
@@ -67,17 +70,17 @@ public final class AppointmentWeek {
     }
 
     /**
-     * Returns the week before this one.
+     * Returns the week before this one, or this week if it is the first.
      */
     public AppointmentWeek previous() {
-        return new AppointmentWeek(monday.minusWeeks(1));
+        return getStart().equals(DateUtil.EARLIEST_DATE) ? this : new AppointmentWeek(monday.minusWeeks(1));
     }
 
     /**
-     * Returns the week after this one.
+     * Returns the week after this one, or this week if it is the last.
      */
     public AppointmentWeek next() {
-        return new AppointmentWeek(monday.plusWeeks(1));
+        return getEnd().equals(DateUtil.LATEST_DATE) ? this : new AppointmentWeek(monday.plusWeeks(1));
     }
 
     /**
@@ -85,15 +88,16 @@ public final class AppointmentWeek {
      * or "Mon 28 Dec 2026 – Sun 3 Jan 2027" for a week that spans two years.
      */
     public String describeDates() {
+        LocalDate start = getStart();
         LocalDate end = getEnd();
         String endText = end.format(WEEKDAY_DAY_MONTH_YEAR);
-        if (monday.getYear() != end.getYear()) {
-            return monday.format(WEEKDAY_DAY_MONTH_YEAR) + " – " + endText;
+        if (start.getYear() != end.getYear()) {
+            return start.format(WEEKDAY_DAY_MONTH_YEAR) + " – " + endText;
         }
-        if (monday.getMonth() != end.getMonth()) {
-            return monday.format(WEEKDAY_DAY_MONTH) + " – " + endText;
+        if (start.getMonth() != end.getMonth()) {
+            return start.format(WEEKDAY_DAY_MONTH) + " – " + endText;
         }
-        return monday.format(WEEKDAY_DAY) + " – " + endText;
+        return start.format(WEEKDAY_DAY) + " – " + endText;
     }
 
     /**

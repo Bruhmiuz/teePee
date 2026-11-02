@@ -157,7 +157,8 @@ computer wakes from sleep.
 
 `AppointmentListPanel` shows the appointments of `Logic#getAppointmentList()`, which holds every appointment of every
 patient, on one of two kinds of page. The weekly view shows one `AppointmentWeek`, from Monday to Sunday, which a plain
-`viewappt` shows for this week. After `viewappt` with a date, a range or `--id`, the panel shows only the appointments
+`viewappt` shows for this week. The weeks stop at `DateUtil#EARLIEST_DATE` and `DateUtil#LATEST_DATE`, the dates that a
+four-digit year allows, so the first and last weeks have fewer days and no signed years. After `viewappt` with a date, a range or `--id`, the panel shows only the appointments
 in the command's range, on one page, and hides the week's arrow buttons; if the range carries a patient ID, only that
 patient's appointments. `AppointmentPage#ofWeek` and
 `AppointmentPage#ofRange` turn the appointments into rows: a heading for each day
@@ -167,7 +168,8 @@ have passed, right above the next one. A page is built as at the time given to i
 it selects first agree, and unit tests can fix the time. While a range is shown, the panel keeps the week of the weekly
 view, so that Esc goes back to it. The panel listens to the appointment list and rebuilds the page after a change,
 keeping the selected appointment if it is still there. Only appointment rows can be selected, so the panel handles Up,
-Down, Home, End, Left and Right itself, with the moves that `AppointmentPage` finds, and headings ignore the mouse. When
+Down, Page Up, Page Down, Home, End, Left and Right itself, with the moves that `AppointmentPage` finds, and headings
+ignore the mouse. Page Up and Page Down move by the number of rows shown, less one, to the nearest appointment. When
 the selection changes, the panel tells `MainWindow`, which shows the appointment's patient in the second
 `PatientDetailPanel` with that appointment marked.
 
@@ -803,7 +805,8 @@ Shift+Down and typed text do there:
 * Tab moves the focus between the tabs and the list. The appointment list always takes the focus, so that Left and
   Right can leave an empty week.
 * Shift+Up and Shift+Down scroll the details beside the list, with `PatientDetailPanel#scroll`, as the details never
-  take the focus.
+  take the focus. Their vertical scroll bar always shows. A bar that comes and goes changes the width of the text, and
+  so where it wraps and how tall the details are, which at some sizes makes the bar flip on and off in every frame.
 * Shift+Tab does nothing, also in the command box. `MainWindow` consumes it, or JavaFX would move the focus to another
   node.
 
@@ -2412,6 +2415,12 @@ testers are expected to do more *exploratory* testing.
        Expected: Right shows the week after the sample week, e.g. the week of Mon 12 Oct, and selects its first
        appointment, or nothing in a week with no appointments. Left twice shows the week before the previous one,
        e.g. the week of Mon 28 Sep. `viewappt` goes back to this week, marked `This week`.
+
+    1. Test case: `addappt S1234567A --date 0000-01-01`, then press Left<br>
+       Expected: The header says `Sat 1 – Sun 2 Jan 0000`, with headings for those two days only. Left changes nothing.
+
+    1. Test case: `addappt S1234567A --date 9999-12-31`, then press Right<br>
+       Expected: The header says `Mon 27 – Fri 31 Dec 9999`, with headings for those five days only. Right changes nothing.
 
 1. Switching views without a command
 

@@ -163,6 +163,27 @@ public class AppointmentPageTest {
     }
 
     @Test
+    public void entryIndexRowsAfterAndBefore_landOnAppointmentsAndStopAtEnds() {
+        AppointmentPage page = AppointmentPage.ofWeek(THIS_WEEK, ALL, NOW);
+        // two rows after Monday's appointment is a heading, so the next appointment is today's first
+        assertEquals(OptionalInt.of(6), page.entryIndexRowsAfter(1, 2));
+        assertEquals(OptionalInt.of(7), page.entryIndexRowsAfter(6, 1));
+        // beyond the last appointment, it stops there
+        assertEquals(OptionalInt.of(7), page.entryIndexRowsAfter(6, 50));
+
+        // two rows before today's last appointment is a heading, so the previous appointment is Monday's
+        assertEquals(OptionalInt.of(1), page.entryIndexRowsBefore(7, 2));
+        assertEquals(OptionalInt.of(6), page.entryIndexRowsBefore(7, 1));
+        // beyond the first appointment, it stops there
+        assertEquals(OptionalInt.of(1), page.entryIndexRowsBefore(6, 50));
+        assertEquals(OptionalInt.of(1), page.entryIndexRowsBefore(-1, 3));
+
+        AppointmentPage empty = AppointmentPage.ofWeek(THIS_WEEK, List.of(), NOW);
+        assertEquals(OptionalInt.empty(), empty.entryIndexRowsAfter(0, 3));
+        assertEquals(OptionalInt.empty(), empty.entryIndexRowsBefore(0, 3));
+    }
+
+    @Test
     public void indexOf_findsSameEntryAfterPatientEdit() {
         AppointmentPage page = AppointmentPage.ofWeek(THIS_WEEK, ALL, NOW);
         assertEquals(OptionalInt.of(7), page.indexOf(TODAY_ALEX));
