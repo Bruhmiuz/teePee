@@ -6,6 +6,7 @@ import java.util.List;
 
 import seedu.address.commons.core.FeatureFlags;
 import seedu.address.commons.util.ToStringBuilder;
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.CliSyntax;
 import seedu.address.model.LaiNurse;
@@ -19,10 +20,10 @@ public class ClearCommand extends Command implements Confirmable {
 
     public static final String COMMAND_WORD = "clear";
     public static final String MESSAGE_SUCCESS = "LaiNurse has been cleared!";
-    public static final String MESSAGE_ARCHIVED_SUCCESS = "Deleted %1$d archived patient(s).";
-    public static final String MESSAGE_DELETES = "This deletes %1$d patient(s) and their %2$d appointment(s).";
+    public static final String MESSAGE_ARCHIVED_SUCCESS = "Deleted %1$s.";
+    public static final String MESSAGE_DELETES = "This deletes %1$s and their %2$s.";
     public static final String MESSAGE_DELETES_ARCHIVED =
-            "This deletes %1$d archived patient(s) and their %2$d appointment(s).";
+            "This deletes %1$s and their %2$s.";
     public static final String MESSAGE_NO_PATIENTS = "There are no patients to delete.";
     public static final String MESSAGE_NO_ARCHIVED_PATIENTS = "There are no archived patients to delete.";
     public static final String MESSAGE_USAGE = FeatureFlags.isSelectiveClearEnabled()
@@ -59,7 +60,8 @@ public class ClearCommand extends Command implements Confirmable {
         }
         List<Patient> archived = patientsToDelete(model);
         archived.forEach(model::deletePatient);
-        return new CommandResult(String.format(MESSAGE_ARCHIVED_SUCCESS, archived.size())).withSelectionCleared();
+        return new CommandResult(String.format(MESSAGE_ARCHIVED_SUCCESS,
+                Messages.formatCount(archived.size(), "archived patient"))).withSelectionCleared();
     }
 
     @Override
@@ -70,8 +72,9 @@ public class ClearCommand extends Command implements Confirmable {
             throw new CommandException(isArchivedOnly ? MESSAGE_NO_ARCHIVED_PATIENTS : MESSAGE_NO_PATIENTS);
         }
         int appointmentCount = patients.stream().mapToInt(patient -> patient.getSchedule().asList().size()).sum();
-        return String.format(isArchivedOnly ? MESSAGE_DELETES_ARCHIVED : MESSAGE_DELETES, patients.size(),
-                appointmentCount);
+        String patientCount = Messages.formatCount(patients.size(), isArchivedOnly ? "archived patient" : "patient");
+        return String.format(isArchivedOnly ? MESSAGE_DELETES_ARCHIVED : MESSAGE_DELETES, patientCount,
+                Messages.formatCount(appointmentCount, "appointment"));
     }
 
     private List<Patient> patientsToDelete(Model model) {

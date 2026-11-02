@@ -9,6 +9,7 @@ import static seedu.address.testutil.TypicalPatients.getTypicalLaiNurse;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.LaiNurse;
 import seedu.address.model.Model;
@@ -48,10 +49,11 @@ public class ClearCommandTest {
         expectedModel.deletePatient(archivedBenson);
 
         ClearCommand command = new ClearCommand(true);
-        assertEquals(String.format(ClearCommand.MESSAGE_DELETES_ARCHIVED, 1,
-                archivedBenson.getSchedule().asList().size()), command.describeDeletion(model));
+        assertEquals(String.format(ClearCommand.MESSAGE_DELETES_ARCHIVED, "1 archived patient",
+                Messages.formatCount(archivedBenson.getSchedule().asList().size(), "appointment")),
+                        command.describeDeletion(model));
         assertCommandSuccess(command, model, new CommandResult(String.format(ClearCommand.MESSAGE_ARCHIVED_SUCCESS,
-                1)).withSelectionCleared(), expectedModel);
+                "1 archived patient")).withSelectionCleared(), expectedModel);
         // nothing left to delete
         assertThrows(CommandException.class, ClearCommand.MESSAGE_NO_ARCHIVED_PATIENTS, () ->
                 command.describeDeletion(model));
@@ -62,8 +64,9 @@ public class ClearCommandTest {
         Model model = new ModelManager(getTypicalLaiNurse(), new UserPrefs());
         int appointmentCount = model.getLaiNurse().getPatientList().stream()
                 .mapToInt(patient -> patient.getSchedule().asList().size()).sum();
-        assertEquals(String.format(ClearCommand.MESSAGE_DELETES, model.getLaiNurse().getPatientList().size(),
-                appointmentCount), new ClearCommand().describeDeletion(model));
+        assertEquals(String.format(ClearCommand.MESSAGE_DELETES,
+                Messages.formatCount(model.getLaiNurse().getPatientList().size(), "patient"),
+                Messages.formatCount(appointmentCount, "appointment")), new ClearCommand().describeDeletion(model));
         assertThrows(CommandException.class, ClearCommand.MESSAGE_NO_PATIENTS, () ->
                 new ClearCommand().describeDeletion(new ModelManager()));
         assertEquals(new ClearCommand(), new ClearCommand(false));

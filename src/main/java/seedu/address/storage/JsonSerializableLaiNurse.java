@@ -19,7 +19,7 @@ import seedu.address.model.patient.Patient;
 @JsonRootName(value = "lainurse")
 class JsonSerializableLaiNurse {
 
-    public static final String MESSAGE_DUPLICATE_PATIENT = "Patients list contains duplicate patient(s).";
+    public static final String MESSAGE_DUPLICATE_PATIENT = "Patients list contains duplicate patients.";
     public static final String MESSAGE_MISSING_PATIENTS = "The data file has no \"patients\" list.";
     public static final String MESSAGE_NULL_PATIENT = "Patients list contains a null entry.";
 

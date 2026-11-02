@@ -313,7 +313,7 @@ Format: `viewappt [DATE]` or `viewappt [--from START_DATE] [--to END_DATE]`, eac
 * The ID is case-insensitive, as in [`view`](#listing-patients-and-viewing-a-patients-details-view), and must belong to a patient. If no patient has it, LaiNurse shows an error, and the appointment page stays as it was.
 * LaiNurse switches to the **Appointments** view, and shows the appointments in the range on one page, in place of the weekly view. With `--id`, the header above the list starts with the patient's ID. The next appointment from now is selected, and its patient's details are shown: on a page that includes today, the first that has not passed, and otherwise the first on the page. If no appointment is in the range, the page says `No appointments in this range.`
 * To go back to the weekly view, press Esc with the focus in the appointment list. The weekly view shows the week of the selected appointment, which stays selected, or this week if none is selected. See [The patient and appointment views](#the-patient-and-appointment-views).
-* The patient list, on the **Patients** tab, stays as it was: `viewappt` does not change which patients it shows. Without `--id`, the status message says how many patients have an appointment in the range, such as `3 patient(s) with appointments on 2026-10-15`, and with `--id`, how many appointments that patient has in it.
+* The patient list, on the **Patients** tab, stays as it was: `viewappt` does not change which patients it shows. Without `--id`, the status message says how many patients have an appointment in the range, such as `3 patients with appointments on 2026-10-15`, and with `--id`, how many appointments that patient has in it.
 * Only dates are compared, so an appointment earlier today still counts.
 * Without `--id`, `viewappt` shows the appointments of patients who are not archived. `--all` shows archived patients' appointments too, and `--archived` only theirs. They take no value, and cannot be given together, or with `--id`, which shows that patient's appointments whether they are archived or not. The header then counts them as it would among everyone's: `3`, or `(3)` for an archived patient. Like the dates, the option applies to this `viewappt` only: the next `viewappt` without it hides archived patients' appointments again.
 
@@ -519,7 +519,7 @@ Format: `delete ID`
 * Deletes the patient with the specified `ID`. IDs are case-insensitive, so `s1234567a` and `S1234567A` refer to the same patient.
 * The patient does not need to be in the displayed list, because `delete` searches all patients.
 * If no patient has that ID, LaiNurse shows an error and deletes nothing.
-* LaiNurse first says what it would delete, such as `This deletes ALEX YEOH (S1234567A) and their 2 appointment(s).`, and waits. Type `confirm` to go ahead. Anything else cancels. See the caution under [`clear`](#deleting-many-patients-clear).
+* LaiNurse first says what it would delete, such as `This deletes ALEX YEOH (S1234567A) and their 2 appointments.`, and waits. Type `confirm` to go ahead. Anything else cancels. See the caution under [`clear`](#deleting-many-patients-clear).
 * The displayed list keeps its current filter, so the list numbers of the patients below the deleted one go down by one.
 * After a patient is deleted, no patient is selected, and the details beside the list show their starting message. This is so in both views.
 
@@ -537,7 +537,7 @@ Format: `clear [--archived]`
 * LaiNurse keeps the view that is shown, and selects nothing.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-`clear`, `clearappt` and `delete` delete much at once, and cannot be undone. So they first say what they would delete, such as `This deletes 2 archived patient(s) and their 1 appointment(s).`, and wait. Type `confirm` exactly, in lower case, to confirm. Anything else, even another command, cancels: LaiNurse says `Cancelled. Nothing was deleted.`, and does not run what you typed. When there is nothing to delete, the command says so at once, and there is nothing to confirm.
+`clear`, `clearappt` and `delete` delete much at once, and cannot be undone. So they first say what they would delete, such as `This deletes 2 archived patients and their 1 appointment.`, and wait. Type `confirm` exactly, in lower case, to confirm. Anything else, even another command, cancels: LaiNurse says `Cancelled. Nothing was deleted.`, and does not run what you typed. When there is nothing to delete, the command says so at once, and there is nothing to confirm.
 </div>
 
 Examples:

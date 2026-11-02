@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.util.ToStringBuilder;
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.CommandResult.Navigation;
 import seedu.address.logic.commands.CommandResult.View;
 import seedu.address.logic.commands.exceptions.CommandException;
@@ -56,24 +57,24 @@ public class ViewAppointmentCommand extends Command {
             + PREFIX_ARCHIVED.toString().trim() + "] (dates in yyyy-MM-dd)\n"
             + "Example: " + COMMAND_WORD + " 2026-10-15";
 
-    public static final String MESSAGE_VIEW_APPOINTMENT_LISTED_OVERVIEW = "%1$d patient(s) with appointments on %2$s";
+    public static final String MESSAGE_VIEW_APPOINTMENT_LISTED_OVERVIEW = "%1$s with appointments on %2$s";
     public static final String MESSAGE_VIEW_APPOINTMENT_RANGE_LISTED_OVERVIEW =
-            "%1$d patient(s) with appointments from %2$s to %3$s";
+            "%1$s with appointments from %2$s to %3$s";
     public static final String MESSAGE_VIEW_APPOINTMENT_FROM_LISTED_OVERVIEW =
-            "%1$d patient(s) with appointments on or after %2$s";
+            "%1$s with appointments on or after %2$s";
     public static final String MESSAGE_VIEW_APPOINTMENT_THIS_WEEK =
             "Showing this week's appointments of patients who are not archived.";
     public static final String MESSAGE_VIEW_APPOINTMENT_THIS_WEEK_WITH_ARCHIVED =
             "Showing this week's appointments, with archived patients' ones.";
     public static final String MESSAGE_VIEW_APPOINTMENT_THIS_WEEK_ARCHIVED =
             "Showing this week's appointments of archived patients.";
-    public static final String MESSAGE_VIEW_APPOINTMENT_PATIENT_ALL_LISTED_OVERVIEW = "%1$d appointment(s) of %2$s";
+    public static final String MESSAGE_VIEW_APPOINTMENT_PATIENT_ALL_LISTED_OVERVIEW = "%1$s of %2$s";
     public static final String MESSAGE_VIEW_APPOINTMENT_PATIENT_LISTED_OVERVIEW =
-            "%1$d appointment(s) of %2$s on %3$s";
+            "%1$s of %2$s on %3$s";
     public static final String MESSAGE_VIEW_APPOINTMENT_PATIENT_RANGE_LISTED_OVERVIEW =
-            "%1$d appointment(s) of %2$s from %3$s to %4$s";
+            "%1$s of %2$s from %3$s to %4$s";
     public static final String MESSAGE_VIEW_APPOINTMENT_PATIENT_FROM_LISTED_OVERVIEW =
-            "%1$d appointment(s) of %2$s on or after %3$s";
+            "%1$s of %2$s on or after %3$s";
     public static final String MESSAGE_VIEW_APPOINTMENT_TO_BEFORE_TODAY =
             "The " + PREFIX_TO + "date %1$s is before today (%2$s). "
                     + "To see past appointments, give " + PREFIX_FROM + "as well.";
@@ -233,7 +234,8 @@ public class ViewAppointmentCommand extends Command {
                 : "The schedule lists appointments in time order, so the last date is not before the first.";
         logger.fine("Viewed all " + appointments.size() + " appointment(s) of patient " + id + ".");
         return new CommandResult(String.format(MESSAGE_VIEW_APPOINTMENT_PATIENT_ALL_LISTED_OVERVIEW,
-                appointments.size(), patient.getName().fullName), new CommandResult.AppointmentRange(first, last, id))
+                Messages.formatCount(appointments.size(), "appointment"), patient.getName().fullName),
+                new CommandResult.AppointmentRange(first, last, id))
                 .withAppointmentScope(scopeOf(patient))
                 .withNavigation(Navigation.toView(View.APPOINTMENTS));
     }
@@ -269,25 +271,28 @@ public class ViewAppointmentCommand extends Command {
 
     /** Returns the status message for the appointments of every patient in the range. */
     private String describeAll(long count, LocalDate start, LocalDate end) {
+        String patientCount = Messages.formatCount(count, "patient");
         if (endDate.isEmpty()) {
-            return String.format(MESSAGE_VIEW_APPOINTMENT_FROM_LISTED_OVERVIEW, count, start);
+            return String.format(MESSAGE_VIEW_APPOINTMENT_FROM_LISTED_OVERVIEW, patientCount, start);
         }
         if (start.equals(end)) {
-            return String.format(MESSAGE_VIEW_APPOINTMENT_LISTED_OVERVIEW, count, start);
+            return String.format(MESSAGE_VIEW_APPOINTMENT_LISTED_OVERVIEW, patientCount, start);
         }
-        return String.format(MESSAGE_VIEW_APPOINTMENT_RANGE_LISTED_OVERVIEW, count, start, end);
+        return String.format(MESSAGE_VIEW_APPOINTMENT_RANGE_LISTED_OVERVIEW, patientCount, start, end);
     }
 
     /** Returns the status message for the appointments of one patient in the range. */
     private String describeForPatient(long count, Patient patient, LocalDate start, LocalDate end) {
+        String appointmentCount = Messages.formatCount(count, "appointment");
         String name = patient.getName().fullName;
         if (endDate.isEmpty()) {
-            return String.format(MESSAGE_VIEW_APPOINTMENT_PATIENT_FROM_LISTED_OVERVIEW, count, name, start);
+            return String.format(MESSAGE_VIEW_APPOINTMENT_PATIENT_FROM_LISTED_OVERVIEW, appointmentCount, name, start);
         }
         if (start.equals(end)) {
-            return String.format(MESSAGE_VIEW_APPOINTMENT_PATIENT_LISTED_OVERVIEW, count, name, start);
+            return String.format(MESSAGE_VIEW_APPOINTMENT_PATIENT_LISTED_OVERVIEW, appointmentCount, name, start);
         }
-        return String.format(MESSAGE_VIEW_APPOINTMENT_PATIENT_RANGE_LISTED_OVERVIEW, count, name, start, end);
+        return String.format(MESSAGE_VIEW_APPOINTMENT_PATIENT_RANGE_LISTED_OVERVIEW, appointmentCount, name, start,
+                end);
     }
 
     @Override

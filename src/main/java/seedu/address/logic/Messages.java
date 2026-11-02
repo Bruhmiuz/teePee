@@ -26,7 +26,7 @@ public class Messages {
     public static final String MESSAGE_UNKNOWN_COMMAND = "Unknown command. Type 'help' to view all available commands.";
     public static final String MESSAGE_INVALID_COMMAND_FORMAT = "Invalid command format!\n%1$s";
     public static final String MESSAGE_PATIENT_NOT_FOUND = "No patient has the ID %1$s.";
-    public static final String MESSAGE_PATIENTS_LISTED_OVERVIEW = "%1$d patient(s) listed!";
+    public static final String MESSAGE_PATIENTS_LISTED_OVERVIEW = "%1$s listed!";
     public static final String MESSAGE_DUPLICATE_OPTION = "%1$s can be given only once.";
     public static final String MESSAGE_DUPLICATE_OPTIONS = "Each of these options can be given only once: %1$s.";
     public static final String MESSAGE_APPOINTMENT_NUMBER_NOT_FOUND = "Patient %1$s has no appointment #%2$d.";
@@ -62,6 +62,14 @@ public class Messages {
         return duplicateOptions.size() == 1
                 ? String.format(MESSAGE_DUPLICATE_OPTION, duplicateOptions.get(0))
                 : String.format(MESSAGE_DUPLICATE_OPTIONS, String.join(", ", duplicateOptions));
+    }
+
+    /**
+     * Returns {@code count} with {@code noun}, in the singular if {@code count} is 1 and in the plural otherwise,
+     * such as "1 patient" or "2 patients".
+     */
+    public static String formatCount(long count, String noun) {
+        return count + " " + noun + (count == 1 ? "" : "s");
     }
 
     /**

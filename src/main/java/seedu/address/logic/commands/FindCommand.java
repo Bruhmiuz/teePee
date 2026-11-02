@@ -76,7 +76,8 @@ public class FindCommand extends Command {
         scope.ifPresent(model::setPatientListScope);
         model.updateFilteredPatientList(predicate, comparator);
         return new CommandResult(
-                String.format(Messages.MESSAGE_PATIENTS_LISTED_OVERVIEW, model.getFilteredPatientList().size()))
+                String.format(Messages.MESSAGE_PATIENTS_LISTED_OVERVIEW,
+                        Messages.formatCount(model.getFilteredPatientList().size(), "patient")))
                 .withNavigation(Navigation.toView(View.PATIENTS));
     }
 

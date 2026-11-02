@@ -96,7 +96,8 @@ public class LogicManagerTest {
 
         // the first time, clear only says what would go
         CommandResult prompt = logic.execute("clear");
-        assertEquals(String.format(Messages.MESSAGE_CONFIRM, String.format(ClearCommand.MESSAGE_DELETES, 1, 2)),
+        assertEquals(String.format(Messages.MESSAGE_CONFIRM, String.format(ClearCommand.MESSAGE_DELETES, "1 patient",
+                "2 appointments")),
                 prompt.getFeedbackToUser());
         assertEquals(1, model.getLaiNurse().getPatientList().size());
 
@@ -111,7 +112,7 @@ public class LogicManagerTest {
 
         // the phrase confirms it
         logic.execute("clearappt " + amy.getId().value + " --to 2026-10-05");
-        assertEquals(ClearAppointmentCommand.MESSAGE_SUCCESS.formatted(1),
+        assertEquals(ClearAppointmentCommand.MESSAGE_SUCCESS.formatted("1 appointment"),
                 logic.execute(Messages.CONFIRMATION_PHRASE).getFeedbackToUser());
         assertEquals(1, model.findPatientById(amy.getId()).orElseThrow().getSchedule().asList().size());
         logic.execute("clear");
@@ -152,7 +153,7 @@ public class LogicManagerTest {
 
         // the first time, delete only says what would go
         assertEquals(String.format(Messages.MESSAGE_CONFIRM,
-                "This deletes " + amy.getName() + " (" + amy.getId() + ") and their 2 appointment(s)."),
+                "This deletes " + amy.getName() + " (" + amy.getId() + ") and their 2 appointments."),
                 logic.execute(command).getFeedbackToUser());
         assertTrue(model.hasPatient(amy));
 

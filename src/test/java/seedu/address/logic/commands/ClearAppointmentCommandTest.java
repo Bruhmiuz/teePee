@@ -40,8 +40,9 @@ public class ClearAppointmentCommandTest {
     public void execute_nothingGiven_deletesEveryAppointment() throws Exception {
         ClearAppointmentCommand command = new ClearAppointmentCommand(Optional.empty(), Optional.empty(),
                 Optional.empty());
-        assertEquals(String.format(ClearAppointmentCommand.MESSAGE_DELETES, 5, 2), command.describeDeletion(model));
-        assertEquals(String.format(ClearAppointmentCommand.MESSAGE_SUCCESS, 5), command.execute(model)
+        assertEquals(String.format(ClearAppointmentCommand.MESSAGE_DELETES, "5 appointments", "2 patients"),
+                command.describeDeletion(model));
+        assertEquals(String.format(ClearAppointmentCommand.MESSAGE_SUCCESS, "5 appointments"), command.execute(model)
                 .getFeedbackToUser());
         assertEquals(List.of(), appointmentsOf(ALEX.getId()));
         assertEquals(List.of(), appointmentsOf(BEN.getId()));
@@ -53,9 +54,9 @@ public class ClearAppointmentCommandTest {
     public void execute_patientOnly_deletesAllOfTheirs() throws Exception {
         ClearAppointmentCommand command = new ClearAppointmentCommand(Optional.of(ALEX.getId()), Optional.empty(),
                 Optional.empty());
-        assertEquals(String.format(ClearAppointmentCommand.MESSAGE_DELETES_OF_PATIENT, 3, ALEX.getName(),
+        assertEquals(String.format(ClearAppointmentCommand.MESSAGE_DELETES_OF_PATIENT, "3 appointments", ALEX.getName(),
                 ALEX.getId()), command.describeDeletion(model));
-        assertEquals(new CommandResult(String.format(ClearAppointmentCommand.MESSAGE_SUCCESS, 3))
+        assertEquals(new CommandResult(String.format(ClearAppointmentCommand.MESSAGE_SUCCESS, "3 appointments"))
                 .withSelectionCleared(), command.execute(model));
         assertEquals(0, appointmentsOf(ALEX.getId()).size());
         assertEquals(2, appointmentsOf(BEN.getId()).size());
@@ -66,7 +67,8 @@ public class ClearAppointmentCommandTest {
         // a date without a time covers the whole day, and an appointment with no time is on it
         ClearAppointmentCommand command = new ClearAppointmentCommand(Optional.empty(), at("2026-10-05"),
                 at("2026-10-05"));
-        assertEquals(String.format(ClearAppointmentCommand.MESSAGE_DELETES, 3, 2), command.describeDeletion(model));
+        assertEquals(String.format(ClearAppointmentCommand.MESSAGE_DELETES, "3 appointments", "2 patients"),
+                command.describeDeletion(model));
         command.execute(model);
         assertEquals(List.of("2026-10-06 10:00"), appointmentsOf(ALEX.getId()));
         assertEquals(List.of("2026-11-01"), appointmentsOf(BEN.getId()));
@@ -77,7 +79,7 @@ public class ClearAppointmentCommandTest {
         // an appointment with no time counts as at the start of its day, so it is before 09:00
         ClearAppointmentCommand command = new ClearAppointmentCommand(Optional.of(ALEX.getId()),
                 at("2026-10-05 09:00"), at("2026-10-06 10:00"));
-        assertEquals(String.format(ClearAppointmentCommand.MESSAGE_SUCCESS, 2), command.execute(model)
+        assertEquals(String.format(ClearAppointmentCommand.MESSAGE_SUCCESS, "2 appointments"), command.execute(model)
                 .getFeedbackToUser());
         assertEquals(List.of("2026-10-05"), appointmentsOf(ALEX.getId()));
         assertEquals(2, appointmentsOf(BEN.getId()).size());
