@@ -18,7 +18,7 @@ title: Developer Guide
 * AI Use Declaration from Jaydon: "I used Codex and OpenCode to review and generate code.
   Based on the given levels of AI use in coding tasks, this ranges between AI-2 and AI-6".
 
-* AI Use Declaration from Yuhao: "I used Claude Code to write code, tests and documentation, and I review and test the results. AI levels between AI-5 and AI-6"
+* AI Use Declaration from Yuhao: "I used Claude Code, with Claude Opus 5.5, to write code, tests and documentation. I used Codex, with ChatGPT 6 Astra, and Claude Opus 5.5 to review them, and I review and test the results. AI levels between AI-5 and AI-6"
 
 * AI Use Declaration from Yong Kang: "I used Gemini and OpenCode GLM/DeepSeek to write and review code, tests and documentation. No full automation is done and I go back and forth consistently with AI to ensure I am still largely in charge of the process; AI still asks for permission. AI levels range between AI-1 and AI-5/6, depending on the situation."
 
