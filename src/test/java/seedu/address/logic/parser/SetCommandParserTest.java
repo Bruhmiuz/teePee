@@ -24,16 +24,16 @@ public class SetCommandParserTest {
 
     @Test
     public void parse_settingAndValue_setsIt() {
-        assertParseSuccess(parser, "past-clashes off", new SetCommand(Key.PAST_CLASHES, false));
-        assertParseSuccess(parser, "  archived-clashes \t on ", new SetCommand(Key.ARCHIVED_CLASHES, true));
+        assertParseSuccess(parser, "past-clash off", new SetCommand(Key.PAST_CLASHES, false));
+        assertParseSuccess(parser, "  archived-clash \t on ", new SetCommand(Key.ARCHIVED_CLASHES, true));
     }
 
     @Test
     public void parse_invalid_throwsParseException() {
-        assertParseFailure(parser, "past-clashes", INVALID_FORMAT);
-        assertParseFailure(parser, "past-clashes maybe", INVALID_FORMAT);
-        assertParseFailure(parser, "past-clashes OFF", INVALID_FORMAT);
+        assertParseFailure(parser, "past-clash", INVALID_FORMAT);
+        assertParseFailure(parser, "past-clash maybe", INVALID_FORMAT);
+        assertParseFailure(parser, "past-clash OFF", INVALID_FORMAT);
         assertParseFailure(parser, "unknown on", INVALID_FORMAT);
-        assertParseFailure(parser, "past-clashes off now", INVALID_FORMAT);
+        assertParseFailure(parser, "past-clash off now", INVALID_FORMAT);
     }
 }

@@ -42,9 +42,9 @@ public class SettingsTest {
 
     @Test
     public void keyOf_word_findsTheSetting() {
-        assertEquals(Optional.of(Key.PAST_CLASHES), Key.of("past-clashes"));
-        assertEquals(Optional.of(Key.MARK_STOPS_CLASHES), Key.of("mark-stops-clashes"));
-        assertEquals(Optional.empty(), Key.of("Past-Clashes"));
+        assertEquals(Optional.of(Key.PAST_CLASHES), Key.of("past-clash"));
+        assertEquals(Optional.of(Key.MARK_STOPS_CLASHES), Key.of("mark-noclash"));
+        assertEquals(Optional.empty(), Key.of("Past-Clash"));
         assertEquals(Optional.empty(), Key.of("unknown"));
     }
 
