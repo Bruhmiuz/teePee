@@ -22,7 +22,7 @@ title: Developer Guide
 
 * AI Use Declaration from Yong Kang: "I used Gemini and OpenCode GLM/DeepSeek to write and review code, tests and documentation. No full automation is done and I go back and forth consistently with AI to ensure I am still largely in charge of the process; AI still asks for permission. AI levels range between AI-1 and AI-5/6, depending on the situation."
 
-* AI Use Declaration from Darren: "I used Claude Code to write code, tests and documentation, and I review and test the results. The level ranges between AI-2 and AI-6" 
+* AI Use Declaration from Darren: "I used Claude Code to write code, tests and documentation, and I review and test the results. The level ranges between AI-2 and AI-6"
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -71,7 +71,7 @@ The bulk of the app's work is done by the following four components:
 **How the architecture components interact with each other**
 
 The *Sequence Diagram* below shows how the components interact with each other for the scenario where the user issues
-the command `delete 1`.
+the command `delete S1234567A`.
 
 <img src="images/ArchitectureSequenceDiagram.png" width="574" />
 
@@ -293,8 +293,8 @@ The `deleteappt` command also follows this shape, up to the lookup: it finds the
 <img src="images/DeleteAppointmentSequenceDiagram.png" width="800" />
 
 The `viewappt` command follows the same shape: it builds an `AppointmentBetweenDatesPredicate` from the date
-range and filters the patient list with it (`--id` narrows both the appointments and the patient list to one
-patient), then returns a `CommandResult` carrying the range for the appointment view.
+range to count the matching patients without changing the patient list (`--id` narrows the appointment page to
+one patient), then returns a `CommandResult` carrying the range for the appointment view.
 
 <img src="images/ViewAppointmentSequenceDiagram.png" width="800" />
 
@@ -344,7 +344,7 @@ The `Model` component,
 * keeps a list of every appointment of every patient, each as a `PatientAppointment`, in time order. It rebuilds the
   list whenever a patient is added, edited or deleted, and exposes it as an unmodifiable
   `ObservableList<PatientAppointment>` for the appointment view. The filter on the patient list does not change it.
-* stores a `UserPrefs` object that represents the user’s preferences (currently, just the GUI settings). This is exposed
+* stores a `UserPrefs` object that represents the user’s preferences (the GUI settings and the settings changed with `set`). This is exposed
   to the outside as a `ReadOnlyUserPrefs` object.
 * does not depend on any of the other three components (as the `Model` represents data entities of the domain, they
   should make sense on their own without depending on other components)
@@ -508,7 +508,8 @@ an `IllegalValueException`, without coercion. Both statuses persist across resta
 
 An appointment date is written `yyyy-MM-dd`, optionally followed by a time in `HH:mm`, with the year exactly
 four digits and no sign. A data file without the `patients` key, such as one from v1.3 that saved them under
-`persons`, fails to load, and LaiNurse starts with an empty list. A data file from an earlier version with a
+`persons`, fails to load, so LaiNurse starts with the data in its backup, or with no data if there is no usable
+backup (see [Backing up the data file](#backing-up-the-data-file)). A data file from an earlier version with a
 signed or wider year, such as `+12345-01-01` or `-2026-10-05`, also fails to load.
 
 **Clashes.** `AppointmentClashes.find` compares exact date and time over the unfiltered appointment list, excluding
@@ -813,10 +814,11 @@ Rather than hardcoding command names and usage strings inside `HelpCommand`:
     * Empty lines flush pending paragraphs but do not terminate loose list counting.
 * **Callout & Icon Normalization**:
     * Collapses Jekyll/GitHub callout icon clusters (e.g., `[:exclamation: ... ] **Caution:**`) into unified badge components (`⚠ Caution:` in NUS Orange, `ℹ Note:` in Blue).
+    * Wraps Jekyll/GitHub alert blocks (`<div markdown="…" class="alert …">` … `</div>`) in tinted cards with a colored left border (orange for cautions, blue for notes). The div boundaries are pre-processed into unique sentinels, and every construct that can appear inside a callout renders into the active card, so tables, bullets and paragraphs keep their source order.
     * Wraps blockquote lines (`> ...`) in styled callout cards with an NUS Orange left border.
 * **Table Layout**: Groups contiguous piped lines (`|`) into a JavaFX `GridPane` with fixed column constraints (28% label / 72% description) and dark theme styling.
 * **Inline Markup & Hyperlinks**:
-    * Uses regex pattern matching to format bold text (`**`), inline code (`` ` ``), and keyboard keys (`<kbd>`).
+    * Uses regex pattern matching to format bold text (`**`), italics (`_`, outside words), inline code (`` ` ``), and keyboard keys (`<kbd>`).
     * Parses links `[text](url)` so that clicking an external URL copies it to the system clipboard and toggles the link label to `(Copied!)` for 1.5 seconds via a JavaFX `PauseTransition`, eliminating OS browser dependencies in headless testing environments.
 * **HTML `<br>` Sanitization**: Trailing `<br>` tags are stripped to eliminate excessive vertical padding, while consecutive internal `<br>` breaks are collapsed to a single `\n`.
 
@@ -1331,7 +1333,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 1. Nurse requests to view appointments on a date or in a range, optionally for one patient by ID.
 2. LaiNurse shows only the matching appointments, with the next appointment from now and its patient's details, and
-   lists the matching patients.
+   reports how many patients have an appointment in the range, or with an ID, how many appointments that patient has.
 3. Nurse requests to go back to the weekly view.
 4. LaiNurse shows the week of the selected appointment, with that appointment still selected.
 
@@ -1341,50 +1343,50 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 1a. The nurse gives a date that is not a real date in `yyyy-MM-dd`.
 
-    * 1a1. LaiNurse shows an error message.
+    * 1a1. LaiNurse informs the nurse that the date is invalid.
 
       Use case resumes at step 1.
 
-* 1b. The nurse gives no start date.
+* 1b. The nurse gives a range with no start date.
 
-    * 1b1. LaiNurse uses today as the start date.
+    * 1b1. The range becomes today up to the given end date.
 
       Use case resumes at step 2.
 
 * 1c. The start date is after the end date, or the nurse gives only an end date that is before today.
 
-    * 1c1. LaiNurse shows an error message.
+    * 1c1. LaiNurse informs the nurse that the dates are invalid.
 
       Use case resumes at step 1.
 
-* 1d. The nurse gives no end date.
+* 1d. The nurse gives a range with no end date.
 
-    * 1d1. LaiNurse uses a range with no end, so that it covers every appointment on or after the start date.
+    * 1d1. The range becomes the start date onwards, with no end.
 
       Use case resumes at step 2.
 
 * 1e. The nurse gives no date and no ID.
 
-    * 1e1. LaiNurse shows the weekly view of this week, with the next appointment from now selected, and lists the
-      patients with an appointment this week.
+    * 1e1. LaiNurse shows this week's appointments, with the next appointment from now selected.
 
       Use case ends.
 
 * 1f. The nurse gives an ID and no date.
 
-    * 1f1. LaiNurse shows every appointment of that patient, past and upcoming, on one page.
+    * 1f1. The range becomes that patient's whole schedule, past and upcoming.
 
       Use case resumes at step 2.
 
 * 1g. The patient ID the nurse gives is invalid or belongs to no patient.
 
-    * 1g1. LaiNurse shows an error message, and the patient list and the appointment page stay as they were.
+    * 1g1. LaiNurse informs the nurse that no patient has the given ID, and nothing else changes.
 
       Use case resumes at step 1.
 
 * 2a. No appointment is in the range, or, with an ID given, the patient has none in it.
 
-    * 2a1. LaiNurse shows that the range has no appointments, and indicates that there are no matching patients.
+    * 2a1. LaiNurse shows that the range has no appointments, and reports that no patient has one, or, with an ID
+      given, that the patient has none.
 
       Use case resumes at step 3.
 
@@ -1445,20 +1447,20 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
     * Use case ends.
 
 * 1b. Nurse requests to open the full offline User Guide window (`help window`, press <kbd>F1</kbd>, or select **Help** > **Help**).
-    * 1b1. LaiNurse opens the Help Window containing the complete offline User Guide rendered using native JavaFX components.
+    * 1b1. LaiNurse opens the Help Window containing the complete offline User Guide.
     * Use case ends.
 
 * 1c. Nurse enters an unrecognized command target (e.g., `help nonexistent`) or the discontinued flag form (e.g., `help --add`).
-    * 1c1. LaiNurse displays an invalid command format error that shows `HelpCommand.MESSAGE_USAGE` and lists all valid targets.
+    * 1c1. LaiNurse displays an invalid command format error with the usage of `help` and lists all valid targets.
     * Use case ends.
 
 * 1d. Nurse provides a malformed help argument (e.g., `help -- add`, `help --`, or multiple tokens such as `help add patient`).
-    * 1d1. LaiNurse displays an invalid command format error displaying `HelpCommand.MESSAGE_USAGE`.
+    * 1d1. LaiNurse displays an invalid command format error with the usage of `help`.
     * Use case ends.
 
 * 1e. Nurse enters the target command with mixed or uppercase letters (e.g., `help VIEW`).
-    * 1e1. LaiNurse rejects the target as unknown, since command syntax is lowercase-only, and displays an invalid
-      command format error that shows `HelpCommand.MESSAGE_USAGE` and lists all valid targets.
+    * 1e1. LaiNurse rejects the target as unknown and displays an invalid command format error with the usage of
+      `help` and lists all valid targets.
     * Use case ends.
 
 **Use case: UC08 - Edit an appointment**
@@ -1692,7 +1694,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 5. Should respond to any command within 100 milliseconds under typical workloads.
 6. Should be packaged as a single portable JAR file and run directly without requiring an installer.
 7. Should store all data locally in a human-editable, plain-text format (e.g., JSON) that can be inspected and backed up manually.
-8. Should start with an empty patient list instead of crashing if the data file is invalid.
+8. Should not crash if the data file is invalid.
 9. Should not depend on any proprietary third-party software, commercial libraries, or paid external APIs.
 10. A new home nurse familiar with standard CLI operations should be able to learn the basic command set within 1 hour by reading the User Guide.
 11. Should launch and present the user interface ready for input within 2 seconds on standard desktop hardware.
@@ -1725,6 +1727,8 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
   individual patients and prevent duplicate profile collisions (e.g., Singapore NRIC/FIN format such as T0123456B).
 * **NRIC / FIN**: National Registration Identity Card / Foreign Identification Number; the standard national identity
   identification format used in Singapore.
+* **Phone**: The contact number of the patient, which the nurse uses to reach them about home visits
+  (e.g., `+65 9123 4567`).
 * **Address**: The physical location of the patient where home nursing care is delivered. This is not necessarily the
   true residential location, as some treatment, e.g. rehabilitation post surgery may be done outdoors.
 * **Medical History**: Free-form textual records capturing relevant chronic conditions, allergies, past diagnoses, or

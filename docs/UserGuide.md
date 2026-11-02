@@ -20,7 +20,9 @@ LaiNurse is a **desktop application that gives home nurses fast access to patien
 1. Copy the file to the folder you want to use as the _home folder_ for LaiNurse.
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar lainurse.jar`.<br>
-   LaiNurse keeps its data in the folder you launch it from, so always launch it from this folder.<br>
+   LaiNurse keeps its data in the folder you launch it from, so always launch it from this folder, rather than by double-clicking the JAR file.<br>
+   Use a folder that you can write to, as LaiNurse cannot save its data in a write-protected folder.<br>
+   **Mac users:** other windows, such as the Help window, may not behave as expected while LaiNurse is in fullscreen.<br>
    A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data: the sample appointments fall on the Monday, Tuesday and Wednesday of the week you first launch the app in, and Alex Yeoh has another one four weeks later.<br>
    ![Patients view](images/Ui.png)
 
@@ -221,8 +223,8 @@ Format: `add --id ID --name NAME --phone PHONE --address ADDRESS [--medical-hist
   message names every other patient with the same complete name, including archived patients and those hidden by a
   filter. Matching ignores case and repeated whitespace. For example: `Warning: this name is also used by ALEX YEOH
   (S1234567A). Check the patient IDs.` Archived matches have `[archived]` after their ID. No confirmation is required.
-* Invisible characters that text pasted from a website can carry, such as the zero-width space, are removed from names, addresses, medical history, notes and appointment details, so a value is stored as you see it, and a value of such characters only counts as blank. For example, `Alex` and `Smith` joined by a zero-width space is stored as `ALEXSMITH`, which `find --name alexsmith` finds. The characters that some scripts and emoji need, such as in 👩‍⚕️, are kept. An ID, a phone number or a date with an invisible character is rejected.
-* Phone numbers may contain digits, spaces, `+`, and `-`, and must contain at least three digits.
+* Invisible characters that text pasted from a website can carry, such as the zero-width space, are removed from names, addresses, medical history, notes and appointment details, so a value is stored as you see it, and a value of such characters only counts as blank. For example, `Alex` and `Smith` joined by a zero-width space is stored as `ALEXSMITH`, which `find --name alexsmith` finds. The characters that some scripts and emoji need, such as in 👩‍⚕️, are kept. An ID or a date with an invisible character is rejected, and a phone number is rejected if it carries a common one, such as the zero-width space.
+* Phone numbers accept any non-blank text containing at least three digits — for example, `1234 5678 (HP) 1111-3333`, `+65 9876-5432` or `9312.1534`, and are stored in uppercase.
 * A new patient starts with no appointments. Set their appointments with [`addappt`](#adding-an-appointment-addappt).
 * Whitespace-delimited words beginning with `--` are reserved for options, including within text fields. Unknown options, misspellings, and `--name=value` syntax are rejected with the command usage instructions.
 * After a patient is added, the list shows all patients again, even if it was showing `find` results. It keeps its scope, unless it shows only archived patients: then it shows all patients, archived ones too, so that the new patient is in it. The list numbers of other patients may change. The new patient is selected in the list, and their details are shown, as `view` does.
@@ -243,7 +245,7 @@ Format: `edit ID [--name NAME] [--phone PHONE] [--address ADDRESS] [--medical-hi
 * Edits the patient with the given `ID`, which is the patient ID shown in their row, not their position in the list. The patient does not have to be in the list currently shown.
 * `ID` must come first; the other parameters may appear in any order. Separate options and values using spaces or tabs.
 * As in `add`, whitespace-delimited words beginning with `--` are reserved for options. Unknown options, misspellings, and `--id` are rejected with the command usage instructions.
-* The ID itself cannot be edited. To correct a wrong ID, delete the patient and add them again.
+* The ID itself cannot be edited. To correct a wrong ID, delete the patient and add them again. Deleting a patient also deletes their appointments, so note them down first with [`viewappt --id ID`](#viewing-appointments-viewappt), and add them again with [`addappt`](#adding-an-appointment-addappt).
 * At least one of the optional parameters must be provided.
 * `--name`, `--phone`, `--address`, `--medical-history` and `--notes` replace the existing value, and follow the same rules as in [`add`](#adding-a-patient-add). `--medical-history` and `--notes` can also set a value for a patient who has none.
 * `--medical-history` or `--notes` with no value clears that field. For example, `edit S1234567A --notes` removes the patient's notes. In `add`, a blank value is still rejected.
@@ -521,6 +523,7 @@ Format: `delete ID`
 * Deletes the patient with the specified `ID`. IDs are case-insensitive, so `s1234567a` and `S1234567A` refer to the same patient.
 * The patient does not need to be in the displayed list, because `delete` searches all patients.
 * If no patient has that ID, LaiNurse shows an error and deletes nothing.
+* Deleting a patient also deletes all their appointments.
 * The displayed list keeps its current filter, so the list numbers of the patients below the deleted one go down by one.
 * After a patient is deleted, no patient is selected, and the details beside the list show their starting message. This is so in both views.
 
