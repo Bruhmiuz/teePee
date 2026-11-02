@@ -767,6 +767,7 @@ Every key below works without the mouse. Where a key is handled depends on which
 | Focus | Keys | Handled by |
 | --- | --- | --- |
 | Command box | Enter, Tab, Esc, Up and Down | `CommandBox`, which runs the command, or calls [Tab completion](#tab-completion), `MainWindow` or the [command history](#command-history) |
+| Command box | Shift+Up and Shift+Down | `MainWindow`, which scrolls the result display with `ResultDisplay#scroll` |
 | View tabs | Left and Right, Down, Up | `MainWindow` |
 | A list | Up and Down, Ctrl+Up and Ctrl+Down, Page Up, Page Down, Home and End | The list's panel, `PatientListPanel` or `AppointmentListPanel` |
 | The appointment list | Left and Right | `AppointmentListPanel`, which shows the previous or next week |
@@ -2035,6 +2036,10 @@ testers are expected to do more *exploratory* testing.
     1. Test case: make the window short enough that the details do not fit, then, with the focus in the list, press
        Shift+Down, then Shift+Up<br>
        Expected: The details scroll down, then back up. The selection in the list does not move.
+
+    1. Test case: enter `edit S1234567A --notes` with notes long enough to fill more than four lines of the result
+       display, then press Shift+Down and Shift+Up<br>
+       Expected: The result display scrolls down, then back up. The focus stays in the command box.
 
     1. Test case: type `set mark`, then press Tab twice<br>
        Expected: The command box shows `set mark-noclash`, then `set mark-past`.
