@@ -1,12 +1,14 @@
 package seedu.address.logic;
 
+import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
+import static seedu.address.model.patient.PatientNameComparator.PATIENT_NAME_ORDER;
+
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 import seedu.address.logic.parser.CliSyntax;
 import seedu.address.logic.parser.Prefix;
 import seedu.address.model.Model;
@@ -15,7 +17,6 @@ import seedu.address.model.patient.Appointment;
 import seedu.address.model.patient.AppointmentClashes;
 import seedu.address.model.patient.Patient;
 import seedu.address.model.patient.PatientAppointment;
-import static seedu.address.model.patient.PatientNameComparator.PATIENT_NAME_ORDER;
 
 /**
  * Container for user visible messages.
