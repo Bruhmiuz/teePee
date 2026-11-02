@@ -175,7 +175,7 @@ Esc | In the patient view, removes the filter of `find`, and keeps the scope, su
 * Tab finishes these words:
   * **Command words.** For example, `dele` gives `delete`, then `deleteappt`. `view` gives `viewappt`, so type a space after `view` to finish a patient ID instead. When there is only one match, the next Tab goes on to the patient ID if the command takes one, so `addap` gives `addappt`, and the next Tab `addappt S1234567A`.
   * **Options.** Type `-` or the start of an option. For example, `edit S1234567A --ph` gives `edit S1234567A --phone`. Tab offers only the options of that command, and skips the ones you have already typed, and the ones that cannot be given with them: `--all` and `--archived` exclude each other, and in `view` and `viewappt`, a patient ID excludes both.
-  * **Patient IDs** after `view`, `delete`, `archive`, `unarchive`, `edit`, `addappt`, `editappt`, `deleteappt`, `markappt` or `unmarkappt`, and after `--id` in `viewappt`. Type the first few characters of the ID, or none. Patients in the displayed list come first, and archived patients last. For example, `view s12` gives `view S1234567A`.<br>
+  * **Patient IDs** after `view`, `delete`, `archive`, `unarchive`, `edit`, `addappt`, `editappt`, `deleteappt`, `markappt`, `unmarkappt` or `clearappt`, and after `--id` in `viewappt` and `clearappt`. Type the first few characters of the ID, or none. Patients in the displayed list come first, and archived patients last. For example, `view s12` gives `view S1234567A`.<br>
     With `edit`, `addappt`, `editappt`, `deleteappt`, `markappt` and `unmarkappt`, Tab also works after you have typed the remaining arguments, and keeps them. For example, `edit s12 --phone 91234567` becomes `edit S1234567A --phone 91234567`, and `markappt s12 2` becomes `markappt S1234567A 2`.
   * **Help topics** after `help`. For example, `help ad` gives `help add`, then `help addappt`. `help w` gives `help window`.
 * Tab matches what you type in any case, but fills in command words, options and help topics in lowercase, as LaiNurse expects them. For example, `DELE` gives `delete`, then `deleteappt`, and `--PH` gives `--phone`. A whole word in the wrong case, such as `VIEW`, gives the lowercase word first, then the longer ones: `view`, then `viewappt`. The command word and options before the word you complete must already be in lowercase, so `EDIT S1234567A --PH` and `HELP W` give nothing to fill in.
@@ -227,7 +227,7 @@ Format: `add --id ID --name NAME --phone PHONE --address ADDRESS [--medical-hist
 * Invisible characters that text pasted from a website can carry, such as the zero-width space, are removed from names, addresses, medical history, notes and appointment details, so a value is stored as you see it, and a value of such characters only counts as blank. For example, `Alex` and `Smith` joined by a zero-width space is stored as `ALEXSMITH`, which `find --name alexsmith` finds. The characters that some scripts and emoji need, such as in 👩‍⚕️, are kept. An ID or a date with an invisible character is rejected, and a phone number is rejected if it carries a common one, such as the zero-width space.
 * Phone numbers accept any non-blank text containing at least three digits — for example, `1234 5678 (HP) 1111-3333`, `+65 9876-5432` or `9312.1534`, and are stored in uppercase.
 * A new patient starts with no appointments. Set their appointments with [`addappt`](#adding-an-appointment-addappt).
-* Whitespace-delimited words beginning with `--` are reserved for options, including within text fields. Unknown options, misspellings, and `--name=value` syntax are rejected with the command usage instructions.
+* Whitespace-delimited words beginning with `--` are reserved for options, including within text fields, and there is no way to enter one in a value. For example, `--notes take --daily meds` is rejected, even in quotes, so write `take daily meds` instead. Text such as `Anne--Marie` is accepted. Unknown options, misspellings, and `--name=value` syntax are rejected with the command usage instructions.
 * After a patient is added, the list shows all patients again, even if it was showing `find` results. It keeps its scope, unless it shows only archived patients: then it shows all patients, archived ones too, so that the new patient is in it. The list numbers of other patients may change. The new patient is selected in the list, and their details are shown, as `view` does.
 
 Examples:
@@ -246,7 +246,7 @@ Format: `edit ID [--name NAME] [--phone PHONE] [--address ADDRESS] [--medical-hi
 * Edits the patient with the given `ID`, which is the patient ID shown in their row, not their position in the list. The patient does not have to be in the list currently shown.
 * `ID` must come first; the other parameters may appear in any order. Separate options and values using spaces or tabs.
 * As in `add`, quotes are stored as part of the value, so leave them out.
-* As in `add`, whitespace-delimited words beginning with `--` are reserved for options. Unknown options, misspellings, and `--id` are rejected with the command usage instructions.
+* As in `add`, whitespace-delimited words beginning with `--` are reserved for options, and there is no way to enter one in a value. Unknown options, misspellings, and `--id` are rejected with the command usage instructions.
 * The ID itself cannot be edited. To correct a wrong ID, delete the patient and add them again. Deleting a patient also deletes their appointments, so note them down first with [`viewappt --id ID`](#viewing-appointments-viewappt), and add them again with [`addappt`](#adding-an-appointment-addappt).
 * At least one of the optional parameters must be provided.
 * `--name`, `--phone`, `--address`, `--medical-history` and `--notes` replace the existing value, and follow the same rules as in [`add`](#adding-a-patient-add). `--medical-history` and `--notes` can also set a value for a patient who has none.
@@ -585,6 +585,8 @@ Format: `exit`
 
 LaiNurse saves your data automatically after every command that succeeds. You do not need to save manually.
 
+Your data, including patients' details, is saved as plain text, with no password or encryption, so anyone who can open the folder can read it. Keep the folder where only you can access it.
+
 Each save writes your data to two files in the `data` folder: the data file, `lainurse.json`, and then a backup of it, `lainurse.backup.json`. Both hold the same data: the data as LaiNurse last saved it.
 
 If LaiNurse cannot save the data file, for example because it is read-only, the command shows an error and changes nothing, so you can run it again once the file can be written. If only the backup cannot be saved, the command still takes effect, as the data file holds it, and its message ends with a warning that the data could not be backed up.
@@ -604,7 +606,7 @@ When LaiNurse launches, it loads its data as follows:
 
 Whenever `lainurse.json` cannot be loaded, LaiNurse first copies it to `data/lainurse.corrupt.json`, replacing any earlier copy, so your edits are not lost when the next save overwrites `lainurse.json`. The result display then tells you which file could not be loaded, what LaiNurse loaded instead, and where the copy is kept. To get your edits back, close the window with its close button, fix the mistake in `lainurse.corrupt.json`, and copy it over `lainurse.json`. Do not close LaiNurse with `exit` first if it started with no data, as `exit` saves that empty data over `lainurse.json` and the backup.
 
-An archived patient is saved with `"archived": true`. A patient who is not archived is saved without it, and a file with no `archived` field, such as one saved by an earlier version, loads with no patient archived. If supplied, `archived` must be the JSON boolean `true` or `false`, as `marked` must; a string or a number makes the file fail to load.
+An archived patient is saved with `"archived": true`. A patient who is not archived is saved without it, and a file with no `archived` field, such as one saved by an earlier version, loads with no patient archived. If supplied, `archived` must be the JSON boolean `true` or `false`, or `null`, which counts as not archived; a string or a number makes the file fail to load.
 
 Appointments are saved with their mark, for example
 `{"dateTime": "2026-10-05 09:30", "marked": false, "details": "INSULIN REVIEW"}`. Their numbers are not saved:
@@ -637,6 +639,8 @@ Appointment dates and times in the file follow the formats above, and a file sav
 2. **If you minimize the Help Window** and then run the `help window` command (or select **Help** > **Help**,
    or the keyboard shortcut <kbd>F1</kbd>) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
 3. **In a very narrow window**, the note and the count in a list's header, such as `This week` and the number of appointments, can be cut short. The remedy is to widen the window.
+4. **Text is stored in uppercase.** Names, addresses, medical history, notes and appointment details are stored and shown in uppercase, whatever case you typed, and the original case cannot be recovered.
+5. **Appointment numbers can change.** A patient's appointments are numbered in date order, so adding, moving or deleting an appointment can change the numbers of that patient's later appointments. The remedy is to check the number shown before you use it in `editappt`, `deleteappt`, `markappt` or `unmarkappt`.
 
 --------------------------------------------------------------------------------------------------------------------
 
