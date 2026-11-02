@@ -58,7 +58,13 @@ public class ParserUtilTest {
         assertEquals(2, ParserUtil.parseAppointmentNumber("002"));
         // numbers larger than any appointment number are kept
         assertEquals(99999999999L, ParserUtil.parseAppointmentNumber("99999999999"));
-        assertEquals(Long.MAX_VALUE, ParserUtil.parseAppointmentNumber("99999999999999999999"));
+        assertEquals(Long.MAX_VALUE, ParserUtil.parseAppointmentNumber("9223372036854775807"));
+    }
+
+    @Test
+    public void parseAppointmentNumber_tooLargeForLong_throwsParseExceptionWithTypedNumber() {
+        assertThrows(ParseException.class, "Appointment number 9223372036854775808 is too large.", ()
+                -> ParserUtil.parseAppointmentNumber("9223372036854775808"));
     }
 
     @Test

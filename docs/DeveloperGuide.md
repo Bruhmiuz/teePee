@@ -540,7 +540,8 @@ given to `addappt` or `--add-details`, as `parseNotes` does for notes, and logs 
 number before any options and retain the existing option normalization and duplicate option checks.
 `ParserUtil.parseAppointmentNumber` rejects zero, signs and fractions. It keeps a number too large for any
 appointment as a `long`, so that the command reports that the patient has no such appointment, as it does for any
-other missing number. `AppointmentLookup.Target` holds the positive number; the shared lookup uses `findByNumber`
+other missing number. It rejects a number too large for a `long`, with an error that repeats the number as typed.
+`AppointmentLookup.Target` holds the positive number; the shared lookup uses `findByNumber`
 and reports a missing number before any mutation.
 An assertion checks that the resolved appointment has the requested number.
 
@@ -2680,6 +2681,10 @@ testers are expected to do more *exploratory* testing.
 
     1. Test case: `deleteappt S1234567A 99`<br>
        Expected: No appointment is deleted. The status message says `Patient S1234567A has no appointment #99.`
+
+    1. Test case: `deleteappt S1234567A 99999999999999999999`<br>
+       Expected: No appointment is deleted. The status message says
+       `Appointment number 99999999999999999999 is too large.`
 
     1. Test case: `deleteappt S0000000Z 1`<br>
        Expected: No appointment is deleted. The status message shows `No patient has the ID S0000000Z.`
