@@ -1,0 +1,25 @@
+@startuml
+skin rose
+start
+:CommandBox asks for the completions of the text;
+if () then ([the text is blank])
+    :No completions;
+elseif () then ([the text is one word])
+    :Command words that start with it,
+    or a patient ID if there are none;
+elseif () then ([the last word starts with -])
+    :The command's options that are not
+    typed yet and can be given with them;
+elseif () then ([after help])
+    :Command words and window;
+elseif () then ([after set])
+    :Setting names, then on or off;
+elseif () then ([after --id in viewappt])
+    :Patient IDs that start with the word;
+else ([else])
+    :IdCompleter completes the ID
+    that the command takes first, if any;
+endif
+:Show the words after a Tab key cap in the status bar;
+stop
+@enduml
