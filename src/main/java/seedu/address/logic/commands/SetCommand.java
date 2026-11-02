@@ -62,7 +62,7 @@ public class SetCommand extends Command {
     }
 
     /**
-     * Returns each setting in {@code settings} on a line of its own, such as "past-clashes: on".
+     * Returns each setting in {@code settings} on a line of its own, such as "past-clash: on".
      */
     static String describe(Settings settings) {
         return Arrays.stream(Key.values())

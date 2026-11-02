@@ -18,13 +18,13 @@ public class Settings {
     /** The settings that a user can change, each with the word that the {@code set} command takes for it. */
     public enum Key {
         /** On: a marked appointment never clashes. Off: it clashes like any other. */
-        MARK_STOPS_CLASHES("mark-stops-clashes"),
+        MARK_STOPS_CLASHES("mark-noclash"),
         /** On: a marked appointment counts as over, as one that has passed. Off: a mark only shows a pin. */
-        MARK_COUNTS_AS_DONE("mark-counts-as-done"),
+        MARK_COUNTS_AS_DONE("mark-past"),
         /** On: appointments that have passed can clash. Off: they never do, and neither do marked ones. */
-        PAST_CLASHES("past-clashes"),
+        PAST_CLASHES("past-clash"),
         /** On: archived patients' appointments clash like any other. Off: they never do. */
-        ARCHIVED_CLASHES("archived-clashes");
+        ARCHIVED_CLASHES("archived-clash");
 
         private final String word;
 

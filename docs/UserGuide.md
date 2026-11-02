@@ -549,21 +549,21 @@ Shows the settings, or turns one on or off. The settings decide which appointmen
 Format: `set`, `set SETTING on` or `set SETTING off`
 
 * `set` alone lists each setting with `on` or `off`.
-* `set SETTING on` or `set SETTING off` changes one setting, such as `set past-clashes off`. Setting names and `on` and `off` are in lower case.
+* `set SETTING on` or `set SETTING off` changes one setting, such as `set past-clash off`. Setting names and `on` and `off` are in lower case.
 * LaiNurse saves the settings at once, in `preferences.json`, and keeps them when it restarts.
 * The view and the selection stay. The list and the details follow the new setting at once.
 
 Setting | Default | When on | When off
 --------|---------|---------|---------
-`mark-stops-clashes` | on | A done appointment never clashes. | A done appointment clashes like any other, and its pin turns red in place of the `!`.
-`mark-counts-as-done` | off | A done appointment counts as past: it is greyed out, comes first in its day, and shows under **Past** in the details. | A done appointment only shows a pin.
-`past-clashes` | on | Appointments that have passed can clash. | Appointments that have passed never clash, and neither do done appointments.
-`archived-clashes` | off | Archived patients' appointments clash like any other. | Archived patients' appointments never clash.
+`mark-noclash` | on | A done appointment never clashes. | A done appointment clashes like any other, and its pin turns red in place of the `!`.
+`mark-past` | off | A done appointment counts as past: it is greyed out, comes first in its day, and shows under **Past** in the details. | A done appointment only shows a pin.
+`past-clash` | on | Appointments that have passed can clash. | Appointments that have passed never clash, and neither do done appointments.
+`archived-clash` | off | Archived patients' appointments clash like any other. | Archived patients' appointments never clash.
 
 Examples:
 * `set` shows the settings.
-* `set past-clashes off` stops old clashes from showing in red.
-* `set mark-counts-as-done on` greys out each visit as soon as you mark it done.
+* `set past-clash off` stops old clashes from showing in red.
+* `set mark-past on` greys out each visit as soon as you mark it done.
 
 ### Exiting the program: `exit`
 
@@ -647,7 +647,7 @@ Action | Format, Examples
 **EditAppt** | `editappt ID NUMBER [--date NEW_DATE_OR_DATETIME] [--details [DETAILS]] [--add-details MORE_DETAILS]`<br> e.g., `editappt S1234567A 1 --date 2026-10-06 10:00`, `editappt S1234567A 1 --add-details Bring glucometer`
 **Find** | `find [--id ID] [--name NAME] [--address ADDRESS] [--phone PHONE] [--medical-history HISTORY] [--notes NOTES] [--all] [--archived]`<br> e.g., `find --name "John" --notes gardening` (matches either field; at least one field option required), `find --name yu --archived`
 **MarkAppt** | `markappt ID NUMBER`<br> e.g., `markappt S1234567A 2`
-**Set** | `set`, `set SETTING on` or `set SETTING off`<br> e.g., `set`, `set past-clashes off`
+**Set** | `set`, `set SETTING on` or `set SETTING off`<br> e.g., `set`, `set past-clash off`
 **Unarchive** | `unarchive ID`<br> e.g., `unarchive S2345678B`
 **UnmarkAppt** | `unmarkappt ID NUMBER`<br> e.g., `unmarkappt S1234567A 2`
 **View** | `view [--all]`, `view [--archived]` or `view ID`<br> e.g., `view`, `view --all`, `view S1234567A`

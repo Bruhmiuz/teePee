@@ -26,14 +26,14 @@ public class SetCommandTest {
     @Test
     public void execute_noSetting_listsEverySetting() {
         String feedback = new SetCommand().execute(model).getFeedbackToUser();
-        assertEquals(String.format(SetCommand.MESSAGE_SETTINGS, "mark-stops-clashes: on\nmark-counts-as-done: off\n"
-                + "past-clashes: on\narchived-clashes: off"), feedback);
+        assertEquals(String.format(SetCommand.MESSAGE_SETTINGS, "mark-noclash: on\nmark-past: off\n"
+                + "past-clash: on\narchived-clash: off"), feedback);
     }
 
     @Test
     public void execute_setting_savedAndAppliesOnlyOnceReleased() {
         CommandResult result = new SetCommand(Key.PAST_CLASHES, false).execute(model);
-        assertEquals(String.format(SetCommand.MESSAGE_SET_SUCCESS, "past-clashes", "off"), result.getFeedbackToUser());
+        assertEquals(String.format(SetCommand.MESSAGE_SET_SUCCESS, "past-clash", "off"), result.getFeedbackToUser());
         assertFalse(model.getUserPrefs().getSettings().isPastClashing());
         // the user's settings are kept, but the default ones apply while the settings are not released
         assertEquals(Settings.DEFAULT, model.getSettings().getValue());

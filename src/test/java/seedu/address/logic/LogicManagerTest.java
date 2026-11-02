@@ -126,10 +126,10 @@ public class LogicManagerTest {
     @Test
     public void execute_set_unknownUntilReleasedThenSavesPrefs() throws Exception {
         // the settings are not released, so set is an unknown command (#216)
-        assertParseException("set past-clashes off", MESSAGE_UNKNOWN_COMMAND);
+        assertParseException("set past-clash off", MESSAGE_UNKNOWN_COMMAND);
 
         FeatureFlags.setSettingsEnabled(true);
-        logic.execute("set past-clashes off");
+        logic.execute("set past-clash off");
         assertFalse(logic.getSettings().getValue().isPastClashing());
         // saved at once, not only when the app closes
         UserPrefs saved = new JsonUserPrefsStorage(temporaryFolder.resolve("userPrefs.json")).readUserPrefs()
@@ -451,12 +451,12 @@ public class LogicManagerTest {
         logic = new LogicManager(model, storageFailingWith(failures));
 
         // the error says that nothing was changed, so the setting must stay as it was (#261)
-        assertThrows(CommandException.class, () -> logic.execute("set past-clashes off"));
+        assertThrows(CommandException.class, () -> logic.execute("set past-clash off"));
         assertTrue(model.getUserPrefs().getSettings().isPastClashing());
         assertTrue(logic.getSettings().getValue().isPastClashing());
 
         // so running the command again changes it
-        logic.execute("set past-clashes off");
+        logic.execute("set past-clash off");
         assertFalse(model.getUserPrefs().getSettings().isPastClashing());
     }
 

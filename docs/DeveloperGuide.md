@@ -1147,7 +1147,7 @@ The settings of #216 decide how marks, past clashes and archived patients behave
   is unmarked, of a patient who is not archived, and still to come, unless the settings let it clash anyway. Without
   past clashes, a marked appointment counts as past, so it does not clash either. The clash warnings of `addappt`,
   `editappt`, `markappt` and `unmarkappt` and the clash marks in the UI all use it.
-* A marked appointment that clashes, which only `mark-stops-clashes off` allows, shows its pin in place of the boxed
+* A marked appointment that clashes, which only `mark-noclash off` allows, shows its pin in place of the boxed
   `!`: `TimeMark` puts the pin first, and the style sheet colors it red in a clashing row.
 * A mark counts as done through `AppointmentFormatter#isOver`, which is true for an appointment that has passed, or,
   with `isMarkCountedAsDone`, that is marked. `AppointmentPage`, `AppointmentRow`, `DetailAppointments` and
@@ -2882,11 +2882,11 @@ testers are expected to do more *exploratory* testing.
 
     1. Prerequisites: Start with the sample data, and delete `preferences.json` first for the default settings.
     1. Test case: `set`<br>
-       Expected: `Settings:`, then `mark-stops-clashes: on`, `mark-counts-as-done: off`, `past-clashes: on` and
-       `archived-clashes: off`, each on its own line. The view and the selection stay.
-    1. Test case: `set past-clashes off`, then close and restart LaiNurse, and enter `set`<br>
-       Expected: `Turned past-clashes off.` After the restart, `set` still shows `past-clashes: off`.
-    1. Test cases: `set past-clashes`, `set past-clashes yes`, `set unknown on`, `set PAST-CLASHES on`<br>
+       Expected: `Settings:`, then `mark-noclash: on`, `mark-past: off`, `past-clash: on` and
+       `archived-clash: off`, each on its own line. The view and the selection stay.
+    1. Test case: `set past-clash off`, then close and restart LaiNurse, and enter `set`<br>
+       Expected: `Turned past-clash off.` After the restart, `set` still shows `past-clash: off`.
+    1. Test cases: `set past-clash`, `set past-clash yes`, `set unknown on`, `set PAST-CLASH on`<br>
        Expected: The command format error, which lists the setting names, and no setting changes.
 
 1. Settings and clashes
@@ -2895,17 +2895,17 @@ testers are expected to do more *exploratory* testing.
        and one in the past for `PAST`. Enter `addappt S2345678B --date FUTURE 09:00`, then
        `addappt S1234567A --date FUTURE 09:00`, so the two clash.
     1. Test case: `markappt S1234567A N`, where `N` is the number of Alex's `FUTURE` appointment<br>
-       Expected: Neither appointment is red any more. `set mark-stops-clashes off` makes both red again, and Alex's
-       has a red pin in place of the `!`. Enter `set mark-stops-clashes on` afterwards.
-    1. Test case: `set mark-counts-as-done on`<br>
+       Expected: Neither appointment is red any more. `set mark-noclash off` makes both red again, and Alex's
+       has a red pin in place of the `!`. Enter `set mark-noclash on` afterwards.
+    1. Test case: `set mark-past on`<br>
        Expected: Alex's marked appointment is greyed out, comes first in its day, and is under **Past** in his
-       details. `set mark-counts-as-done off` undoes it.
-    1. Test case: `unmarkappt S1234567A N`, `archive S2345678B`, then `set archived-clashes on`<br>
-       Expected: Unmarking brings the clash back, and archiving Bernice ends it. With `archived-clashes on`, Alex's
+       details. `set mark-past off` undoes it.
+    1. Test case: `unmarkappt S1234567A N`, `archive S2345678B`, then `set archived-clash on`<br>
+       Expected: Unmarking brings the clash back, and archiving Bernice ends it. With `archived-clash on`, Alex's
        appointment is red again.
     1. Test case: `addappt S3456789D --date PAST 09:00` and `addappt T0123456C --date PAST 09:00`, then
-       `set past-clashes off`<br>
-       Expected: The two past appointments are red until `past-clashes` is turned off.
+       `set past-clash off`<br>
+       Expected: The two past appointments are red until `past-clash` is turned off.
 
 ### Viewing help and command instructions
 
