@@ -1,14 +1,12 @@
 package seedu.address.logic;
 
-import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
-import static seedu.address.model.patient.PatientNameComparator.PATIENT_NAME_ORDER;
-
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 import seedu.address.logic.parser.CliSyntax;
 import seedu.address.logic.parser.Prefix;
 import seedu.address.model.Model;
@@ -17,6 +15,7 @@ import seedu.address.model.patient.Appointment;
 import seedu.address.model.patient.AppointmentClashes;
 import seedu.address.model.patient.Patient;
 import seedu.address.model.patient.PatientAppointment;
+import static seedu.address.model.patient.PatientNameComparator.PATIENT_NAME_ORDER;
 
 /**
  * Container for user visible messages.
@@ -94,7 +93,7 @@ public class Messages {
     /**
      * Returns a warning naming the other patients in {@code patients} who share {@code target}'s normalized name,
      * in patient name and ID order, or an empty string if there are none. The target is excluded by ID, and archived
-     * matches are labelled. The warning has no leading newline, for {@code CommandResult#withNoteAppended}.
+     * matches are labeled. The warning has no leading newline, for {@code CommandResult#withNoteAppended}.
      *
      * @throws NullPointerException if {@code patients}, any patient in it, or {@code target} is null.
      */

@@ -459,7 +459,7 @@ joined text is checked and normalized like any other value. Adding to an empty f
 After adding or editing a patient, `AddCommand` and `EditCommand` pass the complete stored patient list and the
 resulting patient to `Messages#formatSameNameWarning`. It compares names with `Name#equals`, reusing the existing
 normalization, and excludes the resulting patient's ID. All other matches are included, even when archived or hidden
-by the current scope or filter. Matches follow `PatientNameComparator` order, with archived matches labelled
+by the current scope or filter. Matches follow `PatientNameComparator` order, with archived matches labeled
 `[archived]`. Partial names do not match.
 
 The helper returns an empty string when there are no matches, or a warning without a leading newline. Commands append
