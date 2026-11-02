@@ -620,6 +620,18 @@ Certain edits can cause LaiNurse to behave in unexpected ways (e.g., if a value 
 **Q**: How do I transfer my data to another computer?<br>
 **A**: Install LaiNurse on the other computer. Then copy `data/lainurse.json` from your old LaiNurse home folder into a `data` folder next to the JAR file on the new computer, replacing the file there if there is one.
 
+**Q**: Where is my data saved?<br>
+**A**: In `data/lainurse.json`, inside the folder you launched LaiNurse from. LaiNurse saves after every command, so you never need to save. See [Editing the data file](#editing-the-data-file).
+
+**Q**: Can I undo a deletion?<br>
+**A**: No. LaiNurse has no undo. `delete`, `clear` and `clearappt` say what they would delete and wait for you to type `confirm`, but `deleteappt` deletes at once, so check the appointment number first.
+
+**Q**: Why is my text in capitals?<br>
+**A**: LaiNurse stores names, addresses, medical history, notes and appointment details in uppercase, whatever case you typed. See [Known issues](#known-issues).
+
+**Q**: Can two patients have appointments at the same time?<br>
+**A**: Yes. LaiNurse keeps both, warns you when you add or change one, and marks both with a red boxed `!`. [`set`](#changing-settings-set) decides which appointments can clash.
+
 --------------------------------------------------------------------------------------------------------------------
 
 ## Known issues
