@@ -175,75 +175,9 @@ the selection changes, the panel tells `MainWindow`, which shows the appointment
 whatever is today, and a blue for selection, which is the keyboard focus and the selected tab, row and
 appointment. So the marked appointment in the details is orange only if it is today.
 
-Whenever the text in the command box changes, `CommandBox` asks `Logic#getCompletions(String)` for the ways to finish
-the word that the text ends with. Each is a `Completion`: the whole command after the completion, and the word that it
-fills in. `CommandBox` passes the words to `StatusBarFooter#showCompletions`, which shows them after a **Tab** key cap at
-the left end of the status bar, while the command box has the focus and at least one completion would change the text.
-It shows at most the first five words, then the number of the others, such as `+19 more`, so that a long list of
-patient IDs does not fill the status bar.
-Tab replaces the text with the first completion, and each further Tab with the next. While Tab goes through them,
-`CommandBox` keeps the list, so the status bar keeps showing it. After the only completion, `CommandBox` asks for the
-completions of the new text at once, so that `addap` gives `addappt`, and the status bar then shows the patient IDs
-that the next Tab goes through. With nothing to finish, Tab does nothing, so it never moves the focus out of the
-command box. On Tab, and when the command box gets the focus back, `CommandBox` asks again unless Tab is going through a
-list, as the patients may have changed since the user typed. The hint is in the status bar, not in a pop-up under the
-command box, so that it never covers the result of the last command. The team chose this design from three mockups.
-
-`TabCompleter` in the `Logic` component holds the rules, so `CommandBox` needs no knowledge of the command formats. It
-completes the first word to the longer command words that start with it, the word after `help` to what `help` can
-explain, a word that starts with `-` to the command's options that are not typed yet, and the word after `--id` in
-`viewappt` to a patient ID. It does not complete the ID after `--id` in `find`, which searches for any part of an ID,
-or in `add`, which takes a new one. The word being completed matches ignoring case, but command words, options and
-`help` topics are completed in lowercase, the only case that the parsers accept. The words before it are matched
-exactly, as the parsers match them, so `EDIT S1234567A --PH` has nothing to complete. Its table of each command's options must be updated with the parser when a
-command gets a new option. Otherwise it passes the text to `IdCompleter`, which completes the ID that a command takes
-first. `view` and `delete` take only an ID, so the ID must end the command. `edit`, `addappt`, `editappt`,
-`deleteappt`, `markappt` and `unmarkappt` take the ID first, so `IdCompleter` completes the word after the command word
-and keeps later options or appointment numbers. A whole command word that no other command word starts with, such as
-`addappt`, also goes to `IdCompleter`, which adds a space and the ID.
-`CommandBox` also keeps a `CommandHistory` of the commands entered since the app
-started, which the Up and Down keys go through. The history is kept only in the UI, because no command needs it.
-
-The keyboard focus is in one of three areas, given by `FocusArea`: the command box, and in the view that is shown, the
-view tabs or the list. The details beside the list are not an area, so the keyboard never moves the focus there. In the
-view, Tab moves between the tabs and the list, as `FocusArea#afterTab` gives. Up and Down move between them too: each
-list calls back to `MainWindow` when Up is pressed at its first row, and `MainWindow` handles Down on the tabs. Up on
-the tabs does nothing: `MainWindow` consumes it, so that JavaFX does not move the focus to another node. In both lists,
-Ctrl+Up and Ctrl+Down (Cmd on macOS, as given by `KeyEvent#isShortcutDown`) select the first and last row. The tabs
-take the focus only from the keyboard, so a click on a tab does not move the focus. If a tab has the focus when the view
-changes, `MainWindow` moves the focus to the tab of the view being shown.
-
-Esc in the command box calls back to `MainWindow`, which moves the focus to the list, or to the tabs if the patient list
-is empty, and leaves the typed text in place. Outside the command box, `MainWindow` handles keys with event filters on
-the window, which see each key before the focused part does. `BrowseKeys` decides what Enter, Esc, Tab, Shift+Up,
-Shift+Down and typed text do there:
-
-* Enter, and any printable character, move the focus back to the command box. A typed character is added to the text
-  there.
-* Esc resets the view by one step, and keeps the selected entry so that it is seen among the rest. In the patient
-  view, `MainWindow#resetView` calls `Logic#resetPatientList`, which removes the filter of the patient list, such as
-  that of `find`, and keeps its scope. With no filter, it goes back to the default scope, as `view` does. It runs no
-  command. So nothing is saved, the status message stays, and no `Navigation` selects the first patient;
-  `resetView` only selects again, in the longer list, the patient whose details are shown. (Running `view` itself would
-  show the first patient's details and then the earlier patient's again.) In the appointment view,
-  `AppointmentListPanel#reset` removes the filter of `viewappt`: from a page, it goes back to the weekly view of the
-  selected appointment's week, or of this week if none is selected, with the default scope, unless the selected
-  appointment is an archived patient's. In the weekly view, it goes back to the default scope. It keeps the selection
-  if it can. See [Archiving patients](#archiving-patients).
-* Tab moves the focus between the tabs and the list. The appointment list always takes the focus, so that Left and
-  Right can leave an empty week.
-* Shift+Up and Shift+Down scroll the details beside the list, with `PatientDetailPanel#scroll`, as the details never
-  take the focus.
-* Shift+Tab does nothing, also in the command box. `MainWindow` consumes it, or JavaFX would move the focus to another
-  node.
-
-The menu bar must not take these keys. JavaFX's `MenuBar` selects a menu that the mouse is over, in a focused window,
-and while a menu is selected, a key filter that it adds to the scene takes Left and Right to move between the menus.
-That filter runs before the filters on the tabs and the lists, and the menu stays selected after the mouse has left,
-until a click outside the menu bar. So `MainWindow#ignoreHoverOfClosedMenus` stops the mouse-entered events of the
-menus while no menu is open. As JavaFX then sets no `:hover`, it gives the menu under the mouse the `hovered`
-pseudo-class, which `DarkTheme.css` styles as Modena styles `:hover`. A click still opens a menu, and an open menu
-still follows the mouse to the next one.
+Some of how the UI behaves has a section of its own under Implementation: [Tab completion](#tab-completion), the
+[command history](#command-history), the [keyboard shortcuts](#keyboard-shortcuts) and
+[automatic navigation](#automatic-navigation).
 
 `FocusArea`, `BrowseKeys`, `AppointmentWeek`, `AppointmentPage`, `DetailAppointments` and `AppointmentFormatter` hold
 no JavaFX nodes, so unit tests cover these rules, and the UI parts only connect them to JavaFX.
@@ -719,35 +653,10 @@ Each `Command` declares the view it shows by overriding `Command#getView()`, whi
 in that range on one page. The result of a plain `viewappt` has no range, so the panel shows the weekly view of this
 week.
 
-A command can also choose the entry to select, by adding a `CommandResult.Navigation` with
-`CommandResult#withNavigation`. `Navigation.toPatient(id)` selects that patient in the patient view, and
-`Navigation.toAppointment(entry)` selects that appointment in the appointment view. If the result has no range, the
-appointment view stays on the page shown if that page has the appointment, so that a nurse working through a range
-stays on it, or else shows the appointment's week. `Navigation.toView(view)` selects the entry to start from: the
-first patient in the list, or the next appointment from now (the first, if all have passed), in the result's range
-or, if the result has no range, in this week. A command that filters the patient list or shows a range can select an
-entry in the same result, because the entry is selected after the filter and the range are applied. A result can
-instead clear the selection with `CommandResult#withSelectionCleared`, which `MainWindow` applies to both views, so
-that no patient's details are shown.
+What a command selects is described in [Automatic navigation](#automatic-navigation).
 
 An `AppointmentRange` can also name a patient, with `new AppointmentRange(start, end, id)`. The page
 then shows only that patient's appointments, and its header starts with their ID.
-
-After the command, `LogicManager` checks that the entry to select is in the list that the view shows: a patient in
-the filtered patient list, and an appointment in the range, including the range's patient. If it is not, the
-command has a bug, and `LogicManager` throws an `IllegalStateException`.
-
-Each command navigates as follows:
-
-| Command | Result |
-| --- | --- |
-| `add`, `edit`, `view ID` | `Navigation.toPatient` of the patient that they add, edit or show. All three show all patients first, and call `Model#showInPatientList`, which widens the scope to `ALL` if it hides the patient, so that patient is always in the list. |
-| `archive`, `unarchive` | `Navigation.toPatient` if the list still shows the patient, and otherwise `withSelectionCleared()`. The scope stays, so that archiving a patient hides them. |
-| `view` without an ID, `find` | `Navigation.toView(View.PATIENTS)`, which selects the first patient in the list |
-| `viewappt` | `Navigation.toView(View.APPOINTMENTS)`, with the range of a date, of `--from`/`--to` or of `--id` alone, and with no range for a plain `viewappt`. Every result also has the scope of the appointment view, `withAppointmentScope`. |
-| `addappt`, `editappt`, `markappt`, `unmarkappt` | `Navigation.toAppointment` of the changed appointment, with no range, so the page shown stays if it has the appointment |
-| `delete`, `deleteappt`, `clear`, `clearappt` | `withSelectionCleared()`: keeps the view and selects nothing |
-| `help`, `exit`, `set` | no navigation: keeps the view and the selection |
 
 Switching the tab by mouse or key runs no command and changes no model state. So the result display, the filtered
 patient list and the shown page of appointments all keep their state. If the keyboard focus is in the view being hidden, `MainWindow`
@@ -778,6 +687,145 @@ moves it to the tab of the view being shown.
     * Pros: There is one kind of page, and a week always shows all the visits of that week.
     * Cons: After `viewappt` with a range, appointments outside the range still show, and a range of several weeks
       needs paging to see.
+
+### Automatic navigation
+
+After a command, the window goes to what the command was about, so that the nurse does not have to find it. This
+section describes how a command chooses that. [Patient and appointment views](#patient-and-appointment-views) describes
+how it chooses the view.
+
+A command chooses the entry to select by adding a `CommandResult.Navigation` with
+`CommandResult#withNavigation`. `Navigation.toPatient(id)` selects that patient in the patient view, and
+`Navigation.toAppointment(entry)` selects that appointment in the appointment view. If the result has no range, the
+appointment view stays on the page shown if that page has the appointment, so that a nurse working through a range
+stays on it, or else shows the appointment's week. `Navigation.toView(view)` selects the entry to start from: the
+first patient in the list, or the next appointment from now (the first, if all have passed), in the result's range
+or, if the result has no range, in this week. A command that filters the patient list or shows a range can select an
+entry in the same result, because the entry is selected after the filter and the range are applied. A result can
+instead clear the selection with `CommandResult#withSelectionCleared`, which `MainWindow` applies to both views, so
+that no patient's details are shown.
+
+After the command, `LogicManager` checks that the entry to select is in the list that the view shows: a patient in
+the filtered patient list, and an appointment in the range, including the range's patient. If it is not, the
+command has a bug, and `LogicManager` throws an `IllegalStateException`.
+
+Each command navigates as follows:
+
+| Command | Result |
+| --- | --- |
+| `add`, `edit`, `view ID` | `Navigation.toPatient` of the patient that they add, edit or show. All three show all patients first, and call `Model#showInPatientList`, which widens the scope to `ALL` if it hides the patient, so that patient is always in the list. |
+| `archive`, `unarchive` | `Navigation.toPatient` if the list still shows the patient, and otherwise `withSelectionCleared()`. The scope stays, so that archiving a patient hides them. |
+| `view` without an ID, `find` | `Navigation.toView(View.PATIENTS)`, which selects the first patient in the list |
+| `viewappt` | `Navigation.toView(View.APPOINTMENTS)`, with the range of a date, of `--from`/`--to` or of `--id` alone, and with no range for a plain `viewappt`. Every result also has the scope of the appointment view, `withAppointmentScope`. |
+| `addappt`, `editappt`, `markappt`, `unmarkappt` | `Navigation.toAppointment` of the changed appointment, with no range, so the page shown stays if it has the appointment |
+| `delete`, `deleteappt`, `clear`, `clearappt` | `withSelectionCleared()`: keeps the view and selects nothing |
+| `help`, `exit`, `set` | no navigation: keeps the view and the selection |
+
+While `delete`, `clear` or `clearappt` waits for confirmation, `LogicManager` returns the prompt with no view and no
+navigation, and so it does if the user cancels. The view and the selection stay until the command runs.
+
+### Keyboard shortcuts
+
+Every key below works without the mouse. Where a key is handled depends on which part has the focus:
+
+| Focus | Keys | Handled by |
+| --- | --- | --- |
+| Command box | Enter, Tab, Esc, Up and Down | `CommandBox`, which runs the command, or calls [Tab completion](#tab-completion), `MainWindow` or the [command history](#command-history) |
+| View tabs | Left and Right, Down, Up | `MainWindow` |
+| A list | Up and Down, Ctrl+Up and Ctrl+Down, Page Up, Page Down, Home and End | The list's panel, `PatientListPanel` or `AppointmentListPanel` |
+| The appointment list | Left and Right | `AppointmentListPanel`, which shows the previous or next week |
+| View tabs or a list | Enter, Esc, Tab, Shift+Up and Shift+Down, and typed text | `MainWindow`, as `BrowseKeys` decides |
+| Anywhere | F1, which opens the Help Window | The Help menu item, which `MainWindow#setAccelerators` gives this accelerator |
+| Anywhere | Shift+Tab, which does nothing | `MainWindow` |
+
+The User Guide lists what each key does for the user.
+
+The keyboard focus is in one of three areas, given by `FocusArea`: the command box, and in the view that is shown, the
+view tabs or the list. The details beside the list are not an area, so the keyboard never moves the focus there. In the
+view, Tab moves between the tabs and the list, as `FocusArea#afterTab` gives. Up and Down move between them too: each
+list calls back to `MainWindow` when Up is pressed at its first row, and `MainWindow` handles Down on the tabs. Up on
+the tabs does nothing: `MainWindow` consumes it, so that JavaFX does not move the focus to another node. In both lists,
+Ctrl+Up and Ctrl+Down (Cmd on macOS, as given by `KeyEvent#isShortcutDown`) select the first and last row. The tabs
+take the focus only from the keyboard, so a click on a tab does not move the focus. If a tab has the focus when the view
+changes, `MainWindow` moves the focus to the tab of the view being shown.
+
+Esc in the command box calls back to `MainWindow`, which moves the focus to the list, or to the tabs if the patient list
+is empty, and leaves the typed text in place. Outside the command box, `MainWindow` handles keys with event filters on
+the window, which see each key before the focused part does. `BrowseKeys` decides what Enter, Esc, Tab, Shift+Up,
+Shift+Down and typed text do there:
+
+* Enter, and any printable character, move the focus back to the command box. A typed character is added to the text
+  there.
+* Esc resets the view by one step, and keeps the selected entry so that it is seen among the rest. In the patient
+  view, `MainWindow#resetView` calls `Logic#resetPatientList`, which removes the filter of the patient list, such as
+  that of `find`, and keeps its scope. With no filter, it goes back to the default scope, as `view` does. It runs no
+  command. So nothing is saved, the status message stays, and no `Navigation` selects the first patient;
+  `resetView` only selects again, in the longer list, the patient whose details are shown. (Running `view` itself would
+  show the first patient's details and then the earlier patient's again.) In the appointment view,
+  `AppointmentListPanel#reset` removes the filter of `viewappt`: from a page, it goes back to the weekly view of the
+  selected appointment's week, or of this week if none is selected, with the default scope, unless the selected
+  appointment is an archived patient's. In the weekly view, it goes back to the default scope. It keeps the selection
+  if it can. See [Archiving patients](#archiving-patients).
+* Tab moves the focus between the tabs and the list. The appointment list always takes the focus, so that Left and
+  Right can leave an empty week.
+* Shift+Up and Shift+Down scroll the details beside the list, with `PatientDetailPanel#scroll`, as the details never
+  take the focus.
+* Shift+Tab does nothing, also in the command box. `MainWindow` consumes it, or JavaFX would move the focus to another
+  node.
+
+The menu bar must not take these keys. JavaFX's `MenuBar` selects a menu that the mouse is over, in a focused window,
+and while a menu is selected, a key filter that it adds to the scene takes Left and Right to move between the menus.
+That filter runs before the filters on the tabs and the lists, and the menu stays selected after the mouse has left,
+until a click outside the menu bar. So `MainWindow#ignoreHoverOfClosedMenus` stops the mouse-entered events of the
+menus while no menu is open. As JavaFX then sets no `:hover`, it gives the menu under the mouse the `hovered`
+pseudo-class, which `DarkTheme.css` styles as Modena styles `:hover`. A click still opens a menu, and an open menu
+still follows the mouse to the next one.
+
+### Tab completion
+
+Whenever the text in the command box changes, `CommandBox` asks `Logic#getCompletions(String)` for the ways to finish
+the word that the text ends with. Each is a `Completion`: the whole command after the completion, and the word that it
+fills in. `CommandBox` passes the words to `StatusBarFooter#showCompletions`, which shows them after a **Tab** key cap at
+the left end of the status bar, while the command box has the focus and at least one completion would change the text.
+It shows at most the first five words, then the number of the others, such as `+19 more`, so that a long list of
+patient IDs does not fill the status bar.
+Tab replaces the text with the first completion, and each further Tab with the next. While Tab goes through them,
+`CommandBox` keeps the list, so the status bar keeps showing it. After the only completion, `CommandBox` asks for the
+completions of the new text at once, so that `addap` gives `addappt`, and the status bar then shows the patient IDs
+that the next Tab goes through. With nothing to finish, Tab does nothing, so it never moves the focus out of the
+command box. On Tab, and when the command box gets the focus back, `CommandBox` asks again unless Tab is going through a
+list, as the patients may have changed since the user typed. The hint is in the status bar, not in a pop-up under the
+command box, so that it never covers the result of the last command. The team chose this design from three mockups.
+
+`TabCompleter` in the `Logic` component holds the rules, so `CommandBox` needs no knowledge of the command formats. It
+completes the first word to the longer command words that start with it, the word after `help` to what `help` can
+explain, a word that starts with `-` to the command's options that are not typed yet, and the word after `--id` in
+`viewappt` and `clearappt` to a patient ID. It does not complete the ID after `--id` in `find`, which searches for any part of an ID,
+or in `add`, which takes a new one. The word being completed matches ignoring case, but command words, options and
+`help` topics are completed in lowercase, the only case that the parsers accept. The words before it are matched
+exactly, as the parsers match them, so `EDIT S1234567A --PH` has nothing to complete. Its table of each command's options must be updated with the parser when a
+command gets a new option. Otherwise it passes the text to `IdCompleter`, which completes the ID that a command takes
+first. `view`, `delete`, `archive` and `unarchive` take only an ID, so the ID must end the command. `edit`, `addappt`,
+`editappt`, `deleteappt`, `markappt`, `unmarkappt` and `clearappt` take the ID first, so `IdCompleter` completes the word after the command word
+and keeps later options or appointment numbers. A whole command word that no other command word starts with, such as
+`addappt`, also goes to `IdCompleter`, which adds a space and the ID.
+
+`Logic#getCompletions` gives `TabCompleter` the patient IDs in the order that Tab goes through them: the patients in the
+displayed list first, then those hidden by a filter, with archived patients last.
+
+### Command history
+
+`CommandBox` keeps a `CommandHistory` of the commands entered since the app started, which the Up and Down keys go
+through. The history is kept only in the UI, because no command needs it, and it is not saved when the app closes.
+
+`CommandBox#handleCommandEntered` adds the text to the history before it runs the command, so a command that fails is
+in the history too. All other input is added as well, such as the word that
+confirms a deletion. `CommandHistory#add` skips text that is the same as the newest command, so that Up does not stop on
+the same command twice. An empty command box adds nothing.
+
+`CommandHistory#previous` keeps what the user was typing when they first press Up, and `CommandHistory#next` gives it
+back after the newest command, so going through the history does not lose it. Running a command goes back to the line
+being typed.
 
 ### Three-tier help system and offline User Guide rendering
 
@@ -1825,6 +1873,8 @@ testers are expected to do more *exploratory* testing.
     1. Other incorrect view command to try: `view S123-456` (not a valid ID)<br>
        Expected: The panel does not change. The status message shows the correct command format.
 
+### Completing with Tab
+
 1. Completing with Tab
 
     1. Prerequisites: Start with the sample data, which includes patients with the IDs `S1234567A` and `S2345678B`.
@@ -1865,6 +1915,8 @@ testers are expected to do more *exploratory* testing.
     1. Test case: type `add --id S1`, `view XYZ`, `view S1 extra`, `edit --phone 91234567`, `exit` or
        `view S1234567A`, then press Tab<br>
        Expected: The status bar shows only the data file path. The command box does not change.
+
+### Using the keyboard
 
 1. Moving between the command box and the patient list
 
@@ -1909,6 +1961,8 @@ testers are expected to do more *exploratory* testing.
     1. Test case: `find --name zzz`, then press Esc<br>
        Expected: The list says `No patients match the filter.`, so the focus goes to the **Patients** tab instead. A
        second Esc shows all patients.
+
+### Going through command history
 
 1. Going through command history with Up and Down
 
@@ -2344,6 +2398,8 @@ testers are expected to do more *exploratory* testing.
        Expected: At first, the panel lists the new appointment under **Appointments**, in orange. Within a few seconds
        of the minute after `HH:MM`, when the appointment has passed, it moves under **Past**, dimmed. On the
        **Appointments** tab, it is greyed out.
+
+### Automatic navigation
 
 1. Commands that keep the view
 
