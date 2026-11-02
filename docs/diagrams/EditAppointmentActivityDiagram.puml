@@ -4,12 +4,12 @@ skinparam ActivityFontSize 15
 skinparam ArrowFontSize 12
 start
 :User enters editappt ID NUMBER
-[~--to NEW] [~--details DETAILS];
+[~--date NEW] [~--details DETAILS];
 
 'Since the beta syntax does not support placing the condition outside the
 'diamond we place it as the true branch instead.
 
-if () then ([input is valid, with --to
+if () then ([input is valid, with --date
 or --details or both])
     if () then ([a patient has ID])
         if () then ([patient has appointment NUMBER])

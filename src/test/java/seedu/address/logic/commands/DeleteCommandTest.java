@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.logic.commands.CommandTestUtil.showPatientAtIndex;
+import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PATIENT;
 import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_PATIENT;
 import static seedu.address.testutil.TypicalPatients.getTypicalLaiNurse;
@@ -13,11 +14,13 @@ import static seedu.address.testutil.TypicalPatients.getTypicalLaiNurse;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.Messages;
+import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.patient.Patient;
 import seedu.address.model.patient.PatientId;
+import seedu.address.testutil.PatientBuilder;
 
 /**
  * Contains integration tests (interaction with the Model) and unit tests for
@@ -41,6 +44,24 @@ public class DeleteCommandTest {
         // A command that removes patients selects nothing
         assertCommandSuccess(deleteCommand, model, new CommandResult(expectedMessage).withSelectionCleared(),
                 expectedModel);
+    }
+
+    @Test
+    public void describeDeletion_validId_namesPatientAndAppointments() throws Exception {
+        Patient patient = new PatientBuilder().withId("D1").withName("Test Name")
+                .withAppointments("2026-10-05", "2026-10-06").build();
+        model.addPatient(patient);
+
+        assertEquals("This deletes TEST NAME (D1) and their 2 appointment(s).",
+                new DeleteCommand(patient.getId()).describeDeletion(model));
+        assertTrue(model.hasPatient(patient));
+    }
+
+    @Test
+    public void describeDeletion_nonExistentId_throwsCommandException() {
+        PatientId nonExistentId = new PatientId("T9999999Z");
+        assertThrows(CommandException.class, String.format(Messages.MESSAGE_PATIENT_NOT_FOUND, nonExistentId), () ->
+                new DeleteCommand(nonExistentId).describeDeletion(model));
     }
 
     @Test

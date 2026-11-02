@@ -22,7 +22,6 @@ import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
-import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.MarkAppointmentCommand;
 import seedu.address.logic.commands.SetCommand;
 import seedu.address.logic.commands.UnarchiveCommand;
@@ -89,7 +88,6 @@ public class LaiNurseParser {
                 yield new ClearAppointmentCommandParser().parse(arguments);
             }
             case FindCommand.COMMAND_WORD -> new FindCommandParser().parse(arguments);
-            case ListCommand.COMMAND_WORD -> new ListCommand();
             case ViewAppointmentCommand.COMMAND_WORD -> new ViewAppointmentCommandParser().parse(arguments);
             case ViewCommand.COMMAND_WORD -> new ViewCommandParser().parse(arguments);
             case ExitCommand.COMMAND_WORD -> new ExitCommand();

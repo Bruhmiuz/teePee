@@ -78,8 +78,6 @@ public class HelpCommandTest {
                 new HelpCommand(FindCommand.COMMAND_WORD).execute(model).getFeedbackToUser());
         assertEquals(HelpCommand.MESSAGE_USAGE,
                 new HelpCommand(HelpCommand.COMMAND_WORD).execute(model).getFeedbackToUser());
-        assertEquals(ListCommand.MESSAGE_USAGE,
-                new HelpCommand(ListCommand.COMMAND_WORD).execute(model).getFeedbackToUser());
         assertEquals(MarkAppointmentCommand.MESSAGE_USAGE,
                 new HelpCommand(MarkAppointmentCommand.COMMAND_WORD).execute(model).getFeedbackToUser());
         assertEquals(UnmarkAppointmentCommand.MESSAGE_USAGE,

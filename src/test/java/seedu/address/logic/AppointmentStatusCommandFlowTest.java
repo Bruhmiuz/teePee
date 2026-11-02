@@ -123,7 +123,7 @@ public class AppointmentStatusCommandFlowTest {
         logic.execute("editappt S1234567A 1 --details Bring pen");
         assertTrue(appointment(1).isDone());
         // moved after the blood test that is already on 2026-11-02, so it becomes #2
-        CommandResult moved = logic.execute("editappt S1234567A 1 --to 2026-11-02");
+        CommandResult moved = logic.execute("editappt S1234567A 1 --date 2026-11-02");
         assertTrue(appointment(2).isDone());
         assertEquals("BRING PEN", appointment(2).getDetails().orElseThrow().value);
         assertFalse(appointment(1).isDone());

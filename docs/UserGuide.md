@@ -40,7 +40,7 @@ LaiNurse is a **desktop application that gives home nurses fast access to patien
 
    * `viewappt` : Switches to the **Appointments** view, and shows the weekly view of this week, with the next appointment from now selected.
 
-   * `delete S1234567A` : Deletes the patient with the ID `S1234567A` (Alex Yeoh, in the sample data).
+   * `delete S1234567A` : Deletes the patient with the ID `S1234567A` (Alex Yeoh, in the sample data), after you type `confirm`.
 
    * `exit` : Exits the app.
 
@@ -197,7 +197,7 @@ Format: `help [COMMAND]`
 * Typing `help` without arguments outputs a summary of all commands in the result display, including help itself.
 * Adding a command name (e.g., `help add`, `help edit`, `help help`) displays the syntax and practical examples for that command.
 * Typing `help window` opens the pop-up Help Window containing the complete User Guide.
-* Typing an unknown command name (e.g., `help 3`), a wrong-case target (e.g., `help LIST`), or the unsupported `help --COMMAND` flag form results in an invalid command format error that lists the valid targets.
+* Typing an unknown command name (e.g., `help 3`), a wrong-case target (e.g., `help VIEW`), or the unsupported `help --COMMAND` flag form results in an invalid command format error that lists the valid targets.
 
 Examples:
 * `help` shows a quick summary list of all available commands in the result display.
@@ -312,7 +312,7 @@ Format: `viewappt [DATE]` or `viewappt [--from START_DATE] [--to END_DATE]`, eac
 * All dates must be real dates, in the appointment date format described in the notes about the command format above.
 * `viewappt DATE` looks for appointments on `DATE`.
 * With `--from` and `--to`, the range includes both dates. Give one of them or both, in any order, each at most once.
-* Without `--from`, the range starts today. Without `--to`, the range has no end. A plain `viewappt`, with no date and no options, shows the weekly view of this week, and says `Listed all appointments of patients who are not archived.`; with `--all` or `--archived`, it says which appointments it lists instead. To see the appointments from today onwards, give `--from` with today's date.
+* Without `--from`, the range starts today. Without `--to`, the range has no end. A plain `viewappt`, with no date and no options, shows the weekly view of this week, and says `Showing this week's appointments of patients who are not archived.`; with `--all` or `--archived`, it says which appointments it shows instead. To see the appointments from today onwards, give `--from` with today's date.
 * "Today" is the current date on your computer, in its time zone. If your computer is set to a different time zone from where you visit patients, "today" can be a day off near midnight.
 * The `--from` date must not be later than the `--to` date. With only `--to`, the date must not be before today. To see past appointments, give `--from` too.
 * `DATE` cannot be combined with `--from` or `--to`, and comes before the options.
@@ -362,15 +362,15 @@ Examples:
 
 Moves one of a patient's appointments to another date or time, or changes its details, or both.
 
-Format: `editappt ID NUMBER [--to NEW_DATE_OR_DATETIME] [--details [DETAILS]] [--add-details MORE_DETAILS]`
+Format: `editappt ID NUMBER [--date NEW_DATE_OR_DATETIME] [--details [DETAILS]] [--add-details MORE_DETAILS]`
 
 * `ID` is the patient's ID, as in [`edit`](#editing-a-patient-edit), and must come first. The patient does not have to be in the list currently shown.
 * `NUMBER` is the appointment's number shown as `#N`, without the `#`: its place among the patient's appointments in
   date order. Numbers belong to a patient; they are different from the positions down the appointment page. If the patient has no such number, nothing is changed.
-* `--to` moves the appointment to a new date, or date and time, in the same format as in [`addappt`](#adding-an-appointment-addappt). Giving a date alone turns it into an appointment with no time.
+* `--date` moves the appointment to a new date, or date and time, in the same format as in [`addappt`](#adding-an-appointment-addappt). Giving a date alone turns it into an appointment with no time.
 * `--details` sets the appointment's details, such as what to do or bring, replacing any it had. Like notes, details are stored in upper case. With no value, `--details` clears the details.
 * `--add-details` adds text to the end of the details, after `; `, or sets the details if the appointment has none. The text to add cannot be blank. `--details` and `--add-details` cannot be given together.
-* Give at least one of `--to`, `--details` and `--add-details`. The options may appear in any order after the ID and number, each at most once.
+* Give at least one of `--date`, `--details` and `--add-details`. The options may appear in any order after the ID and number, each at most once.
 * Moving an appointment keeps its details, unless `--details` is also given to replace or clear them, or `--add-details` to add to them.
 * Changing only an appointment's details keeps its number. Moving it gives it the number of its new place in date
   order, after any appointment already at that date and time, and renumbers the others. Either way, it keeps its
@@ -380,9 +380,9 @@ Format: `editappt ID NUMBER [--to NEW_DATE_OR_DATETIME] [--details [DETAILS]] [-
 * LaiNurse switches to the **Appointments** view and selects the edited appointment. If the page shown has it, the page stays; otherwise, the week of the appointment is shown.
 
 Examples:
-* `editappt S1234567A 1 --to 2026-10-06 10:00` moves Alex Yeoh's insulin review (#1) from its Monday 09:30 slot to the next day, 10:00, keeping its number and details. The sample appointments fall in the week you first launched the app in; the dates here are for the week of Monday 5 October 2026.
+* `editappt S1234567A 1 --date 2026-10-06 10:00` moves Alex Yeoh's insulin review (#1) from its Monday 09:30 slot to the next day, 10:00, keeping its number and details. The sample appointments fall in the week you first launched the app in; the dates here are for the week of Monday 5 October 2026.
 * `editappt S2345678B 1 --details Check blood pressure` sets the details of Bernice Yu's appointment (#1) on the Tuesday of the sample week.
-* `editappt S1234567A 2 --to 2026-11-03 08:00 --details Fasting blood test` moves Alex Yeoh's monthly blood test (#2), on the Monday four weeks later, to the following day, 08:00, and replaces its details.
+* `editappt S1234567A 2 --date 2026-11-03 08:00 --details Fasting blood test` moves Alex Yeoh's monthly blood test (#2), on the Monday four weeks later, to the following day, 08:00, and replaces its details.
 * `editappt S1234567A 1 --add-details Bring glucometer` changes the details of Alex Yeoh's insulin review (#1) to `INSULIN REVIEW; BRING GLUCOMETER`.
 * `editappt S1234567A 2 --details` clears the details of Alex Yeoh's monthly blood test (#2).
 
@@ -519,7 +519,7 @@ Examples:
 
 ### Deleting a patient: `delete`
 
-Deletes the specified patient from LaiNurse.
+Deletes the specified patient and all their appointments from LaiNurse. You confirm the deletion first.
 
 Format: `delete ID`
 
@@ -527,11 +527,12 @@ Format: `delete ID`
 * The patient does not need to be in the displayed list, because `delete` searches all patients.
 * If no patient has that ID, LaiNurse shows an error and deletes nothing.
 * Deleting a patient also deletes all their appointments.
+* LaiNurse first says what it would delete, such as `This deletes ALEX YEOH (S1234567A) and their 2 appointment(s).`, and waits. Type `confirm` to go ahead. Anything else cancels. See the caution under [`clear`](#deleting-many-patients-clear).
 * The displayed list keeps its current filter, so the list numbers of the patients below the deleted one go down by one.
 * After a patient is deleted, no patient is selected, and the details beside the list show their starting message. This is so in both views.
 
 Examples:
-* `delete S1234567A` deletes the patient with the ID `S1234567A`.
+* `delete S1234567A`, then `confirm`, deletes the patient with the ID `S1234567A`.
 
 ### Deleting many patients: `clear`
 
@@ -544,7 +545,7 @@ Format: `clear [--archived]`
 * LaiNurse keeps the view that is shown, and selects nothing.
 
 <div markdown="span" class="alert alert-warning">:exclamation: **Caution:**
-`clear` and `clearappt` delete much at once, and cannot be undone. So they first say what they would delete, such as `This deletes 2 archived patient(s) and their 1 appointment(s).`, and wait. Type `confirm` exactly, in lower case, to confirm. Anything else, even another command, cancels: LaiNurse says `Cancelled. Nothing was deleted.`, and does not run what you typed. When there is nothing to delete, the command says so at once, and there is nothing to confirm.
+`clear`, `clearappt` and `delete` delete much at once, and cannot be undone. So they first say what they would delete, such as `This deletes 2 archived patient(s) and their 1 appointment(s).`, and wait. Type `confirm` exactly, in lower case, to confirm. Anything else, even another command, cancels: LaiNurse says `Cancelled. Nothing was deleted.`, and does not run what you typed. When there is nothing to delete, the command says so at once, and there is nothing to confirm.
 </div>
 
 Examples:
@@ -648,10 +649,10 @@ Action | Format, Examples
 **Archive** | `archive ID`<br> e.g., `archive S2345678B`
 **Clear** | `clear [--archived]`, then `confirm` to confirm<br> e.g., `clear --archived`
 **ClearAppt** | `clearappt [ID]` or `clearappt [--id ID] [--from DATE_OR_DATETIME] [--to DATE_OR_DATETIME]`, then `confirm` to confirm<br> e.g., `clearappt S1234567A`, `clearappt --to 2026-10-04`
-**Delete** | `delete ID`<br> e.g., `delete T0123456B`
+**Delete** | `delete ID`, then `confirm` to confirm<br> e.g., `delete T0123456B`
 **DeleteAppt** | `deleteappt ID NUMBER`<br> e.g., `deleteappt S1234567A 1`
 **Edit** | `edit ID [--name NAME] [--phone PHONE] [--address ADDRESS] [--medical-history [MEDICAL_HISTORY]] [--add-medical-history MORE_HISTORY] [--notes [NOTES]] [--add-notes MORE_NOTES]`<br> e.g., `edit S1234567A --notes Walks every morning`, `edit S1234567A --add-medical-history Asthma`
-**EditAppt** | `editappt ID NUMBER [--to NEW_DATE_OR_DATETIME] [--details [DETAILS]] [--add-details MORE_DETAILS]`<br> e.g., `editappt S1234567A 1 --to 2026-10-06 10:00`, `editappt S1234567A 1 --add-details Bring glucometer`
+**EditAppt** | `editappt ID NUMBER [--date NEW_DATE_OR_DATETIME] [--details [DETAILS]] [--add-details MORE_DETAILS]`<br> e.g., `editappt S1234567A 1 --date 2026-10-06 10:00`, `editappt S1234567A 1 --add-details Bring glucometer`
 **Find** | `find [--id ID] [--name NAME] [--address ADDRESS] [--phone PHONE] [--medical-history HISTORY] [--notes NOTES] [--all] [--archived]`<br> e.g., `find --name "John" --notes gardening` (matches either field; at least one field option required), `find --name yu --archived`
 **MarkAppt** | `markappt ID NUMBER`<br> e.g., `markappt S1234567A 2`
 **Set** | `set`, `set SETTING on` or `set SETTING off`<br> e.g., `set`, `set past-clashes off`

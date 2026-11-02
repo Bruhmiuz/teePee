@@ -282,6 +282,9 @@ call as an example.
 
 ![Interactions Inside the Logic Component for the `delete S1234567A` Command](images/DeleteSequenceDiagram.png)
 
+The diagram leaves out the confirmation: `LogicManager` runs `delete` only once the next input is the confirmation
+phrase, as described in [Clearing selectively](#clearing-selectively).
+
 The appointment commands follow the same shape. The diagram below shows the `addappt` command, which uses
 `Model#findPatientById()` to find the patient among all patients and adds the appointment to their schedule.
 
@@ -593,7 +596,7 @@ and optional details with `--details`, in either order. Its parser reuses `Argum
 `ParserUtil.parseAppointment`, preserving strict date validation and whitespace normalization, and rejects repeated
 options and any other words between the ID and the options. A missing `--date` gets
 `AddAppointmentCommand.MESSAGE_MISSING_DATE`, so the error names what is missing, and a bad `--date` value gets the
-appointment date format, as `--to` does in `editappt`. It logs parsing success or a rejected input at `FINE` level
+appointment date format, as `--date` does in `editappt`. It logs parsing success or a rejected input at `FINE` level
 without logging appointment details. It finds the patient through
 `Model#findPatientById()`,
 adds the appointment with `AppointmentSchedule#add`, finds its number with `getLastAt`, and replaces the patient.
@@ -1081,14 +1084,14 @@ The settings of #216 decide how marks, past clashes and archived patients behave
 ### Clearing selectively
 
 The selective clearing of #217 is behind `FeatureFlags#isSelectiveClearEnabled()`, which is on. With the switch off,
-`clear` deletes every patient at once, as in AB3, and `clearappt` is an unknown command.
+`clear` and `delete` run at once, as in AB3, and `clearappt` is an unknown command.
 
 * `clear --archived` (`ClearCommand` with `isArchivedOnly`) deletes only archived patients. `clearappt`
   (`ClearAppointmentCommand`) deletes every appointment, all of one patient's appointments, or every appointment from
   `--from` to `--to`, of every patient, or with `--id`, of one. The patients stay. A date without a time given to `--from` is the start of that day, and one
   given to `--to` its end, and an appointment with no time counts as at the start of its day. A patient's remaining
   appointments are numbered again in date order.
-* Both are `Confirmable`. When `LogicManager` parses one, it asks for `Confirmable#describeDeletion` and returns it with
+* These two and `delete` are `Confirmable`. When `LogicManager` parses one, it asks for `Confirmable#describeDeletion` and returns it with
   `Messages#MESSAGE_CONFIRM` instead of running the command, which it keeps as `pendingCommand`. If the next input is
   `Messages#CONFIRMATION_PHRASE`, it runs the command, and saves as after any command. Any other input cancels it, and
   runs no command. A command with nothing to delete fails at once, so there is nothing to confirm.
@@ -1246,8 +1249,9 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 1.  Nurse <u>finds the patient (UC02)</u>
 2.  Nurse requests to delete the patient by ID
-3.  LaiNurse deletes the patient and all of the patient's details
-4.  LaiNurse shows a message confirming the deletion
+3.  LaiNurse says what it would delete, and asks the nurse to confirm
+4.  Nurse confirms
+5.  LaiNurse deletes the patient, their appointments and their other details, and says so
 
     Use case ends.
 
@@ -1268,6 +1272,12 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
     * 2b1. LaiNurse shows an error message.
 
       Use case resumes at step 2.
+
+* 4a. Nurse does not confirm.
+
+    * 4a1. LaiNurse says that nothing was deleted.
+
+      Use case ends.
 
 **Use case: UC04 - Edit a patient's details**
 
@@ -1815,10 +1825,10 @@ testers are expected to do more *exploratory* testing.
     1. Test case: `find --name bernice`, then `view S1234567A`<br>
        Expected: The list shows all patients again, the row of the patient with the ID `S1234567A` is highlighted, and the panel shows their details.
 
-    1. Test case: `view S1234567A`, then `delete S2345678B`, another patient<br>
+    1. Test case: `view S1234567A`, then `delete S2345678B`, another patient, then `confirm`<br>
        Expected: No patient is selected, and the panel goes back to its starting message, because a command that removes patients selects nothing.
 
-    1. Test case: `view S1234567A`, then `delete S1234567A`<br>
+    1. Test case: `view S1234567A`, then `delete S1234567A`, then `confirm`<br>
        Expected: The panel goes back to its starting message.
 
     1. Test case: `view S0000000Z`, where no patient has that ID<br>
@@ -1845,8 +1855,8 @@ testers are expected to do more *exploratory* testing.
        `+1 more`. The second Tab gives `addappt S1234567A`.
 
     1. Test case: type `editappt S1234567A 1 --`, then press Tab<br>
-       Expected: The status bar shows `--to · --details · --add-details`. The command box shows
-       `editappt S1234567A 1 --to`.
+       Expected: The status bar shows `--date · --details · --add-details`. The command box shows
+       `editappt S1234567A 1 --date`.
 
     1. Test case: type `edit S1234567A --name Alex --`<br>
        Expected: The status bar shows every option of `edit` except `--name`.
@@ -1864,7 +1874,7 @@ testers are expected to do more *exploratory* testing.
     1. Test case: type `edit s23 --phone 91234567`, then press Tab<br>
        Expected: The command box shows `edit S2345678B --phone 91234567`. The options are kept.
 
-    1. Test case: type `add --id S1`, `view XYZ`, `view S1 extra`, `edit --phone 91234567`, `list` or
+    1. Test case: type `add --id S1`, `view XYZ`, `view S1 extra`, `edit --phone 91234567`, `exit` or
        `view S1234567A`, then press Tab<br>
        Expected: The status bar shows only the data file path. The command box does not change.
 
@@ -1914,11 +1924,11 @@ testers are expected to do more *exploratory* testing.
 
 1. Going through command history with Up and Down
 
-    1. Prerequisites: Start LaiNurse, then enter `list`, `find --name bernice` and `view S1234567A`.
+    1. Prerequisites: Start LaiNurse, then enter `view`, `find --name bernice` and `view S1234567A`.
 
     1. Test case: type `abc`, then press Up three times<br>
-       Expected: The command box shows `view S1234567A`, then `find --name bernice`, then `list`. A fourth Up keeps
-       `list`.
+       Expected: The command box shows `view S1234567A`, then `find --name bernice`, then `view`. A fourth Up keeps
+       `view`.
 
     1. Test case: after the test case above, press Down three times<br>
        Expected: The command box shows `find --name bernice`, then `view S1234567A`, then `abc` again.
@@ -1929,7 +1939,11 @@ testers are expected to do more *exploratory* testing.
 
     1. Prerequisites: Start with the sample data, which includes a patient with the ID `S1234567A`.
 
-    1. Test case: `delete S1234567A`<br>
+    1. Test case: `delete S2345678B`, then `yes`<br>
+       Expected: The status message says `This deletes BERNICE YU (S2345678B) and their 1 appointment(s).`, with the
+       confirmation prompt, and then `Cancelled. Nothing was deleted.` The patient stays.
+
+    1. Test case: `delete S1234567A`, then `confirm`<br>
        Expected: The patient with the ID `S1234567A` is deleted from the list. The status message shows the deleted patient's details. No patient is selected, and the panel shows its starting message.
 
     1. Test case: `delete S0000000Z`, where no patient has that ID<br>
@@ -1978,13 +1992,13 @@ testers are expected to do more *exploratory* testing.
        `add --id NOTES2 --name Jane Tan --phone 91234567 --address Clementi --notes First --notes Second`<br>
        Expected: A duplicate-option error is shown, and nothing changes.
 
-    1. Enter `delete NOTES1`, then `list` after testing to restore the sample patients.
+    1. Enter `delete NOTES1`, then `confirm`, then `view` after testing to restore the sample patients.
 
 ### Finding patients by substrings
 
 1. Searching each patient field
 
-    1. Prerequisites: Start with the unmodified sample data and enter `list`.
+    1. Prerequisites: Start with the unmodified sample data and enter `view`.
 
     1. Test case: `find --id 0123`<br>
        Expected: Only Charlotte Oliveiro is shown, because their ID contains `0123`.
@@ -2028,7 +2042,7 @@ testers are expected to do more *exploratory* testing.
     1. Test case: `find --address "Gardens Serangoon"`<br>
        Expected: An empty list is shown with a count of zero. Multiword values must match a contiguous substring.
 
-    1. Test case: `list`<br>
+    1. Test case: `view`<br>
        Expected: All six sample patients are shown again. Alex Yeoh, the first, is selected, and the panel shows their
        details.
 
@@ -2063,7 +2077,7 @@ testers are expected to do more *exploratory* testing.
        Expected: The displayed list, its scope and patient records are unchanged. The status message shows
        `Phone search values must contain at least one digit.`
 
-    1. Enter `list` after testing to show all patients again.
+    1. Enter `view` after testing to show all patients again.
 
 ### Sorting by name
 
@@ -2072,7 +2086,7 @@ testers are expected to do more *exploratory* testing.
     1. Prerequisites: Start with the sample data, which is already in name order: Alex Yeoh, Bernice Yu,
        Charlotte Oliveiro, David Li, Irfan Ibrahim, Roy Balakrishnan.
 
-    1. Test case: `list`<br>
+    1. Test case: `view`<br>
        Expected: All six patients are shown, in the name order above.
 
     1. Test case: `add --id S0245678G --name Zara Lim --phone 98765432 --address Blk 123 Clementi Ave 3, #05-12`<br>
@@ -2128,7 +2142,7 @@ testers are expected to do more *exploratory* testing.
     1. Test case: `viewappt`, with no date and no options<br>
        Expected: The weekly view of this week is shown, marked `This week`, with the arrow buttons above the list. Its
        next appointment from now is selected, or nothing if the week has none. The status message says
-       `Listed all appointments of patients who are not archived.`
+       `Showing this week's appointments of patients who are not archived.`
        To see the appointments from today onwards instead, use `viewappt --from` with today's
        date.
 
@@ -2347,11 +2361,11 @@ testers are expected to do more *exploratory* testing.
 
     1. Prerequisites: Start with the sample data, and enter `viewappt MON`.
 
-    1. Test case: `delete S1234567A`<br>
+    1. Test case: `delete S1234567A`, then `confirm`<br>
        Expected: The **Appointments** tab stays selected. Alex Yeoh's appointment disappears from the page, which then
        says `No appointments in this range.` Nothing is selected, and the panel shows its starting message.
 
-    1. Test case: `list`<br>
+    1. Test case: `view`<br>
        Expected: The **Patients** tab is selected, and all patients are listed. Bernice Yu, now the first, is selected.
 
 ### Adding a patient
@@ -2456,7 +2470,7 @@ testers are expected to do more *exploratory* testing.
     1. Prerequisites: Start with the sample data. Alex Yeoh (`S1234567A`) has appointment #1 at `MON 09:30`, with
        the details `INSULIN REVIEW`, and #2 at `BLOOD`, with the details `MONTHLY BLOOD TEST`.
 
-    1. Test case: `editappt S1234567A 1 --to TUE 10:00`<br>
+    1. Test case: `editappt S1234567A 1 --date TUE 10:00`<br>
        Expected: The **Appointments** tab is selected, showing the sample week, with Alex Yeoh's appointment at
        10:00 selected and still showing `INSULIN REVIEW`. The status message ends with
        `(moved from MON 09:30)`.
@@ -2478,15 +2492,15 @@ testers are expected to do more *exploratory* testing.
 
     1. Prerequisites: Start with the sample data.
 
-    1. Test case: `editappt S1234567A 99 --to TUE`, an appointment number the patient does not have<br>
+    1. Test case: `editappt S1234567A 99 --date TUE`, an appointment number the patient does not have<br>
        Expected: No appointment is changed. The status message says `Patient S1234567A has no appointment #99.`
 
-    1. Test case: `editappt S1234567A 1 --to BLOOD`<br>
+    1. Test case: `editappt S1234567A 1 --date BLOOD`<br>
        Expected: The appointment moves to `BLOOD` with its details, and both visits are preserved. It becomes #2,
        after the blood test already on that date, which becomes #1. Neither has a time, so there is no clash warning.
 
     1. Test case: `editappt S1234567A 1`, with nothing to change<br>
-       Expected: No appointment is changed. The status message says that at least one of `--to`, `--details` and
+       Expected: No appointment is changed. The status message says that at least one of `--date`, `--details` and
        `--add-details` must be given.
 
 ### Adding an appointment
@@ -2573,7 +2587,7 @@ testers are expected to do more *exploratory* testing.
    names `this patient's appointment #1` and Bernice's #1. Both Alex visits survive.
 1. Run `editappt S1234567A --appt MON 09:30 --details Review`, then the equivalent `deleteappt` selector.
    Expected: Each rejects the unsupported option, shows its number-based command format and saves no changes.
-1. Run `editappt S1234567A 2 --to TUE 10:00`, then `view S1234567A`.
+1. Run `editappt S1234567A 2 --date TUE 10:00`, then `view S1234567A`.
    Expected: Only the second visit moves, with its details, and stays selected. It is still #2, between the visit
    on Monday and the blood test. The details show `#2` before its date.
 1. Run `deleteappt S1234567A 1`, then restart.
@@ -2601,7 +2615,7 @@ testers are expected to do more *exploratory* testing.
        it is no longer eligible for Alex's next-appointment summary, but stays in its date-based group.
     1. Test case: `markappt S1234567A 2` again<br>
        Expected: An already-done error; model, page, selection and saved file stay unchanged.
-    1. Test case: `editappt S1234567A 2 --to 2099-12-31 --details Follow up`, then restart<br>
+    1. Test case: `editappt S1234567A 2 --date 2099-12-31 --details Follow up`, then restart<br>
        Expected: #2 keeps its pin and the new details after rescheduling and restart. It is still #2, as it is still
        after #1.
     1. Test case: `unmarkappt S1234567A 2`, then the same command again<br>
@@ -2775,7 +2789,7 @@ testers are expected to do more *exploratory* testing.
 
 1. Command overview via CLI
     * Test case: `help`
-        * Expected: An alphabetical summary of all available commands (`add`, `addappt`, `archive`, `clear`, `clearappt`, `delete`, `deleteappt`, `edit`, `editappt`, `exit`, `find`, `help`, `list`, `markappt`, `set`, `unarchive`, `unmarkappt`, `view`, `viewappt`) is displayed in the result box.
+        * Expected: An alphabetical summary of all available commands (`add`, `addappt`, `archive`, `clear`, `clearappt`, `delete`, `deleteappt`, `edit`, `editappt`, `exit`, `find`, `help`, `markappt`, `set`, `unarchive`, `unmarkappt`, `view`, `viewappt`) is displayed in the result box.
 
 2. Targeted command help
     * Test case: `help add`
@@ -2814,10 +2828,10 @@ before you change any file in its `data` folder.
 
 1. Saving the data file and its backup
 
-    1. Launch the app in an empty folder, and run `list`.<br>
+    1. Launch the app in an empty folder, and run `view`.<br>
        Expected: `data/lainurse.json` and `data/lainurse.backup.json` are created, and hold the same data.
 
-    1. Test case: `delete` a patient, then close the app.<br>
+    1. Test case: `delete` a patient, then `confirm`, then close the app.<br>
        Expected: Both files no longer hold that patient.
 
 1. Saving when a file cannot be written
@@ -2842,12 +2856,12 @@ before you change any file in its `data` folder.
 
     1. Test case: Delete `data/lainurse.json`, and launch the app.<br>
        Expected: The app starts with the sample patients. The result display says that `data/lainurse.json` is missing,
-       and that the backup is kept at `data/lainurse.previous.json`. After `list`, both files hold the sample data, and
+       and that the backup is kept at `data/lainurse.previous.json`. After `view`, both files hold the sample data, and
        `data/lainurse.previous.json` still holds the data from before.
 
 1. Dealing with a corrupted data file
 
-    1. Prerequisites: `data/lainurse.backup.json` holds valid data, such as after `list`.
+    1. Prerequisites: `data/lainurse.backup.json` holds valid data, such as after `view`.
 
     1. Test case: Replace the contents of `data/lainurse.json` with `{ not json`, and launch the app.<br>
        Expected: The app starts with the data in the backup. The result display says that `data/lainurse.json` could
@@ -2857,7 +2871,7 @@ before you change any file in its `data` folder.
     1. Test case: As above, but instead change a patient's `phone` in `data/lainurse.json` to `abc`.<br>
        Expected: As above. The corrupt copy holds the edited file, with `abc`.
 
-    1. Test case: After either test case above, run `list`, close the app, and launch it again.<br>
+    1. Test case: After either test case above, run `view`, close the app, and launch it again.<br>
        Expected: `data/lainurse.json` holds the backup's data again, so the app starts with it and with an empty
        result display. `data/lainurse.corrupt.json` is unchanged.
 

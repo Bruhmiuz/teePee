@@ -128,9 +128,9 @@ public class CommandBoxTest {
         onFxThread(() -> {
             pressTab();
             assertEquals("", textField.getText());
-            textField.setText("list");
+            textField.setText("exit");
             pressTab();
-            assertEquals("list", textField.getText());
+            assertEquals("exit", textField.getText());
         });
     }
 
@@ -141,7 +141,7 @@ public class CommandBoxTest {
             textField.setText("dele");
             assertEquals("delete · deleteappt", statusBar.getCompletionHint());
             textField.setText("editappt S1234567A 2 --");
-            assertEquals("--to · --details · --add-details", statusBar.getCompletionHint());
+            assertEquals("--date · --details · --add-details", statusBar.getCompletionHint());
             textField.setText("view ");
             assertEquals("S1234567A · T7654321B", statusBar.getCompletionHint());
         });
@@ -174,7 +174,7 @@ public class CommandBoxTest {
     public void hint_nothingToComplete_isHidden() throws Exception {
         assumeTrue(waitForFocusedCommandBox(), "the display gave the test window no focus");
         onFxThread(() -> {
-            textField.setText("list");
+            textField.setText("exit");
             assertEquals("", statusBar.getCompletionHint());
             // the whole ID is typed, so Tab would not change the text
             textField.setText("view S1234567A");

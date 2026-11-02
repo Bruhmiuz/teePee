@@ -42,7 +42,7 @@ public class TabCompleterTest {
 
     @Test
     public void complete_wholeCommandWordWithNothingToComplete_returnsEmptyList() {
-        assertEquals(List.of(), words("list"));
+        assertEquals(List.of(), words("exit"));
         assertEquals(List.of(), words("viewappt"));
         assertEquals(List.of(), words("viewappt "));
         assertEquals(List.of(), words("xyz"));
@@ -50,8 +50,8 @@ public class TabCompleterTest {
 
     @Test
     public void complete_option_givesOptionsOfTheCommandInUsageOrder() {
-        assertEquals(List.of("--to", "--details", "--add-details"), words("editappt S1234567A 2 --"));
-        assertEquals(List.of("editappt S1234567A 2 --to", "editappt S1234567A 2 --details",
+        assertEquals(List.of("--date", "--details", "--add-details"), words("editappt S1234567A 2 --"));
+        assertEquals(List.of("editappt S1234567A 2 --date", "editappt S1234567A 2 --details",
                 "editappt S1234567A 2 --add-details"), texts("editappt S1234567A 2 --"));
         assertEquals(List.of("--medical-history"), words("edit S1234567A --m"));
         assertEquals(List.of("--add-medical-history", "--add-notes"), words("edit S1234567A --add-"));

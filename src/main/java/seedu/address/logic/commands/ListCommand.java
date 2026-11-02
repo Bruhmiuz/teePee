@@ -16,14 +16,9 @@ import seedu.address.model.PatientScope;
  */
 public class ListCommand extends Command {
 
-    public static final String COMMAND_WORD = "list";
     public static final String MESSAGE_SUCCESS = "Listed all patients who are not archived.";
     public static final String MESSAGE_SUCCESS_ALL = "Listed all patients, with archived ones last.";
     public static final String MESSAGE_SUCCESS_ARCHIVED = "Listed archived patients.";
-    public static final String MESSAGE_USAGE = COMMAND_WORD
-            + ": Shows a list of all patients who are not archived, sorted by name (the patient ID breaks ties), "
-            + "and the details of the first.\n"
-            + "Example: " + COMMAND_WORD;
 
     private final PatientScope scope;
 

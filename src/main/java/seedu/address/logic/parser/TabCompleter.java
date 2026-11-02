@@ -60,7 +60,7 @@ public class TabCompleter {
             FindCommand.COMMAND_WORD, options(PREFIX_ID, PREFIX_NAME, PREFIX_PHONE, PREFIX_ADDRESS,
                     PREFIX_MEDICAL_HISTORY, PREFIX_NOTES, PREFIX_ALL, PREFIX_ARCHIVED),
             AddAppointmentCommand.COMMAND_WORD, options(PREFIX_DATE, PREFIX_DETAILS),
-            EditAppointmentCommand.COMMAND_WORD, options(PREFIX_TO, PREFIX_DETAILS, PREFIX_ADD_DETAILS),
+            EditAppointmentCommand.COMMAND_WORD, options(PREFIX_DATE, PREFIX_DETAILS, PREFIX_ADD_DETAILS),
             ViewAppointmentCommand.COMMAND_WORD, options(PREFIX_ID, PREFIX_FROM, PREFIX_TO, PREFIX_ALL,
                     PREFIX_ARCHIVED),
             ViewCommand.COMMAND_WORD, options(PREFIX_ALL, PREFIX_ARCHIVED));

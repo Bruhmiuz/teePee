@@ -61,11 +61,12 @@ public class ViewAppointmentCommand extends Command {
             "%1$d patient(s) with appointments from %2$s to %3$s";
     public static final String MESSAGE_VIEW_APPOINTMENT_FROM_LISTED_OVERVIEW =
             "%1$d patient(s) with appointments on or after %2$s";
-    public static final String MESSAGE_VIEW_APPOINTMENT_ALL_LISTED =
-            "Listed all appointments of patients who are not archived.";
-    public static final String MESSAGE_VIEW_APPOINTMENT_ALL_WITH_ARCHIVED_LISTED =
-            "Listed all appointments, with archived patients' ones.";
-    public static final String MESSAGE_VIEW_APPOINTMENT_ARCHIVED_LISTED = "Listed archived patients' appointments.";
+    public static final String MESSAGE_VIEW_APPOINTMENT_THIS_WEEK =
+            "Showing this week's appointments of patients who are not archived.";
+    public static final String MESSAGE_VIEW_APPOINTMENT_THIS_WEEK_WITH_ARCHIVED =
+            "Showing this week's appointments, with archived patients' ones.";
+    public static final String MESSAGE_VIEW_APPOINTMENT_THIS_WEEK_ARCHIVED =
+            "Showing this week's appointments of archived patients.";
     public static final String MESSAGE_VIEW_APPOINTMENT_PATIENT_ALL_LISTED_OVERVIEW = "%1$d appointment(s) of %2$s";
     public static final String MESSAGE_VIEW_APPOINTMENT_PATIENT_LISTED_OVERVIEW =
             "%1$d appointment(s) of %2$s on %3$s";
@@ -209,9 +210,9 @@ public class ViewAppointmentCommand extends Command {
      */
     private CommandResult showThisWeek() {
         String message = switch (scope) {
-            case UNARCHIVED -> MESSAGE_VIEW_APPOINTMENT_ALL_LISTED;
-            case ALL -> MESSAGE_VIEW_APPOINTMENT_ALL_WITH_ARCHIVED_LISTED;
-            case ARCHIVED -> MESSAGE_VIEW_APPOINTMENT_ARCHIVED_LISTED;
+            case UNARCHIVED -> MESSAGE_VIEW_APPOINTMENT_THIS_WEEK;
+            case ALL -> MESSAGE_VIEW_APPOINTMENT_THIS_WEEK_WITH_ARCHIVED;
+            case ARCHIVED -> MESSAGE_VIEW_APPOINTMENT_THIS_WEEK_ARCHIVED;
         };
         logger.fine("Viewed this week's appointments.");
         return new CommandResult(message)

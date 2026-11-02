@@ -40,7 +40,6 @@ public class HelpCommand extends Command {
         map.put(ExitCommand.COMMAND_WORD, ExitCommand.MESSAGE_USAGE);
         map.put(FindCommand.COMMAND_WORD, FindCommand.MESSAGE_USAGE);
         map.put(HelpCommand.COMMAND_WORD, HelpCommand.MESSAGE_USAGE);
-        map.put(ListCommand.COMMAND_WORD, ListCommand.MESSAGE_USAGE);
         map.put(MarkAppointmentCommand.COMMAND_WORD, MarkAppointmentCommand.MESSAGE_USAGE);
         map.put(UnarchiveCommand.COMMAND_WORD, UnarchiveCommand.MESSAGE_USAGE);
         map.put(UnmarkAppointmentCommand.COMMAND_WORD, UnmarkAppointmentCommand.MESSAGE_USAGE);

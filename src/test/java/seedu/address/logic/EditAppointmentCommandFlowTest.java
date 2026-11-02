@@ -68,7 +68,7 @@ public class EditAppointmentCommandFlowTest {
         Patient expected = new PatientBuilder(patient(ALEX_ID)).withAppointments()
                 .withAppointment("2026-10-06 10:00", "Insulin review")
                 .withAppointment("2026-11-02", "Monthly blood test").build();
-        assertEditPersisted("editappt S1234567A 1 --to 2026-10-06 10:00", expected,
+        assertEditPersisted("editappt S1234567A 1 --date 2026-10-06 10:00", expected,
                 appointment("2026-10-06 10:00", "Insulin review"),
                 "2026-10-06 10:00; Details: INSULIN REVIEW (moved from 2026-10-05 09:30)");
     }
@@ -94,7 +94,7 @@ public class EditAppointmentCommandFlowTest {
         Patient expected = new PatientBuilder(patient(ALEX_ID)).withAppointments()
                 .withAppointment("2026-10-05 09:30", "Insulin review")
                 .withAppointment("2026-11-03", "Monthly blood test; Fasting").build();
-        assertEditPersisted("editappt S1234567A 2 --to 2026-11-03 --add-details fasting", expected,
+        assertEditPersisted("editappt S1234567A 2 --date 2026-11-03 --add-details fasting", expected,
                 appointment("2026-11-03", "Monthly blood test; Fasting"),
                 "2026-11-03; Details: MONTHLY BLOOD TEST; FASTING (moved from 2026-11-02)");
     }
@@ -112,7 +112,7 @@ public class EditAppointmentCommandFlowTest {
         Patient expected = new PatientBuilder(patient(ALEX_ID)).withAppointments()
                 .withAppointment("2026-10-05 09:30", "Insulin review")
                 .withAppointment("2026-11-03 08:00", "Fasting blood test").build();
-        assertEditPersisted("editappt S1234567A\t2\t--to\t2026-11-03 08:00"
+        assertEditPersisted("editappt S1234567A\t2\t--date\t2026-11-03 08:00"
                 + "\t--details\tFasting blood test", expected, appointment("2026-11-03 08:00", "Fasting blood test"),
                 "2026-11-03 08:00; Details: FASTING BLOOD TEST (moved from 2026-11-02)");
     }
@@ -132,14 +132,14 @@ public class EditAppointmentCommandFlowTest {
 
     @Test
     public void execute_missingAppointment_rejectedWithoutChanges() throws Exception {
-        assertRejectedCommandLeavesDataUnchanged("editappt S1234567A 99 --to 2026-10-06",
+        assertRejectedCommandLeavesDataUnchanged("editappt S1234567A 99 --date 2026-10-06",
                 CommandException.class,
                 String.format(Messages.MESSAGE_APPOINTMENT_NUMBER_NOT_FOUND, ALEX_ID, 99));
     }
 
     @Test
     public void execute_moveOntoOtherAppointment_warnsAndPersistsBoth() throws Exception {
-        CommandResult result = logic.execute("editappt S1234567A 2 --to 2026-10-05 09:30");
+        CommandResult result = logic.execute("editappt S1234567A 2 --date 2026-10-05 09:30");
         assertEquals("Edited appointment 2 of ALEX YEOH (S1234567A): 2026-10-05 09:30; Details: MONTHLY BLOOD TEST"
                 + " (moved from 2026-11-02)\n"
                 + "Warning: it clashes with this patient's appointment #1.", result.getFeedbackToUser());
@@ -151,20 +151,20 @@ public class EditAppointmentCommandFlowTest {
     @Test
     public void execute_moveOntoDateOnlyAppointment_noWarning() throws Exception {
         // appointments with no time never clash, and the moved one comes after the blood test there
-        CommandResult result = logic.execute("editappt S1234567A 1 --to 2026-11-02");
+        CommandResult result = logic.execute("editappt S1234567A 1 --date 2026-11-02");
         assertEquals("Edited appointment 2 of ALEX YEOH (S1234567A): 2026-11-02; Details: INSULIN REVIEW"
                 + " (moved from 2026-10-05 09:30)", result.getFeedbackToUser());
     }
 
     @Test
     public void execute_invalidInput_rejectedWithoutChanges() throws Exception {
-        assertRejectedCommandLeavesDataUnchanged("editappt S0000000Z 1 --to 2026-10-06",
+        assertRejectedCommandLeavesDataUnchanged("editappt S0000000Z 1 --date 2026-10-06",
                 CommandException.class, String.format(Messages.MESSAGE_PATIENT_NOT_FOUND, "S0000000Z"));
         assertRejectedCommandLeavesDataUnchanged("editappt S1234567A 1",
                 ParseException.class, EditAppointmentCommand.MESSAGE_NOT_EDITED);
-        assertRejectedCommandLeavesDataUnchanged("editappt S1234567A --to 2026-10-06", ParseException.class,
+        assertRejectedCommandLeavesDataUnchanged("editappt S1234567A --date 2026-10-06", ParseException.class,
                 INVALID_FORMAT_MESSAGE);
-        assertRejectedCommandLeavesDataUnchanged("editappt S1234567A 1 --to 2026-02-30",
+        assertRejectedCommandLeavesDataUnchanged("editappt S1234567A 1 --date 2026-02-30",
                 ParseException.class, Appointment.MESSAGE_CONSTRAINTS);
         assertRejectedCommandLeavesDataUnchanged("editappt S1234567A 1 --add-details",
                 ParseException.class, AppointmentDetails.MESSAGE_CONSTRAINTS);
@@ -230,7 +230,7 @@ public class EditAppointmentCommandFlowTest {
     @Test
     public void execute_legacySelector_rejectedWithoutChanges() throws Exception {
         logic.execute("addappt S1234567A --date 2026-10-05 09:30 --details Second visit");
-        assertRejectedCommandLeavesDataUnchanged("editappt S1234567A --appt 2026-10-05 09:30 --to 2026-10-06",
+        assertRejectedCommandLeavesDataUnchanged("editappt S1234567A --appt 2026-10-05 09:30 --date 2026-10-06",
                 ParseException.class, INVALID_FORMAT_MESSAGE);
         assertRejectedCommandLeavesDataUnchanged("deleteappt S1234567A --appt 2026-10-05 09:30",
                 ParseException.class,
@@ -241,7 +241,7 @@ public class EditAppointmentCommandFlowTest {
     public void execute_numberSelectsDuplicate_movesItAndRenumbers() throws Exception {
         logic.execute("addappt S1234567A --date 2026-10-05 09:30 --details Second visit");
         // the second visit at 09:30 is #2, and moving it before the others makes it #1
-        CommandResult result = logic.execute("editappt S1234567A 2 --to 2026-09-01");
+        CommandResult result = logic.execute("editappt S1234567A 2 --date 2026-09-01");
         Appointment moved = patient(ALEX_ID).getSchedule().findByNumber(1).orElseThrow();
         assertEquals("2026-09-01", moved.value);
         assertEquals("SECOND VISIT", moved.getDetails().orElseThrow().value);

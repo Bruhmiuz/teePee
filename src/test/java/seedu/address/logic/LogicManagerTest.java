@@ -35,6 +35,7 @@ import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.CommandResult.AppointmentRange;
 import seedu.address.logic.commands.CommandResult.Navigation;
 import seedu.address.logic.commands.CommandResult.View;
+import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.Completion;
@@ -100,7 +101,7 @@ public class LogicManagerTest {
         assertEquals(1, model.getLaiNurse().getPatientList().size());
 
         // any other input cancels it, and runs no command
-        assertEquals(Messages.MESSAGE_CANCELLED, logic.execute("list").getFeedbackToUser());
+        assertEquals(Messages.MESSAGE_CANCELLED, logic.execute("view").getFeedbackToUser());
         assertEquals(1, model.getLaiNurse().getPatientList().size());
 
         // the phrase is case-sensitive
@@ -119,7 +120,7 @@ public class LogicManagerTest {
 
         // with nothing to delete, there is nothing to confirm
         assertCommandException("clear --archived", ClearCommand.MESSAGE_NO_ARCHIVED_PATIENTS);
-        assertEquals(ListCommand.MESSAGE_SUCCESS, logic.execute("list").getFeedbackToUser());
+        assertEquals(ListCommand.MESSAGE_SUCCESS, logic.execute("view").getFeedbackToUser());
     }
 
     @Test
@@ -143,6 +144,30 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_delete_asksForConfirmationFirst() throws Exception {
+        FeatureFlags.setSelectiveClearEnabled(true);
+        Patient amy = new PatientBuilder(AMY).withAppointments("2026-10-05", "2026-10-06").build();
+        model.addPatient(amy);
+        String command = "delete " + amy.getId().value;
+
+        // the first time, delete only says what would go
+        assertEquals(String.format(Messages.MESSAGE_CONFIRM,
+                "This deletes " + amy.getName() + " (" + amy.getId() + ") and their 2 appointment(s)."),
+                logic.execute(command).getFeedbackToUser());
+        assertTrue(model.hasPatient(amy));
+
+        // any other input cancels it
+        assertEquals(Messages.MESSAGE_CANCELLED, logic.execute("yes").getFeedbackToUser());
+        assertTrue(model.hasPatient(amy));
+
+        // the phrase confirms it
+        logic.execute(command);
+        assertEquals(String.format(DeleteCommand.MESSAGE_DELETE_PATIENT_SUCCESS, Messages.format(amy)),
+                logic.execute(Messages.CONFIRMATION_PHRASE).getFeedbackToUser());
+        assertFalse(model.hasPatient(amy));
+    }
+
+    @Test
     public void execute_commandExecutionError_throwsCommandException() {
         String deleteCommand = "delete T9999999Z";
         assertCommandException(deleteCommand, String.format(MESSAGE_PATIENT_NOT_FOUND, "T9999999Z"));
@@ -150,8 +175,7 @@ public class LogicManagerTest {
 
     @Test
     public void execute_validCommand_success() throws Exception {
-        String listCommand = ListCommand.COMMAND_WORD;
-        assertCommandSuccess(listCommand, ListCommand.MESSAGE_SUCCESS, model);
+        assertCommandSuccess("view", ListCommand.MESSAGE_SUCCESS, model);
     }
 
     @Test
@@ -201,7 +225,7 @@ public class LogicManagerTest {
     @Test
     public void execute_eachCommand_resultNamesTheViewItShows() throws Exception {
         // commands that list or change patients show the patient view
-        assertEquals(Optional.of(View.PATIENTS), logic.execute(ListCommand.COMMAND_WORD).getView());
+        assertEquals(Optional.of(View.PATIENTS), logic.execute("view").getView());
         assertEquals(Optional.of(View.PATIENTS), logic.execute("find --name Amy").getView());
         // a command word that ends in "appt" shows the appointment view
         assertEquals(Optional.of(View.APPOINTMENTS), logic.execute("viewappt 2026-10-06").getView());
@@ -308,7 +332,7 @@ public class LogicManagerTest {
                 logic.getCompletions("view S1").stream().map(Completion::text).toList());
         assertEquals(List.of("S1000003C", "S1000001A", "S1000002B"),
                 logic.getCompletions("viewappt --id s").stream().map(Completion::word).toList());
-        assertEquals(List.of(), logic.getCompletions("list"));
+        assertEquals(List.of(), logic.getCompletions("exit"));
     }
 
     @Test
