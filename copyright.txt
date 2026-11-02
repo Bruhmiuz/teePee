@@ -2,8 +2,6 @@
 
 Copyright by Susumu Yoshida - http://www.mcdodesign.com/
 - lainurse_32.png (originally address_book_32.png)
-- AddressApp.ico
 
-Copyright by Jan Jan Kovařík - http://glyphicons.com/
-- calendar.png
-- edit.png
+From AddressBook-Level3 - https://github.com/se-edu/addressbook-level3
+- help_icon.png
