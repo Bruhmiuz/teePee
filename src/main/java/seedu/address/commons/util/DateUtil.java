@@ -18,6 +18,11 @@ public final class DateUtil {
 
     public static final int DAYS_IN_WEEK = 7;
 
+    /** The earliest date that the four-digit, unsigned year of a date allows. */
+    public static final LocalDate EARLIEST_DATE = LocalDate.of(0, 1, 1);
+    /** The latest date that the four-digit, unsigned year of a date allows. */
+    public static final LocalDate LATEST_DATE = LocalDate.of(9999, 12, 31);
+
     public static final String DATE_FORMAT = "yyyy-MM-dd";
     public static final String TIME_FORMAT = "HH:mm";
     public static final String MESSAGE_CONSTRAINTS = "Dates must be a real date in the format " + DATE_FORMAT + ".";

@@ -157,7 +157,8 @@ computer wakes from sleep.
 
 `AppointmentListPanel` shows the appointments of `Logic#getAppointmentList()`, which holds every appointment of every
 patient, on one of two kinds of page. The weekly view shows one `AppointmentWeek`, from Monday to Sunday, which a plain
-`viewappt` shows for this week. After `viewappt` with a date, a range or `--id`, the panel shows only the appointments
+`viewappt` shows for this week. The weeks stop at `DateUtil#EARLIEST_DATE` and `DateUtil#LATEST_DATE`, the dates that a
+four-digit year allows, so the first and last weeks have fewer days and no signed years. After `viewappt` with a date, a range or `--id`, the panel shows only the appointments
 in the command's range, on one page, and hides the week's arrow buttons; if the range carries a patient ID, only that
 patient's appointments. `AppointmentPage#ofWeek` and
 `AppointmentPage#ofRange` turn the appointments into rows: a heading for each day
@@ -2408,6 +2409,12 @@ testers are expected to do more *exploratory* testing.
        Expected: Right shows the week after the sample week, e.g. the week of Mon 12 Oct, and selects its first
        appointment, or nothing in a week with no appointments. Left twice shows the week before the previous one,
        e.g. the week of Mon 28 Sep. `viewappt` goes back to this week, marked `This week`.
+
+    1. Test case: `addappt S1234567A --date 0000-01-01`, then press Left<br>
+       Expected: The header says `Sat 1 – Sun 2 Jan 0000`, with headings for those two days only. Left changes nothing.
+
+    1. Test case: `addappt S1234567A --date 9999-12-31`, then press Right<br>
+       Expected: The header says `Mon 27 – Fri 31 Dec 9999`, with headings for those five days only. Right changes nothing.
 
 1. Switching views without a command
 

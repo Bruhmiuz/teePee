@@ -330,6 +330,10 @@ public class AppointmentListPanel extends UiPart<Region> {
     }
 
     private void showWeekAndSelectFirst(AppointmentWeek newWeek) {
+        if (newWeek.equals(week)) {
+            // The first or last week has no week beyond it, so the selection stays
+            return;
+        }
         week = newWeek;
         showPage();
         page.firstEntryIndex().ifPresentOrElse(this::select, this::clearSelection);

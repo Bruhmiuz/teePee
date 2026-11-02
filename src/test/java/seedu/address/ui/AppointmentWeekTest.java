@@ -62,6 +62,39 @@ public class AppointmentWeekTest {
     }
 
     @Test
+    public void firstWeek_hasOnlyDaysFromEarliestDate() {
+        LocalDate saturday = LocalDate.of(0, 1, 1);
+        LocalDate sunday = LocalDate.of(0, 1, 2);
+        AppointmentWeek week = AppointmentWeek.of(sunday);
+
+        assertEquals(saturday, week.getStart());
+        assertEquals(sunday, week.getEnd());
+        assertEquals(List.of(saturday, sunday), week.getDays());
+        assertFalse(week.contains(saturday.minusDays(1)));
+        assertEquals("Sat 1 – Sun 2 Jan 0000", week.describeDates());
+        assertEquals(week, week.previous());
+        assertEquals(LocalDate.of(0, 1, 3), week.next().getStart());
+        assertEquals(week, week.next().previous());
+    }
+
+    @Test
+    public void lastWeek_hasOnlyDaysUpToLatestDate() {
+        LocalDate monday = LocalDate.of(9999, 12, 27);
+        LocalDate friday = LocalDate.of(9999, 12, 31);
+        AppointmentWeek week = AppointmentWeek.of(monday);
+
+        assertEquals(monday, week.getStart());
+        assertEquals(friday, week.getEnd());
+        assertEquals(5, week.getDays().size());
+        assertEquals(friday, week.getDays().get(4));
+        assertFalse(week.contains(friday.plusDays(1)));
+        assertEquals("Mon 27 – Fri 31 Dec 9999", week.describeDates());
+        assertEquals(week, week.next());
+        assertEquals(LocalDate.of(9999, 12, 20), week.previous().getStart());
+        assertEquals(week, week.previous().next());
+    }
+
+    @Test
     public void describeDates_sameMonth_namesMonthOnce() {
         assertEquals("Mon 12 – Sun 18 Oct 2026", AppointmentWeek.of(TODAY).describeDates());
     }
