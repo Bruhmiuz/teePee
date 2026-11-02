@@ -291,6 +291,48 @@ public class MarkdownRendererTest {
         assertTrue(hasDescendantStyled(card, "-fx-background-color: #12233d"));
     }
 
+    @Test
+    public void render_oneLineCallout_closesOnItsOpeningLine() {
+        VBox rendered = MarkdownRenderer.render(String.join("\n",
+                "<div class=\"alert alert-info\">One line tip</div>",
+                "After the callout."));
+
+        assertEquals(2, rendered.getChildren().size());
+        VBox card = (VBox) rendered.getChildren().get(0);
+        assertTrue(visibleText(card).contains("One line tip"));
+        assertTrue(rendered.getChildren().get(1) instanceof TextFlow);
+        assertTrue(visibleText((Parent) rendered.getChildren().get(1)).contains("After the callout."));
+        assertFalse(visibleText(rendered).contains("</div"));
+    }
+
+    @Test
+    public void render_tableBeforeCalloutClose_staysInsideTheCard() {
+        VBox rendered = MarkdownRenderer.render(String.join("\n",
+                "<div markdown=\"block\" class=\"alert alert-info\">",
+                "Option | Effect",
+                "-------|-------",
+                "`view` | shows patients",
+                "</div>",
+                "After the callout."));
+
+        assertEquals(2, rendered.getChildren().size());
+        VBox card = (VBox) rendered.getChildren().get(0);
+        assertEquals(1, tables(card).size());
+        assertTrue(visibleText(card).contains("shows patients"));
+        assertTrue(visibleText((Parent) rendered.getChildren().get(1)).contains("After the callout."));
+    }
+
+    @Test
+    public void render_underscoresInsideWords_stayLiteral() {
+        VBox rendered = MarkdownRenderer.render("Plain a_b and c_d text. Use the _home folder_ for data.");
+
+        String visible = visibleText(rendered);
+        assertTrue(visible.contains("a_b"));
+        assertTrue(visible.contains("c_d"));
+        assertTrue(visible.contains("home folder"));
+        assertTrue(containsTextStyle(rendered, "-fx-font-style: italic"));
+    }
+
     private static boolean containsTextStyle(Parent root, String styleFragment) {
         return descendants(root).stream().anyMatch(n -> n instanceof Text t
                 && t.getStyle().contains(styleFragment));

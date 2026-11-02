@@ -38,9 +38,9 @@ public class MarkdownRenderer {
     private static final String CALLOUT_INFO_BACKGROUND = "#12233d";
     private static final String CALLOUT_WARNING_BACKGROUND = "#2b1d0e";
 
-    // Matches links [text](url), <kbd>key</kbd>, **bold**, `code`, and _italics_
+    // Matches links [text](url), <kbd>key</kbd>, **bold**, `code`, and _italics_ (not inside words)
     private static final Pattern INLINE_PATTERN =
-            Pattern.compile("(\\[.*?\\]\\(.*?\\)|<kbd>.*?</kbd>|\\*\\*.*?\\*\\*|`.*?`|_[^_]+?_)");
+            Pattern.compile("(\\[.*?\\]\\(.*?\\)|<kbd>.*?</kbd>|\\*\\*.*?\\*\\*|`.*?`|(?<!\\w)_[^_]+?_(?!\\w))");
 
     // Matches image syntax ![alt](url) so images resolve to offline placeholders instead of being skipped
     private static final Pattern IMAGE_PATTERN = Pattern.compile("!\\[(.*?)\\]\\((.*?)\\)");
@@ -86,6 +86,7 @@ public class MarkdownRenderer {
             // Alert callout boundaries pre-processed by splitCalloutBoundaries
             if (line.equals(CALLOUT_OPEN_WARNING) || line.equals(CALLOUT_OPEN_INFO)) {
                 flushParagraph(target, currentParagraph);
+                flushPendingTable(target, currentTableLines);
                 boolean isWarning = line.equals(CALLOUT_OPEN_WARNING);
                 calloutCard = buildCalloutCard(
                         isWarning ? NUS_ORANGE : CALLOUT_INFO_ACCENT,
@@ -95,6 +96,7 @@ public class MarkdownRenderer {
             }
             if (line.equals(CALLOUT_CLOSE)) {
                 flushParagraph(target, currentParagraph);
+                flushPendingTable(target, currentTableLines);
                 if (calloutCard != null) {
                     container.getChildren().add(calloutCard);
                     calloutCard = null;
@@ -105,9 +107,8 @@ public class MarkdownRenderer {
 
             // Table boundary
             boolean isTableLine = line.contains("|") && !line.startsWith("#");
-            if (!isTableLine && !currentTableLines.isEmpty()) {
-                target.getChildren().add(renderTable(currentTableLines));
-                currentTableLines.clear();
+            if (!isTableLine) {
+                flushPendingTable(target, currentTableLines);
             }
 
             // Blank lines flush active paragraph without inserting blank nodes
@@ -230,11 +231,7 @@ public class MarkdownRenderer {
         }
 
         flushParagraph(target, currentParagraph);
-
-        if (!currentTableLines.isEmpty()) {
-            target.getChildren().add(renderTable(currentTableLines));
-            currentTableLines.clear();
-        }
+        flushPendingTable(target, currentTableLines);
 
         // A callout left open at the end of the input still renders its collected lines
         if (calloutCard != null) {
@@ -252,6 +249,17 @@ public class MarkdownRenderer {
         }
         TextFlow flow = buildInlineTextFlow(content);
         container.getChildren().add(flow);
+    }
+
+    /**
+     * Renders and clears any table lines accumulated so far, so that a table directly before a
+     * callout boundary lands inside the card and in source order.
+     */
+    private static void flushPendingTable(VBox target, List<String> currentTableLines) {
+        if (!currentTableLines.isEmpty()) {
+            target.getChildren().add(renderTable(currentTableLines));
+            currentTableLines.clear();
+        }
     }
 
     private static String sanitizeLine(String line) {
@@ -273,7 +281,14 @@ public class MarkdownRenderer {
                 processed.add(trimmed.contains("alert-warning")
                         ? CALLOUT_OPEN_WARNING : CALLOUT_OPEN_INFO);
                 String remainder = trimmed.replaceFirst("^<div[^>]*>", "").trim();
-                if (!remainder.isEmpty()) {
+                if (remainder.endsWith("</div>")) {
+                    // A one-line callout closes on its own opening line
+                    remainder = remainder.substring(0, remainder.length() - "</div>".length()).trim();
+                    if (!remainder.isEmpty()) {
+                        processed.add(remainder);
+                    }
+                    processed.add(CALLOUT_CLOSE);
+                } else if (!remainder.isEmpty()) {
                     processed.add(remainder);
                 }
             } else if (trimmed.equals("</div>")) {
@@ -286,7 +301,7 @@ public class MarkdownRenderer {
     }
 
     /**
-     * Builds the tinted card with a coloured left border that visually groups the lines of one
+     * Builds the tinted card with a colored left border that visually groups the lines of one
      * alert callout.
      */
     private static VBox buildCalloutCard(String accent, String background) {
@@ -482,7 +497,7 @@ public class MarkdownRenderer {
                     // The collapsed callout kept its bold wrapper, so the badge prefix lands inside
                     // a bold match: style the prefix as the badge, and the rest of the text as bold.
                     Text badge = new Text(badgePrefix);
-                    badge.setStyle("-fx-fill: " + (badgePrefix.startsWith("⚠") ? NUS_ORANGE : "#58a6ff")
+                    badge.setStyle("-fx-fill: " + (badgePrefix.startsWith("⚠") ? NUS_ORANGE : CALLOUT_INFO_ACCENT)
                             + "; -fx-font-weight: bold; -fx-font-size: 13px;");
                     flow.getChildren().add(badge);
                     String rest = inner.substring(badgePrefix.length());
