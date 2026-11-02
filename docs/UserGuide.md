@@ -626,7 +626,7 @@ Certain edits can cause LaiNurse to behave in unexpected ways (e.g., if a value 
 **A**: In `data/lainurse.json`, inside the folder you launched LaiNurse from. LaiNurse saves after every command, so you never need to save. See [Editing the data file](#editing-the-data-file).
 
 **Q**: Can I undo a deletion?<br>
-**A**: No. LaiNurse has no undo. `delete`, `clear` and `clearappt` say what they would delete and wait for you to type `confirm`, but `deleteappt` deletes at once, so check the appointment number first.
+**A**: No. LaiNurse has no undo. `delete`, `clear` and `clearappt` say what they would delete and wait for you to type `confirm`, but `deleteappt` deletes at once, so check the appointment number first. See the caution under [`clear`](#deleting-many-patients-clear).
 
 **Q**: Why is my text in capitals?<br>
 **A**: LaiNurse stores names, addresses, medical history, notes and appointment details in uppercase, whatever case you typed. See [Known issues](#known-issues).
