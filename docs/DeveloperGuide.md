@@ -1317,9 +1317,9 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case resumes at step 1.
 
-* 1b. The nurse gives no start date.
+* 1b. The nurse gives a range with no start date.
 
-    * 1b1. LaiNurse shows the appointments from today onwards, up to the given end date.
+    * 1b1. The range becomes today up to the given end date.
 
       Use case resumes at step 2.
 
@@ -1329,9 +1329,9 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
       Use case resumes at step 1.
 
-* 1d. The nurse gives no end date.
+* 1d. The nurse gives a range with no end date.
 
-    * 1d1. LaiNurse shows every appointment on or after the start date, however far ahead it is.
+    * 1d1. The range becomes the start date onwards, with no end.
 
       Use case resumes at step 2.
 
@@ -1343,7 +1343,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 1f. The nurse gives an ID and no date.
 
-    * 1f1. LaiNurse shows every appointment of that patient, past and upcoming.
+    * 1f1. The range becomes that patient's whole schedule, past and upcoming.
 
       Use case resumes at step 2.
 
