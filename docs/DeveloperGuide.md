@@ -2156,8 +2156,8 @@ testers are expected to do more *exploratory* testing.
     1. Other incorrect commands to try: `viewappt --id MON S1234567A`, an ID value that ends in an ID rather
        than a date, `viewappt --id 123 456`, a digit-only ID typed with a stray space, `viewappt --id` (missing
        ID), `viewappt --id S1234567A --id S2345678B` (repeated option)<br>
-       Expected: The list is unchanged. The status message shows the patient ID constraints or a duplicate-option
-       error.
+       Expected: The list is unchanged. The status message shows `No patient has the ID ...` for the first two, the
+       patient ID constraints for the missing ID, and a duplicate-option error for the repeated option.
 
 1. Viewing a date-only appointment next to a timed one on the same day
 
