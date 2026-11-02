@@ -8,7 +8,6 @@ participant ":LaiNurseParser" as LaiNurseParser LOGIC_COLOR
 participant ":EditCommandParser" as EditCommandParser LOGIC_COLOR
 participant "d:EditPatientDescriptor" as EditPatientDescriptor LOGIC_COLOR
 participant "e:EditCommand" as EditCommand LOGIC_COLOR
-participant "r:CommandResult" as CommandResult LOGIC_COLOR
 end box
 
 box Model MODEL_COLOR_T1
@@ -21,12 +20,7 @@ activate LogicManager
 LogicManager -> LaiNurseParser : parseCommand("edit S1234567A --phone 91234567")
 activate LaiNurseParser
 
-create EditCommandParser
-LaiNurseParser -> EditCommandParser
-activate EditCommandParser
-
-EditCommandParser --> LaiNurseParser
-deactivate EditCommandParser
+ref over LaiNurseParser, EditCommandParser : Create the parser of the command, as for clear
 
 LaiNurseParser -> EditCommandParser : parse("S1234567A --phone 91234567")
 activate EditCommandParser
@@ -70,10 +64,6 @@ Model --> EditCommand : laiNurse
 deactivate Model
 
 EditCommand -> EditCommand : createEditedPatient(p, d)
-activate EditCommand
-
-EditCommand --> EditCommand : editedPatient
-deactivate EditCommand
 
 EditCommand -> Model : setPatient(p, editedPatient)
 activate Model
@@ -86,13 +76,6 @@ activate Model
 
 Model --> EditCommand
 deactivate Model
-
-create CommandResult
-EditCommand -> CommandResult
-activate CommandResult
-
-CommandResult --> EditCommand
-deactivate CommandResult
 
 EditCommand --> LogicManager : r
 deactivate EditCommand

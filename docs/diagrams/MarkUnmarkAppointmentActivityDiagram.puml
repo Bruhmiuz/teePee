@@ -26,7 +26,7 @@ endif
 preserving number, date, time and details;
 :Replace the appointment in the schedule
 and update the patient without changing filters;
-if () then ([unmarking restores a clash])
+if () then ([the change leaves a clash])
     :Append a warning naming the other
     patients and appointment numbers;
 endif
