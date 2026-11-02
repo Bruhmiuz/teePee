@@ -26,6 +26,7 @@ import seedu.address.model.LaiNurse;
 import seedu.address.model.Model;
 import seedu.address.model.PatientScope;
 import seedu.address.model.ReadOnlyLaiNurse;
+import seedu.address.model.ReadOnlyUserPrefs;
 import seedu.address.model.Settings;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.patient.Patient;
@@ -102,10 +103,10 @@ public class LogicManager implements Logic {
             commandResult = commandResult.withNoteAppended(
                     String.format(BACKUP_WARNING_FORMAT, e.getBackupFilePath()));
         } catch (AccessDeniedException e) {
-            restore(dataBefore);
+            restore(dataBefore, userPrefsBefore);
             throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
         } catch (IOException ioe) {
-            restore(dataBefore);
+            restore(dataBefore, userPrefsBefore);
             throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
         }
 
@@ -127,13 +128,17 @@ public class LogicManager implements Logic {
     }
 
     /**
-     * Puts back {@code dataBefore}, the data before a command whose change could not be saved. Data that the command
-     * did not change is left as it is, so that the lists do not refresh for nothing.
+     * Puts back {@code dataBefore} and the settings in {@code userPrefsBefore}, from before a command whose change
+     * could not be saved. What the command did not change is left as it is, so that nothing refreshes for nothing.
      */
-    private void restore(ReadOnlyLaiNurse dataBefore) {
+    private void restore(ReadOnlyLaiNurse dataBefore, ReadOnlyUserPrefs userPrefsBefore) {
         if (!dataBefore.equals(model.getLaiNurse())) {
             model.setLaiNurse(dataBefore);
             logger.info("Put back the data as it was before the command, as it could not be saved.");
+        }
+        if (!userPrefsBefore.getSettings().equals(model.getUserPrefs().getSettings())) {
+            model.setSettings(userPrefsBefore.getSettings());
+            logger.info("Put back the settings as they were before the command, as the data could not be saved.");
         }
     }
 
