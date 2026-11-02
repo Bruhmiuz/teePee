@@ -204,6 +204,24 @@ public final class AppointmentPage {
     }
 
     /**
+     * Returns the index of the first appointment row at least {@code rowCount} rows after the row at {@code index},
+     * or the last appointment row if there is none, or {@code OptionalInt#empty()} if the page has no appointments.
+     */
+    public OptionalInt entryIndexRowsAfter(int index, int rowCount) {
+        OptionalInt entry = entryIndexAfter(index + rowCount - 1);
+        return entry.isPresent() ? entry : lastEntryIndex();
+    }
+
+    /**
+     * Returns the index of the last appointment row at least {@code rowCount} rows before the row at {@code index},
+     * or the first appointment row if there is none, or {@code OptionalInt#empty()} if the page has no appointments.
+     */
+    public OptionalInt entryIndexRowsBefore(int index, int rowCount) {
+        OptionalInt entry = entryIndexBefore(index - rowCount + 1);
+        return entry.isPresent() ? entry : firstEntryIndex();
+    }
+
+    /**
      * Returns the index of the heading of the day of the row at {@code index}, or of the row itself if it is a
      * heading. Returns 0 for an index outside the page.
      */

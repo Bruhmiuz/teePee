@@ -274,8 +274,9 @@ public class AppointmentListPanel extends UiPart<Region> {
 
     /**
      * Handles the keys that move between appointments and weeks, so that a heading is never selected.
-     * Ctrl+Up and Ctrl+Down (Cmd on macOS) go to the first and last appointment of the page. Left and Right
-     * change the week only in the weekly view. Space, which would select whichever row the list last focused,
+     * Ctrl+Up and Ctrl+Down (Cmd on macOS) go to the first and last appointment of the page. Page Up and Page Down
+     * move about one screen, as they do in the patient list, to the nearest appointment. Left and Right change the
+     * week only in the weekly view. Space, which would select whichever row the list last focused,
      * does nothing. Other keys keep their usual effect.
      */
     private void handleKeyPressed(KeyEvent event) {
@@ -298,8 +299,11 @@ public class AppointmentListPanel extends UiPart<Region> {
             case UP, KP_UP -> page.entryIndexBefore(selected).ifPresentOrElse(this::select, this::leaveTop);
             case DOWN, KP_DOWN -> (selected < 0 ? page.firstEntryIndex() : page.entryIndexAfter(selected))
                     .ifPresent(this::select);
-            case HOME, PAGE_UP -> page.firstEntryIndex().ifPresent(this::select);
-            case END, PAGE_DOWN -> page.lastEntryIndex().ifPresent(this::select);
+            case HOME -> page.firstEntryIndex().ifPresent(this::select);
+            case END -> page.lastEntryIndex().ifPresent(this::select);
+            case PAGE_UP -> page.entryIndexRowsBefore(selected, getRowsPerScreen()).ifPresent(this::select);
+            case PAGE_DOWN -> (selected < 0 ? page.firstEntryIndex()
+                    : page.entryIndexRowsAfter(selected, getRowsPerScreen())).ifPresent(this::select);
             case LEFT, KP_LEFT -> {
                 if (range == null) {
                     handlePreviousWeek();
@@ -318,6 +322,18 @@ public class AppointmentListPanel extends UiPart<Region> {
             }
         }
         event.consume();
+    }
+
+    /**
+     * Returns how many rows Page Up and Page Down move: all the rows shown but one, so that one row stays in view.
+     */
+    private int getRowsPerScreen() {
+        if (!(appointmentListView.lookup(".virtual-flow") instanceof VirtualFlow<?> flow)) {
+            return 1;
+        }
+        IndexedCell<?> first = flow.getFirstVisibleCell();
+        IndexedCell<?> last = flow.getLastVisibleCell();
+        return first == null || last == null ? 1 : Math.max(last.getIndex() - first.getIndex(), 1);
     }
 
     /**

@@ -168,7 +168,8 @@ have passed, right above the next one. A page is built as at the time given to i
 it selects first agree, and unit tests can fix the time. While a range is shown, the panel keeps the week of the weekly
 view, so that Esc goes back to it. The panel listens to the appointment list and rebuilds the page after a change,
 keeping the selected appointment if it is still there. Only appointment rows can be selected, so the panel handles Up,
-Down, Home, End, Left and Right itself, with the moves that `AppointmentPage` finds, and headings ignore the mouse. When
+Down, Page Up, Page Down, Home, End, Left and Right itself, with the moves that `AppointmentPage` finds, and headings
+ignore the mouse. Page Up and Page Down move by the number of rows shown, less one, to the nearest appointment. When
 the selection changes, the panel tells `MainWindow`, which shows the appointment's patient in the second
 `PatientDetailPanel` with that appointment marked.
 

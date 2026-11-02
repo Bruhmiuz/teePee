@@ -155,7 +155,8 @@ Key | What it does
 --------|------------------
 Up and Down | In the patient list, select the previous or next patient and show their details. In the appointment list, select the previous or next appointment and show its patient's details. Up at the first patient, or at the first appointment of the page, moves to the view tabs.
 Ctrl+Up and Ctrl+Down (Cmd+Up and Cmd+Down on macOS) | Select the first or last patient in the patient list, or the first or last appointment of the page in the appointment list.
-Page Up, Page Down, Home and End | In the patient list, move further, in the same way as Up and Down. In the appointment list, select the first or last appointment of the page.
+Page Up and Page Down | Move about one screen up or down the list, and show the details of what they select. In the appointment list, they select the nearest appointment, never a day heading.
+Home and End | Select the first or last patient in the patient list, or the first or last appointment of the page in the appointment list.
 Left and Right | In the weekly appointment view, show the previous or next week, and select its first appointment. The weeks stop at the years `0000` and `9999`, so the first and last weeks have only the days in those years. On a `viewappt` page, they do nothing.
 Shift+Up and Shift+Down | Scroll the details beside the list.
 Tab | Moves to the view tabs.
