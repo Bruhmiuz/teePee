@@ -1303,7 +1303,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 1. Nurse requests to view appointments on a date or in a range, optionally for one patient by ID.
 2. LaiNurse shows only the matching appointments, with the next appointment from now and its patient's details, and
-   reports how many patients have an appointment in the range.
+   reports how many patients have an appointment in the range, or with an ID, how many appointments that patient has.
 3. Nurse requests to go back to the weekly view.
 4. LaiNurse shows the week of the selected appointment, with that appointment still selected.
 
@@ -1355,7 +1355,8 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 2a. No appointment is in the range, or, with an ID given, the patient has none in it.
 
-    * 2a1. LaiNurse shows that the range has no appointments, and indicates that there are no matching patients.
+    * 2a1. LaiNurse shows that the range has no appointments, and reports that no patient has one, or, with an ID
+      given, that the patient has none.
 
       Use case resumes at step 3.
 
