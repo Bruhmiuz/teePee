@@ -416,6 +416,22 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_setWhenSaveFails_settingsUnchanged() throws Exception {
+        FeatureFlags.setSettingsEnabled(true);
+        List<IOException> failures = new ArrayList<>(List.of(DUMMY_AD_EXCEPTION));
+        logic = new LogicManager(model, storageFailingWith(failures));
+
+        // the error says that nothing was changed, so the setting must stay as it was (#261)
+        assertThrows(CommandException.class, () -> logic.execute("set past-clashes off"));
+        assertTrue(model.getUserPrefs().getSettings().isPastClashing());
+        assertTrue(logic.getSettings().getValue().isPastClashing());
+
+        // so running the command again changes it
+        logic.execute("set past-clashes off");
+        assertFalse(model.getUserPrefs().getSettings().isPastClashing());
+    }
+
+    @Test
     public void execute_backupFails_keepsChangeAndWarns() throws Exception {
         Path backupPath = temporaryFolder.resolve("lainurse.backup.json");
         List<IOException> failures = new ArrayList<>(List.of(
