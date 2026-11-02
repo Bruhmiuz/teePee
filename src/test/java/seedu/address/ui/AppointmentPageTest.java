@@ -86,9 +86,9 @@ public class AppointmentPageTest {
         assertEquals(Optional.of(doneEntry), page.getEntryAt(page.defaultEntryIndex().orElseThrow()));
         assertEquals(List.of(new DayHeading(TODAY, 2), new Entry(1, doneEntry), new Entry(2, TODAY_ALEX)),
                 page.getRows());
-        DetailAppointments details = DetailAppointments.of(patient.getSchedule(), NOW, Optional.of(done));
+        DetailAppointments details = DetailAppointments.of(patient.getSchedule(), NOW);
         assertEquals(List.of(done), details.getUpcoming());
-        assertEquals(1, details.getPastCount());
+        assertEquals(1, details.getPast().size());
     }
 
     @Test

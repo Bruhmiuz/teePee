@@ -144,8 +144,8 @@ An appointment has passed once its time today has gone by, or once its day is ov
 
 * A patient's row filters out done visits, then shows their first appointment that has not passed, from
   `AppointmentFormatter#findFirstNotPassed`. Completion does not affect the other date-based rules below.
-* `DetailAppointments` picks the appointments that the details list: every one that has not passed, and the latest ten
-  that have, plus a marked older one.
+* `DetailAppointments` picks the appointments that the details list: every one that has not passed, and every one that
+  has, latest first.
 * The appointment list greys out the appointments that have passed.
 
 Each of these decides what has passed, and which day is today, when it is drawn. So that they stay right while the
@@ -1953,7 +1953,7 @@ testers are expected to do more *exploratory* testing.
     1. Prerequisites: Start with the sample data, which includes a patient with the ID `S1234567A`.
 
     1. Test case: `view S1234567A`<br>
-       Expected: The **Patients** tab is selected. The panel beside the list shows the patient's name, ID, phone number, address, medical history and notes, then their appointments that have not passed, then up to ten that have, dimmed. Each appointment shows its details beside its time, or under it if the window is narrow. Their row in the list is highlighted. The status message names the patient.
+       Expected: The **Patients** tab is selected. The panel beside the list shows the patient's name, ID, phone number, address, medical history and notes, then their appointments that have not passed, then those that have, dimmed. Each appointment shows its details beside its time, or under it if the window is narrow. Their row in the list is highlighted. The status message names the patient.
 
     1. Test case: `find --name bernice`, then `view S1234567A`<br>
        Expected: The list shows all patients again, the row of the patient with the ID `S1234567A` is highlighted, and the panel shows their details.

@@ -89,8 +89,8 @@ LaiNurse shows one view at a time. The tabs under the result display switch betw
   * A header above the list says whether it shows `All patients` or `Filtered patients`, such as after `find`, and how many: `12`, or `3 of 12` when filtered. It says `Filtered patients` whenever a filter is set, even one that every patient matches, such as `12 of 12`, so that you can tell that Esc will remove it. An empty list says why: `No patients yet.`, `No patients match the filter.`, `No archived patients.` or `Every patient is archived. To see them: view --all`.
   * The list hides [archived](#archiving-a-patient-archive) patients, and the header counts only the others, such as `12`. `view --all` shows archived patients too, at the bottom of the list and greyed out, and the header counts them in brackets: `12 (2)`. `view --archived` shows only them, under `Archived patients`, with `(2)`. When the list is filtered, each count shows how many of each kind it shows, such as `3 of 12 (1 of 2)`. This choice is the list's **scope**. It stays until you choose another, and goes back to the default, which hides archived patients, when LaiNurse restarts.
   * The next appointment of a patient is their first **undone** appointment that has not passed.
-  * The details list every upcoming appointment of the patient, in time order, and their last ten past appointments, dimmed.
-* **Appointments**: the appointments, day by day, and beside them the details of the selected appointment's patient, with that appointment highlighted. If it is older than the patient's last ten past appointments, the details list it under **Past** as well. Each day has a heading with its number of appointments, and the appointments are numbered from 1 down the page. Each row also shows `#N` in a small box after the patient ID:
+  * The details list every upcoming appointment of the patient, in time order, and all their past appointments, latest first and dimmed.
+* **Appointments**: the appointments, day by day, and beside them the details of the selected appointment's patient, with that appointment highlighted. Each day has a heading with its number of appointments, and the appointments are numbered from 1 down the page. Each row also shows `#N` in a small box after the patient ID:
   this is the appointment's number within that patient, used by `editappt`, `deleteappt`, `markappt` and `unmarkappt`. A patient's
   appointments are numbered from 1 in date order. The details panel shows the same number, dimmed, before each date.
   * An appointment with no time shows `‒‒:‒‒` in the list, and `Unspecified` in the details, in the color of its row. It comes first in its day, except today: there it comes after the appointments that have passed, right above the next one.
@@ -473,7 +473,7 @@ Format: `view [--all]`, `view [--archived]` or `view ID`
 * `view ID` takes no `--all` or `--archived`, since it shows the patient whether they are archived or not.
 * If no patient has that ID, LaiNurse shows an error, and the panel keeps showing what it showed before.
 * LaiNurse switches to the **Patients** view.
-* The panel shows the patient's name, ID, phone number, address, medical history, notes and appointments. Notes appear below medical history, with `None recorded` when no notes have been supplied. Under **Appointments**, it lists every appointment that has not passed, in time order. Under **Past**, it lists the last ten that have passed, latest first and dimmed, including any earlier today. An appointment today or tomorrow shows `Today` or `Tomorrow`, and one with no time shows `Unspecified`. A patient with no appointment left shows `None upcoming`. If the details do not fit, press Shift+Down with the focus in the view, or scroll down the panel.
+* The panel shows the patient's name, ID, phone number, address, medical history, notes and appointments. Notes appear below medical history, with `None recorded` when no notes have been supplied. Under **Appointments**, it lists every appointment that has not passed, in time order. Under **Past**, it lists those that have passed, latest first and dimmed, including any earlier today. An appointment today or tomorrow shows `Today` or `Tomorrow`, and one with no time shows `Unspecified`. A patient with no appointment left shows `None upcoming`. If the details do not fit, press Shift+Down with the focus in the view, or scroll down the panel.
 * The panel stays up to date. After you edit the patient, it shows the new details. After you delete the patient, or delete them with `clear`, it goes back to its starting message.
 * You can also click a patient in the list to see their details, or press Esc and move to them with Up and Down. See [Using the keyboard](#using-the-keyboard).
 
@@ -647,7 +647,6 @@ Certain edits can cause LaiNurse to behave in unexpected ways (e.g., if a value 
 6. **The result display has a fixed height.** A long message does not fit. The remedy is to scroll it, with Shift+Up and Shift+Down in the command box.
 7. **Grey has two meanings.** Both an archived patient in the patient list and an appointment that has passed are greyed out.
 8. **LaiNurse keeps one backup.** Every save replaces `data/lainurse.backup.json`. The remedy, to keep an older copy, is to copy the file elsewhere yourself.
-9. **The details list only the last ten past appointments of a patient.** The remedy is `viewappt --id ID`, which shows all of that patient's appointments.
 
 --------------------------------------------------------------------------------------------------------------------
 

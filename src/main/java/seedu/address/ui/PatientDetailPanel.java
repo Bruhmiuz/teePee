@@ -249,18 +249,17 @@ public class PatientDetailPanel extends UiPart<Region> {
             markedAppointment = null;
         }
         LocalDateTime now = LocalDateTime.now();
-        DetailAppointments appointments = DetailAppointments.of(patient.getSchedule(), now,
-                Optional.ofNullable(markedAppointment), settings.get());
+        DetailAppointments appointments = DetailAppointments.of(patient.getSchedule(), now, settings.get());
         upcomingNote.setText(appointments.describeUpcoming());
         rowParts.clear();
         upcomingRows.getChildren().setAll(createRows(patient, appointments.getUpcoming(), now));
         pastNote.setText(appointments.describePast());
-        pastRows.getChildren().setAll(createRows(patient, appointments.getPastShown(), now));
+        pastRows.getChildren().setAll(createRows(patient, appointments.getPast(), now));
         // The new rows need their styles, such as the font of today's rows, before their times can be measured
         upcomingRows.applyCss();
         pastRows.applyCss();
         updateRowLayout();
-        setShown(pastSection, appointments.getPastCount() > 0);
+        setShown(pastSection, !appointments.getPast().isEmpty());
 
         setShown(placeholder, false);
         setShown(details, true);

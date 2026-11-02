@@ -5,16 +5,13 @@ import static seedu.address.testutil.Assert.assertThrows;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
 
 import seedu.address.model.Settings;
 import seedu.address.model.patient.Appointment;
-import seedu.address.model.patient.AppointmentDetails;
 import seedu.address.model.patient.AppointmentSchedule;
 
 public class DetailAppointmentsTest {
@@ -33,31 +30,28 @@ public class DetailAppointmentsTest {
     @Test
     public void of_null_throwsNullPointerException() {
         AppointmentSchedule schedule = AppointmentSchedule.empty();
-        assertThrows(NullPointerException.class, () -> DetailAppointments.of(null, NOW, Optional.empty()));
-        assertThrows(NullPointerException.class, () -> DetailAppointments.of(schedule, null, Optional.empty()));
+        assertThrows(NullPointerException.class, () -> DetailAppointments.of(null, NOW));
+        assertThrows(NullPointerException.class, () -> DetailAppointments.of(schedule, null));
         assertThrows(NullPointerException.class, () -> DetailAppointments.of(schedule, NOW, null));
     }
 
     @Test
     public void of_noAppointments_nothingListed() {
-        DetailAppointments appointments = DetailAppointments.of(AppointmentSchedule.empty(), NOW,
-                Optional.empty());
+        DetailAppointments appointments = DetailAppointments.of(AppointmentSchedule.empty(), NOW);
         assertEquals(List.of(), appointments.getUpcoming());
-        assertEquals(List.of(), appointments.getPastShown());
-        assertEquals(0, appointments.getPastCount());
+        assertEquals(List.of(), appointments.getPast());
         assertEquals("None upcoming", appointments.describeUpcoming());
     }
 
     @Test
     public void of_mixedAppointments_upcomingInTimeOrderAndPastLatestFirst() {
         DetailAppointments appointments = DetailAppointments.of(schedule(NEXT_MONTH, FIRST_VISIT, TODAY_EARLY,
-                THIRD_VISIT, NEXT_WEEK, SECOND_VISIT, YESTERDAY), NOW, Optional.empty());
+                THIRD_VISIT, NEXT_WEEK, SECOND_VISIT, YESTERDAY), NOW);
         // an appointment earlier today still counts as upcoming, as only dates are compared
         assertEquals(List.of(TODAY_EARLY, NEXT_WEEK, NEXT_MONTH), appointments.getUpcoming());
-        assertEquals(List.of(YESTERDAY, THIRD_VISIT, SECOND_VISIT, FIRST_VISIT), appointments.getPastShown());
-        assertEquals(4, appointments.getPastCount());
+        assertEquals(List.of(YESTERDAY, THIRD_VISIT, SECOND_VISIT, FIRST_VISIT), appointments.getPast());
         assertEquals("3 upcoming", appointments.describeUpcoming());
-        assertEquals("4 of 4", appointments.describePast());
+        assertEquals("4, latest first", appointments.describePast());
     }
 
     @Test
@@ -65,49 +59,30 @@ public class DetailAppointmentsTest {
         Appointment markedNextWeek = NEXT_WEEK.withDone(true);
         AppointmentSchedule schedule = schedule(markedNextWeek, NEXT_MONTH, YESTERDAY);
         // a mark counted as done (#216) makes an appointment past, wherever it is in time
-        DetailAppointments appointments = DetailAppointments.of(schedule, NOW, Optional.empty(),
+        DetailAppointments appointments = DetailAppointments.of(schedule, NOW,
                 Settings.DEFAULT.with(Settings.Key.MARK_COUNTS_AS_DONE, true));
         assertEquals(List.of(NEXT_MONTH.toString()), names(appointments.getUpcoming()));
-        assertEquals(List.of(markedNextWeek.toString(), YESTERDAY.toString()), names(appointments.getPastShown()));
+        assertEquals(List.of(markedNextWeek.toString(), YESTERDAY.toString()), names(appointments.getPast()));
         // the default settings keep it upcoming
         assertEquals(List.of(markedNextWeek.toString(), NEXT_MONTH.toString()),
-                names(DetailAppointments.of(schedule, NOW, Optional.empty()).getUpcoming()));
+                names(DetailAppointments.of(schedule, NOW).getUpcoming()));
     }
 
     @Test
-    public void of_manyPastAppointments_latestTenListed() {
+    public void of_manyPastAppointments_allListed() {
         List<Appointment> past = pastVisits(12);
-        DetailAppointments appointments = DetailAppointments.of(new AppointmentSchedule(past), NOW,
-                Optional.empty());
-        assertEquals(past.reversed().subList(0, 10), appointments.getPastShown());
-        assertEquals(12, appointments.getPastCount());
-        assertEquals("last 10 of 12, latest first", appointments.describePast());
+        DetailAppointments appointments = DetailAppointments.of(new AppointmentSchedule(past), NOW);
+        assertEquals(past.reversed(), appointments.getPast());
+        assertEquals("12, latest first", appointments.describePast());
     }
 
     @Test
     public void of_fewPastAppointments_allListed() {
-        DetailAppointments appointments = DetailAppointments.of(schedule(YESTERDAY, NEXT_WEEK), NOW,
-                Optional.empty());
+        DetailAppointments appointments = DetailAppointments.of(schedule(YESTERDAY, NEXT_WEEK), NOW);
         // the schedule renumbers its appointments, so compare their dates and times
-        assertEquals(List.of(YESTERDAY.value), values(appointments.getPastShown()));
-        assertEquals("1 of 1", appointments.describePast());
+        assertEquals(List.of(YESTERDAY.value), values(appointments.getPast()));
+        assertEquals("1, latest first", appointments.describePast());
         assertEquals("1 upcoming", appointments.describeUpcoming());
-    }
-
-    @Test
-    public void of_olderMarkedAppointment_alsoListed() {
-        List<Appointment> past = pastVisits(12);
-        AppointmentSchedule schedule = new AppointmentSchedule(past);
-        DetailAppointments appointments = DetailAppointments.of(schedule, NOW, Optional.of(past.get(0)));
-        List<Appointment> expected = new ArrayList<>(past.reversed().subList(0, 10));
-        expected.add(past.get(0));
-        assertEquals(expected, appointments.getPastShown());
-        assertEquals("11 of 12, latest first", appointments.describePast());
-
-        // a marked appointment that is listed anyway changes nothing
-        appointments = DetailAppointments.of(schedule, NOW, Optional.of(past.get(11)));
-        assertEquals(past.reversed().subList(0, 10), appointments.getPastShown());
-        assertEquals("last 10 of 12, latest first", appointments.describePast());
     }
 
     @Test
@@ -115,12 +90,11 @@ public class DetailAppointmentsTest {
         Appointment todayNoTime = new Appointment("2026-10-16").withNumber(8);
         Appointment todayLater = new Appointment("2026-10-16 14:00").withNumber(9);
         DetailAppointments appointments = DetailAppointments.of(schedule(YESTERDAY, TODAY_EARLY, todayNoTime,
-                todayLater), LocalDateTime.of(2026, 10, 16, 10, 0), Optional.empty());
+                todayLater), LocalDateTime.of(2026, 10, 16, 10, 0));
 
         // an appointment today with no time has not passed
         assertEquals(List.of(todayNoTime.value, todayLater.value), values(appointments.getUpcoming()));
-        assertEquals(List.of(TODAY_EARLY.value, YESTERDAY.value), values(appointments.getPastShown()));
-        assertEquals(2, appointments.getPastCount());
+        assertEquals(List.of(TODAY_EARLY.value, YESTERDAY.value), values(appointments.getPast()));
     }
 
     private static List<String> values(List<Appointment> appointments) {
@@ -143,18 +117,5 @@ public class DetailAppointmentsTest {
         return IntStream.range(0, count)
                 .mapToObj(i -> new Appointment(LocalDate.of(2026, 9, 1).plusDays(i) + " 09:30").withNumber(i + 1))
                 .toList();
-    }
-
-    @Test
-    public void of_markedAppointmentWithOtherDetails_stillListed() {
-        // the marked appointment can be an older copy, from before its details were edited
-        List<Appointment> past = new ArrayList<>(pastVisits(12));
-        Appointment firstVisitWithDetails = new Appointment("2026-09-01 09:30",
-                Optional.of(new AppointmentDetails("First visit"))).withNumber(1);
-        past.set(0, firstVisitWithDetails);
-        DetailAppointments appointments = DetailAppointments.of(new AppointmentSchedule(past), NOW,
-                Optional.of(new Appointment("2026-09-01 09:30").withNumber(1)));
-        assertEquals(11, appointments.getPastShown().size());
-        assertEquals(firstVisitWithDetails, appointments.getPastShown().get(10));
     }
 }
