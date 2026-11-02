@@ -2066,13 +2066,13 @@ testers are expected to do more *exploratory* testing.
     1. Test case: `list`<br>
        Expected: All six patients are shown, in the name order above.
 
-    1. Test case: `add --id S0245678G --name Zara Lim --phone 98765432 --address "Blk 123 Clementi Ave 3, #05-12"`<br>
+    1. Test case: `add --id S0245678G --name Zara Lim --phone 98765432 --address Blk 123 Clementi Ave 3, #05-12`<br>
        Expected: The list shows all patients again, and Zara Lim is last, after Roy Balakrishnan.
 
     1. Test case: `edit S0245678G --name Aaron Tan`<br>
        Expected: Aaron Tan moves to the top of the list, above Alex Yeoh.
 
-    1. Test case: `add --id S0356789H --name aaron tan --phone 91234567 --address "Blk 456 Bedok Ave 2"`<br>
+    1. Test case: `add --id S0356789H --name aaron tan --phone 91234567 --address Blk 456 Bedok Ave 2`<br>
        Expected: Two rows read `AARON TAN`, adjacent at the top: `S0245678G` above `S0356789H`, because the patient
        ID breaks the tie. The add succeeds, and its result ends with `Warning: this name is also used by AARON TAN
        (S0245678G). Check the patient IDs.`
@@ -2208,8 +2208,8 @@ testers are expected to do more *exploratory* testing.
     1. Other incorrect commands to try: `viewappt --id MON S1234567A`, an ID value that ends in an ID rather
        than a date, `viewappt --id 123 456`, a digit-only ID typed with a stray space, `viewappt --id` (missing
        ID), `viewappt --id S1234567A --id S2345678B` (repeated option)<br>
-       Expected: The list is unchanged. The status message shows the patient ID constraints or a duplicate-option
-       error.
+       Expected: The list is unchanged. The status message shows `No patient has the ID ...` for the first two, the
+       patient ID constraints for the missing ID, and a duplicate-option error for the repeated option.
 
 1. Viewing a date-only appointment next to a timed one on the same day
 
