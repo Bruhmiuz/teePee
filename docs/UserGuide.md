@@ -606,7 +606,7 @@ When LaiNurse launches, it loads its data as follows:
 
 Whenever `lainurse.json` cannot be loaded, LaiNurse first copies it to `data/lainurse.corrupt.json`, replacing any earlier copy, so your edits are not lost when the next save overwrites `lainurse.json`. The result display then tells you which file could not be loaded, what LaiNurse loaded instead, and where the copy is kept. To get your edits back, close the window with its close button, fix the mistake in `lainurse.corrupt.json`, and copy it over `lainurse.json`. Do not close LaiNurse with `exit` first if it started with no data, as `exit` saves that empty data over `lainurse.json` and the backup.
 
-An archived patient is saved with `"archived": true`. A patient who is not archived is saved without it, and a file with no `archived` field, such as one saved by an earlier version, loads with no patient archived. If supplied, `archived` must be the JSON boolean `true` or `false`, as `marked` must; a string or a number makes the file fail to load.
+An archived patient is saved with `"archived": true`. A patient who is not archived is saved without it, and a file with no `archived` field, such as one saved by an earlier version, loads with no patient archived. If supplied, `archived` must be the JSON boolean `true` or `false`, or `null`, which counts as not archived; a string or a number makes the file fail to load.
 
 Appointments are saved with their mark, for example
 `{"dateTime": "2026-10-05 09:30", "marked": false, "details": "INSULIN REVIEW"}`. Their numbers are not saved:

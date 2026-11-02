@@ -1816,7 +1816,7 @@ testers are expected to do more *exploratory* testing.
     1. Test case: `view S0000000Z`, where no patient has that ID<br>
        Expected: The panel does not change. The status message shows an error.
 
-    1. Other incorrect view commands to try: `view`, `view S123-456` (not a valid ID)<br>
+    1. Other incorrect view command to try: `view S123-456` (not a valid ID)<br>
        Expected: The panel does not change. The status message shows the correct command format.
 
 1. Completing with Tab
