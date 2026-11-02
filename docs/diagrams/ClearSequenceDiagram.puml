@@ -1,0 +1,94 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+
+box Logic LOGIC_COLOR_T1
+participant ":LogicManager" as LogicManager LOGIC_COLOR
+participant ":LaiNurseParser" as LaiNurseParser LOGIC_COLOR
+participant ":ClearCommandParser" as ClearCommandParser LOGIC_COLOR
+participant "c:ClearCommand" as ClearCommand LOGIC_COLOR
+end box
+
+box Model MODEL_COLOR_T1
+participant "m:Model" as Model MODEL_COLOR
+end box
+
+box Storage STORAGE_COLOR_T1
+participant "s:Storage" as Storage STORAGE_COLOR
+end box
+
+[-> LogicManager : execute("clear")
+activate LogicManager
+
+LogicManager -> LaiNurseParser : parseCommand("clear")
+activate LaiNurseParser
+
+create ClearCommandParser
+LaiNurseParser -> ClearCommandParser
+activate ClearCommandParser
+
+ClearCommandParser --> LaiNurseParser
+deactivate ClearCommandParser
+
+LaiNurseParser -> ClearCommandParser : parse("")
+activate ClearCommandParser
+
+create ClearCommand
+ClearCommandParser -> ClearCommand
+activate ClearCommand
+
+ClearCommand --> ClearCommandParser
+deactivate ClearCommand
+
+ClearCommandParser --> LaiNurseParser : c
+deactivate ClearCommandParser
+'Hidden arrow to position the destroy marker below the end of the activation bar.
+ClearCommandParser -[hidden]-> LaiNurseParser
+destroy ClearCommandParser
+
+LaiNurseParser --> LogicManager : c
+deactivate LaiNurseParser
+
+LogicManager -> ClearCommand : describeDeletion(m)
+activate ClearCommand
+
+ClearCommand -> Model : getLaiNurse()
+activate Model
+
+Model --> ClearCommand : laiNurse
+deactivate Model
+
+ClearCommand --> LogicManager : what it would delete
+deactivate ClearCommand
+
+note over LogicManager : Keeps c as pendingCommand
+
+[<-- LogicManager : the prompt
+deactivate LogicManager
+
+[-> LogicManager : execute("confirm")
+activate LogicManager
+
+note over LogicManager : Any other input cancels c,\nand runs no command
+
+LogicManager -> ClearCommand : execute(m)
+activate ClearCommand
+
+ClearCommand -> Model : setLaiNurse(empty)
+activate Model
+
+Model --> ClearCommand
+deactivate Model
+
+ClearCommand --> LogicManager : r
+deactivate ClearCommand
+
+LogicManager -> Storage : saveLaiNurse(laiNurse)
+activate Storage
+
+Storage --> LogicManager
+deactivate Storage
+
+[<-- LogicManager : r
+deactivate LogicManager
+@enduml

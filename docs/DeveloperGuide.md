@@ -217,16 +217,15 @@ Here's a (partial) class diagram of the `Logic` component:
 
 <img src="images/LogicClassDiagram.png" width="550"/>
 
-The sequence diagram below illustrates the interactions within the `Logic` component, taking `execute("delete
-S1234567A")` API
-call as an example.
+The sequence diagram below illustrates the interactions within the `Logic` component, taking the API calls
+`execute("clear")`, then `execute("confirm")`, as an example.
 
-![Interactions Inside the Logic Component for the `delete S1234567A` Command](images/DeleteSequenceDiagram.png)
+![Interactions Inside the Logic Component for the `clear` Command](images/ClearSequenceDiagram.png)
 
-The diagram leaves out the confirmation: `LogicManager` runs `delete` only once the next input is the confirmation
-phrase, as described in [Clearing selectively](#clearing-selectively).
+`delete` and `clearappt` are confirmed in the same way, as described in [Clearing selectively](#clearing-selectively).
+Other commands run at once, in the first call to `execute`.
 
-The appointment commands follow the same shape. The diagram below shows the `addappt` command, which uses
+The appointment commands run at once, and otherwise follow the same shape. The diagram below shows the `addappt` command, which uses
 `Model#findPatientById()` to find the patient among all patients and adds the appointment to their schedule.
 
 <img src="images/AddAppointmentSequenceDiagram.png" width="800" />
