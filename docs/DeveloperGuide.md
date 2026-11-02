@@ -1203,7 +1203,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 3a. Another patient has the same normalized name, including an archived patient or one hidden by a filter.
 
-    * 3a1. LaiNurse keeps the added patient and appends a warning naming the other patients and their IDs, marking
+    * 3a1. LaiNurse keeps the added patient and shows a warning naming the other patients and their IDs, marking
       archived matches. No confirmation is required.
 
       Use case ends.
@@ -1228,6 +1228,12 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 * 1b. An option is unknown or repeated, or the command contains unexpected text or malformed quotes.
 
     * 1b1. LaiNurse shows an error message and keeps the displayed list unchanged.
+
+      Use case resumes at step 1.
+
+* 1c. A phone search value contains no digits.
+
+    * 1c1. LaiNurse shows an error message and keeps the displayed list unchanged.
 
       Use case resumes at step 1.
 
@@ -1329,7 +1335,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 * 4a. The resulting name matches another patient's normalized name, including an archived patient or one hidden by a
   filter. The name may have been left unchanged.
 
-    * 4a1. LaiNurse keeps the edit and appends a warning naming the other patients and their IDs, marking archived
+    * 4a1. LaiNurse keeps the edit and shows a warning naming the other patients and their IDs, marking archived
       matches. No confirmation is required.
 
       Use case ends.
