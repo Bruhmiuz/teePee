@@ -29,6 +29,15 @@ public class MarkdownRenderer {
     private static final String NUS_BLUE = "#003d7c";
     private static final String NUS_BLUE_BORDER = "#1f5f9e";
 
+    // Unique sentinels standing in for alert <div> boundaries after pre-processing; they never
+    // appear in guide content, so the render loop can match them exactly
+    private static final String CALLOUT_OPEN_WARNING = "<<<callout-open:warning>>>";
+    private static final String CALLOUT_OPEN_INFO = "<<<callout-open:info>>>";
+    private static final String CALLOUT_CLOSE = "<<<callout-close>>>";
+    private static final String CALLOUT_INFO_ACCENT = "#58a6ff";
+    private static final String CALLOUT_INFO_BACKGROUND = "#12233d";
+    private static final String CALLOUT_WARNING_BACKGROUND = "#2b1d0e";
+
     // Matches links [text](url), <kbd>key</kbd>, **bold**, `code`, and _italics_
     private static final Pattern INLINE_PATTERN =
             Pattern.compile("(\\[.*?\\]\\(.*?\\)|<kbd>.*?</kbd>|\\*\\*.*?\\*\\*|`.*?`|_[^_]+?_)");
@@ -45,7 +54,7 @@ public class MarkdownRenderer {
         container.setPadding(new Insets(15));
         container.setFillWidth(true);
 
-        String[] lines = markdown.split("\\r?\\n");
+        String[] lines = splitCalloutBoundaries(markdown.split("\\r?\\n"));
         boolean inFrontmatter = false;
         int frontmatterDashes = 0;
 
@@ -53,11 +62,16 @@ public class MarkdownRenderer {
         StringBuilder currentParagraph = new StringBuilder();
         int listCounter = 0;
 
+        // calloutCard is non-null while inside an alert callout, whose lines render into it;
+        // target is the container the current line renders into
+        VBox calloutCard = null;
+        VBox target = container;
+
         for (String rawLine : lines) {
             String line = rawLine.trim();
 
             if (line.equals("---")) {
-                flushParagraph(container, currentParagraph);
+                flushParagraph(target, currentParagraph);
                 listCounter = 0;
                 frontmatterDashes++;
                 inFrontmatter = frontmatterDashes < 2;
@@ -69,16 +83,36 @@ public class MarkdownRenderer {
                 continue;
             }
 
+            // Alert callout boundaries pre-processed by splitCalloutBoundaries
+            if (line.equals(CALLOUT_OPEN_WARNING) || line.equals(CALLOUT_OPEN_INFO)) {
+                flushParagraph(target, currentParagraph);
+                boolean isWarning = line.equals(CALLOUT_OPEN_WARNING);
+                calloutCard = buildCalloutCard(
+                        isWarning ? NUS_ORANGE : CALLOUT_INFO_ACCENT,
+                        isWarning ? CALLOUT_WARNING_BACKGROUND : CALLOUT_INFO_BACKGROUND);
+                target = calloutCard;
+                continue;
+            }
+            if (line.equals(CALLOUT_CLOSE)) {
+                flushParagraph(target, currentParagraph);
+                if (calloutCard != null) {
+                    container.getChildren().add(calloutCard);
+                    calloutCard = null;
+                    target = container;
+                }
+                continue;
+            }
+
             // Table boundary
             boolean isTableLine = line.contains("|") && !line.startsWith("#");
             if (!isTableLine && !currentTableLines.isEmpty()) {
-                container.getChildren().add(renderTable(currentTableLines));
+                target.getChildren().add(renderTable(currentTableLines));
                 currentTableLines.clear();
             }
 
             // Blank lines flush active paragraph without inserting blank nodes
             if (line.isEmpty()) {
-                flushParagraph(container, currentParagraph);
+                flushParagraph(target, currentParagraph);
                 continue;
             }
 
@@ -91,9 +125,9 @@ public class MarkdownRenderer {
             Matcher imageMatcher = IMAGE_PATTERN.matcher(line);
             if (imageMatcher.matches()) {
                 // Standalone image line: flush pending text first so the source order is kept
-                flushParagraph(container, currentParagraph);
+                flushParagraph(target, currentParagraph);
                 // Show where the figure belongs and how to view it online
-                container.getChildren().add(buildImagePlaceholder(imageMatcher.group(1)));
+                target.getChildren().add(buildImagePlaceholder(imageMatcher.group(1)));
                 continue;
             }
             // Inline image inside a paragraph: substitute it with bracket-free placeholder text
@@ -108,7 +142,7 @@ public class MarkdownRenderer {
 
             // Accumulate table rows
             if (isTableLine) {
-                flushParagraph(container, currentParagraph);
+                flushParagraph(target, currentParagraph);
                 listCounter = 0;
                 if (!line.matches("^[\\-\\s|:]+$")) {
                     currentTableLines.add(line);
@@ -118,38 +152,38 @@ public class MarkdownRenderer {
 
             // Headings and section rules reset numbering
             if (line.startsWith("### ")) {
-                flushParagraph(container, currentParagraph);
+                flushParagraph(target, currentParagraph);
                 listCounter = 0;
                 Label h3 = new Label(cleanHtmlLineBreaks(line.substring(4)).replaceAll("`", ""));
                 h3.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: "
                         + NUS_ORANGE + "; -fx-padding: 8 0 2 0;");
                 h3.setWrapText(true);
-                container.getChildren().add(h3);
+                target.getChildren().add(h3);
             } else if (line.startsWith("## ")) {
-                flushParagraph(container, currentParagraph);
+                flushParagraph(target, currentParagraph);
                 listCounter = 0;
                 Label h2 = new Label(cleanHtmlLineBreaks(line.substring(3)).replaceAll("`", ""));
                 h2.setStyle("-fx-font-size: 19px; -fx-font-weight: bold; -fx-text-fill: "
                         + NUS_ORANGE + "; -fx-padding: 12 0 4 0;");
                 h2.setWrapText(true);
-                container.getChildren().add(h2);
+                target.getChildren().add(h2);
             } else if (line.startsWith("# ")) {
-                flushParagraph(container, currentParagraph);
+                flushParagraph(target, currentParagraph);
                 listCounter = 0;
                 Label h1 = new Label(cleanHtmlLineBreaks(line.substring(2)).replaceAll("`", ""));
                 h1.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #ffffff; "
                         + "-fx-padding: 14 0 6 0;");
                 h1.setWrapText(true);
-                container.getChildren().add(h1);
+                target.getChildren().add(h1);
             } else if (line.matches("^-{3,}$")) {
-                flushParagraph(container, currentParagraph);
+                flushParagraph(target, currentParagraph);
                 listCounter = 0;
                 Separator separator = new Separator();
                 separator.setStyle("-fx-padding: 6 0 6 0; -fx-opacity: 0.35;");
-                container.getChildren().add(separator);
+                target.getChildren().add(separator);
             } else if (line.startsWith(">")) {
                 // Blockquote callout box
-                flushParagraph(container, currentParagraph);
+                flushParagraph(target, currentParagraph);
                 String calloutText = cleanHtmlLineBreaks(line.substring(1).trim());
                 TextFlow calloutFlow = buildInlineTextFlow(calloutText);
                 calloutFlow.setStyle("-fx-background-color: #161b22; "
@@ -157,23 +191,23 @@ public class MarkdownRenderer {
                         + "-fx-border-width: 0 0 0 3px; "
                         + "-fx-padding: 6 10 6 12; "
                         + "-fx-background-radius: 0 4 4 0;");
-                container.getChildren().add(calloutFlow);
+                target.getChildren().add(calloutFlow);
             } else if (line.startsWith("* ") || line.startsWith("- ")) {
                 // Sub-bullets
-                flushParagraph(container, currentParagraph);
+                flushParagraph(target, currentParagraph);
                 String text = cleanHtmlLineBreaks(line.substring(2));
                 TextFlow bulletFlow = buildInlineTextFlow("•  " + text);
                 int leftPadding = (listCounter > 0) ? 28 : 16;
                 bulletFlow.setStyle("-fx-padding: 0 0 0 " + leftPadding + ";");
-                container.getChildren().add(bulletFlow);
+                target.getChildren().add(bulletFlow);
             } else if (line.matches("^\\d+\\.\\s+.*")) {
                 // Numbered list item
-                flushParagraph(container, currentParagraph);
+                flushParagraph(target, currentParagraph);
                 listCounter++;
                 String itemText = cleanHtmlLineBreaks(line.replaceFirst("^\\d+\\.\\s+", ""));
                 TextFlow listFlow = buildInlineTextFlow(listCounter + ".  " + itemText);
                 listFlow.setStyle("-fx-padding: 0 0 0 16;");
-                container.getChildren().add(listFlow);
+                target.getChildren().add(listFlow);
             } else {
                 // Indented notes or secondary descriptive lines
                 boolean isSecondaryNote = line.startsWith("**Mac users:**")
@@ -182,10 +216,10 @@ public class MarkdownRenderer {
                         || line.startsWith("Some example commands");
 
                 if (listCounter > 0 && isSecondaryNote) {
-                    flushParagraph(container, currentParagraph);
+                    flushParagraph(target, currentParagraph);
                     TextFlow noteFlow = buildInlineTextFlow(cleanHtmlLineBreaks(line));
                     noteFlow.setStyle("-fx-padding: 0 0 0 28;");
-                    container.getChildren().add(noteFlow);
+                    target.getChildren().add(noteFlow);
                 } else {
                     if (currentParagraph.length() > 0) {
                         currentParagraph.append(" ");
@@ -195,11 +229,16 @@ public class MarkdownRenderer {
             }
         }
 
-        flushParagraph(container, currentParagraph);
+        flushParagraph(target, currentParagraph);
 
         if (!currentTableLines.isEmpty()) {
-            container.getChildren().add(renderTable(currentTableLines));
+            target.getChildren().add(renderTable(currentTableLines));
             currentTableLines.clear();
+        }
+
+        // A callout left open at the end of the input still renders its collected lines
+        if (calloutCard != null) {
+            container.getChildren().add(calloutCard);
         }
 
         return container;
@@ -219,6 +258,47 @@ public class MarkdownRenderer {
         return line.replaceAll("(?i)</?div[^>]*>", "")
                 .replaceAll("(?i)</?span[^>]*>", "")
                 .trim();
+    }
+
+    /**
+     * Replaces alert {@code <div>} boundaries with unique sentinels so the render loop can open and
+     * close callout cards exactly. Content trailing the opening tag stays as its own line. Callout
+     * blocks are assumed not to be nested, which holds for the guide today.
+     */
+    private static String[] splitCalloutBoundaries(String[] lines) {
+        List<String> processed = new ArrayList<>();
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (trimmed.contains("<div") && trimmed.contains("class=\"alert")) {
+                processed.add(trimmed.contains("alert-warning")
+                        ? CALLOUT_OPEN_WARNING : CALLOUT_OPEN_INFO);
+                String remainder = trimmed.replaceFirst("^<div[^>]*>", "").trim();
+                if (!remainder.isEmpty()) {
+                    processed.add(remainder);
+                }
+            } else if (trimmed.equals("</div>")) {
+                processed.add(CALLOUT_CLOSE);
+            } else {
+                processed.add(line);
+            }
+        }
+        return processed.toArray(String[]::new);
+    }
+
+    /**
+     * Builds the tinted card with a coloured left border that visually groups the lines of one
+     * alert callout.
+     */
+    private static VBox buildCalloutCard(String accent, String background) {
+        VBox card = new VBox();
+        card.setStyle("-fx-background-color: " + background + "; "
+                + "-fx-border-color: " + accent + "; "
+                + "-fx-border-width: 0 0 0 3px; "
+                + "-fx-padding: 8 12 8 12; "
+                + "-fx-background-radius: 0 4 4 0; "
+                + "-fx-border-radius: 0 4 4 0; "
+                + "-fx-spacing: 4;");
+        return card;
     }
 
     /**

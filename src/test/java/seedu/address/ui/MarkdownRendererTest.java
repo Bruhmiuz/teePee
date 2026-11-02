@@ -236,9 +236,69 @@ public class MarkdownRendererTest {
         assertTrue(containsTextStyle(rendered, "-fx-font-style: italic"));
     }
 
+    @Test
+    public void render_divCallout_rendersAsCard() {
+        VBox rendered = MarkdownRenderer.render(String.join("\n",
+                "Before the callout.",
+                "<div markdown=\"span\" class=\"alert alert-warning\">:exclamation: **Caution:**",
+                "`clear` and `clearappt` delete much at once, and cannot be undone.",
+                "</div>",
+                "After the callout."));
+
+        assertEquals(3, rendered.getChildren().size());
+        assertTrue(rendered.getChildren().get(1) instanceof VBox);
+        String visible = visibleText(rendered);
+        assertTrue(visible.contains("⚠ Caution: "));
+        assertTrue(visible.contains("delete much at once"));
+        assertTrue(visible.contains("After the callout."));
+        assertTrue(hasDescendantStyled(rendered, "-fx-background-color: #2b1d0e"));
+        assertTrue(hasDescendantStyled(rendered, "-fx-border-color: #ef7c00"));
+        assertFalse(visible.contains("<div"));
+        assertFalse(visible.contains("callout-open"));
+    }
+
+    @Test
+    public void render_infoBlockCallout_rendersMultiLineCard() {
+        VBox rendered = MarkdownRenderer.render(String.join("\n",
+                "<div markdown=\"block\" class=\"alert alert-info\">",
+                "",
+                "**:information_source: Notes about the command format:**",
+                "",
+                "* `UPPER_CASE` is a parameter.",
+                "</div>"));
+
+        // The whole input lives inside the callout, so the card is the container's only child
+        assertEquals(1, rendered.getChildren().size());
+        VBox card = (VBox) rendered.getChildren().get(0);
+        String cardText = visibleText(card);
+        assertTrue(cardText.contains("ℹ Note: "));
+        assertTrue(cardText.contains("UPPER_CASE"));
+        assertTrue(hasDescendantStyled(card, "-fx-background-color: #12233d"));
+        assertTrue(hasDescendantStyled(card, "-fx-border-color: #58a6ff"));
+        assertFalse(visibleText(rendered).contains("<div"));
+        assertFalse(visibleText(rendered).contains("callout-open"));
+    }
+
+    @Test
+    public void render_unterminatedCallout_stillRendersCard() {
+        VBox rendered = MarkdownRenderer.render(String.join("\n",
+                "<div markdown=\"block\" class=\"alert alert-info\">",
+                "Content without a closing div."));
+
+        assertEquals(1, rendered.getChildren().size());
+        VBox card = (VBox) rendered.getChildren().get(0);
+        assertTrue(visibleText(card).contains("Content without a closing div."));
+        assertTrue(hasDescendantStyled(card, "-fx-background-color: #12233d"));
+    }
+
     private static boolean containsTextStyle(Parent root, String styleFragment) {
         return descendants(root).stream().anyMatch(n -> n instanceof Text t
                 && t.getStyle().contains(styleFragment));
+    }
+
+    private static boolean hasDescendantStyled(Parent root, String styleFragment) {
+        return descendants(root).stream().anyMatch(node -> node.getStyle() != null
+                && node.getStyle().contains(styleFragment));
     }
 
     @Test
