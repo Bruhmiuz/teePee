@@ -637,6 +637,7 @@ Appointment dates and times in the file follow the formats above, and a file sav
 2. **If you minimize the Help Window** and then run the `help window` command (or select **Help** > **Help**,
    or the keyboard shortcut <kbd>F1</kbd>) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
 3. **In a very narrow window**, the note and the count in a list's header, such as `This week` and the number of appointments, can be cut short. The remedy is to widen the window.
+4. **Text is stored in uppercase.** Names, addresses, medical history, notes and appointment details are stored and shown in uppercase, whatever case you typed, and the original case cannot be recovered.
 
 --------------------------------------------------------------------------------------------------------------------
 
