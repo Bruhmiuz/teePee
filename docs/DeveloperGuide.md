@@ -1697,6 +1697,8 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
   individual patients and prevent duplicate profile collisions (e.g., Singapore NRIC/FIN format such as T0123456B).
 * **NRIC / FIN**: National Registration Identity Card / Foreign Identification Number; the standard national identity
   identification format used in Singapore.
+* **Phone**: The contact number of the patient, which the nurse uses to reach them about home visits
+  (e.g., `+65 9123 4567`).
 * **Address**: The physical location of the patient where home nursing care is delivered. This is not necessarily the
   true residential location, as some treatment, e.g. rehabilitation post surgery may be done outdoors.
 * **Medical History**: Free-form textual records capturing relevant chronic conditions, allergies, past diagnoses, or
