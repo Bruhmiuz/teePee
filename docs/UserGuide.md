@@ -219,6 +219,7 @@ Format: `add --id ID --name NAME --phone PHONE --address ADDRESS [--medical-hist
 * Parameters may appear in any order. Each option may appear only once. Separate options and values using spaces or tabs; values may contain spaces.
 * IDs contain 1 to 10 letters or digits. IDs are case-insensitive, and a patient with an existing ID cannot be added again. LaiNurse then names the patient who has that ID, such as `ALEX YEOH (S1234567A) already exists in LaiNurse.` If that patient is archived, it says so, and how to unarchive them: `ALEX YEOH (S1234567A) already exists in LaiNurse, and is archived. To unarchive them: 'unarchive S1234567A'`
 * Names, addresses, medical history and notes accept any non-blank text. IDs and these text fields are stored in uppercase, with repeated whitespace collapsed.
+* Unlike in `find`, quotes are not removed: they are stored as part of the value. For example, `--notes "Likes tea"` stores `"LIKES TEA"`, with the quotes, so leave them out.
 * Invisible characters that text pasted from a website can carry, such as the zero-width space, are removed from names, addresses, medical history, notes and appointment details, so a value is stored as you see it, and a value of such characters only counts as blank. For example, `Alex` and `Smith` joined by a zero-width space is stored as `ALEXSMITH`, which `find --name alexsmith` finds. The characters that some scripts and emoji need, such as in 👩‍⚕️, are kept. An ID or a date with an invisible character is rejected, and a phone number is rejected if it carries a common one, such as the zero-width space.
 * Phone numbers accept any non-blank text containing at least three digits — for example, `1234 5678 (HP) 1111-3333`, `+65 9876-5432` or `9312.1534`, and are stored in uppercase.
 * A new patient starts with no appointments. Set their appointments with [`addappt`](#adding-an-appointment-addappt).
@@ -240,6 +241,7 @@ Format: `edit ID [--name NAME] [--phone PHONE] [--address ADDRESS] [--medical-hi
 
 * Edits the patient with the given `ID`, which is the patient ID shown in their row, not their position in the list. The patient does not have to be in the list currently shown.
 * `ID` must come first; the other parameters may appear in any order. Separate options and values using spaces or tabs.
+* As in `add`, quotes are stored as part of the value, so leave them out.
 * As in `add`, whitespace-delimited words beginning with `--` are reserved for options. Unknown options, misspellings, and `--id` are rejected with the command usage instructions.
 * The ID itself cannot be edited. To correct a wrong ID, delete the patient and add them again. Deleting a patient also deletes their appointments, so note them down first with [`viewappt --id ID`](#viewing-appointments-viewappt), and add them again with [`addappt`](#adding-an-appointment-addappt).
 * At least one of the optional parameters must be provided.
