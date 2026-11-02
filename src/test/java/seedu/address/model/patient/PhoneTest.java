@@ -51,6 +51,7 @@ public class PhoneTest {
     @Test
     public void constructor_normalizesValue() {
         assertEquals("+65 9312-1534", new Phone("  +65   9312-1534 ").value);
+        assertEquals("1234 (HP)", new Phone("1234 (hp)").value); // letters are stored in upper case
     }
 
     @Test

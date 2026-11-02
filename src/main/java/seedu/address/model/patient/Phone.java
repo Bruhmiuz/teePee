@@ -7,7 +7,7 @@ import seedu.address.commons.util.TextNormalizer;
 
 /**
  * Represents a Patient's phone number in LaiNurse.
- * The number is stored with leading, trailing and repeated whitespace removed.
+ * The number is stored in upper case, with leading, trailing and repeated whitespace removed.
  * Guarantees: immutable; is valid as declared in {@link #isValidPhone(String)}
  */
 public class Phone {
