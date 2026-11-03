@@ -165,7 +165,7 @@ computer wakes from sleep.
 `AppointmentListPanel` shows the appointments of `Logic#getAppointmentList()`, which holds every appointment of every
 patient, on one of two kinds of page. The weekly view shows one `AppointmentWeek`, from Monday to Sunday, which a plain
 `viewappt` shows for this week. The weeks stop at `DateUtil#EARLIEST_DATE` and `DateUtil#LATEST_DATE`, the dates that a
-four-digit year allows, so the first and last weeks have fewer days and no signed years. After `viewappt` with a date, a range or `--id`, the panel shows only the appointments
+four-digit year allows, so the first and last weeks have fewer days and no signed years, and the panel hides the arrow button with no week beyond it. Only the computer's clock can give a date outside those limits, because a typed date has a four-digit year. If today is in a week that overlaps the limits, the panel shows that week, the first or last, marked `This week`. If today's week is wholly outside them, its start is after its end, so `AppointmentWeek#getDays` throws `IllegalArgumentException`, and at startup `UiManager` shows its fatal error dialog and closes the app. After `viewappt` with a date, a range or `--id`, the panel shows only the appointments
 in the command's range, on one page, and hides the week's arrow buttons; if the range carries a patient ID, only that
 patient's appointments. `AppointmentPage#ofWeek` and
 `AppointmentPage#ofRange` turn the appointments into rows: a heading for each day
@@ -2456,10 +2456,10 @@ testers are expected to do more *exploratory* testing.
        e.g. the week of Mon 28 Sep. `viewappt` goes back to this week, marked `This week`.
 
     1. Test case: `addappt S1234567A --date 0000-01-01`, then press Left<br>
-       Expected: The header says `Sat 1 – Sun 2 Jan 0000`, with headings for those two days only. Left changes nothing.
+       Expected: The header says `Sat 1 – Sun 2 Jan 0000`, with headings for those two days only. There is no left arrow button, and Left changes nothing.
 
     1. Test case: `addappt S1234567A --date 9999-12-31`, then press Right<br>
-       Expected: The header says `Mon 27 – Fri 31 Dec 9999`, with headings for those five days only. Right changes nothing.
+       Expected: The header says `Mon 27 – Fri 31 Dec 9999`, with headings for those five days only. There is no right arrow button, and Right changes nothing.
 
 1. Switching views without a command
 
