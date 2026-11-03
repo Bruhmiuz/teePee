@@ -125,7 +125,7 @@ Commands switch the view. `viewappt`, `editappt`, `addappt`, `markappt` and `unm
 
 You can also click a tab, or move to the tabs with the keyboard and press Left or Right. Switching views this way runs no command, so each view still shows what it showed before.
 
-In the weekly view, click the arrow buttons above the list to see another week, or press Left or Right with the focus in the list. The arrows show only in the weekly view. Esc in the list goes back from a `viewappt` page to the weekly view of the selected appointment's week, and keeps that appointment selected. It also removes `--all` or `--archived`, unless the selected appointment is an archived patient's. In the weekly view, Esc hides archived patients' appointments again, if they are shown, and otherwise does nothing; a plain `viewappt` goes back to this week.
+In the weekly view, click the arrow buttons above the list to see another week, or press Left or Right with the focus in the list. The arrows show only in the weekly view, and only if there is a week to go to, so the first week of `0000` has no left arrow, and the last week of `9999` has no right arrow. Esc in the list goes back from a `viewappt` page to the weekly view of the selected appointment's week, and keeps that appointment selected. It also removes `--all` or `--archived`, unless the selected appointment is an archived patient's. In the weekly view, Esc hides archived patients' appointments again, if they are shown, and otherwise does nothing; a plain `viewappt` goes back to this week.
 
 ### Using the keyboard
 
@@ -158,7 +158,7 @@ Up and Down | In the patient list, select the previous or next patient and show 
 Ctrl+Up and Ctrl+Down (Cmd+Up and Cmd+Down on macOS) | Select the first or last patient in the patient list, or the first or last appointment of the page in the appointment list.
 Page Up and Page Down | Move about one screen up or down the list, and show the details of what they select. In the appointment list, they select the nearest appointment, never a day heading.
 Home and End | Select the first or last patient in the patient list, or the first or last appointment of the page in the appointment list.
-Left and Right | In the weekly appointment view, show the previous or next week, and select its first appointment. The weeks stop at the years `0000` and `9999`, so the first and last weeks have only the days in those years. On a `viewappt` page, they do nothing.
+Left and Right | In the weekly appointment view, show the previous or next week, and select its first appointment. The weeks stop at the years `0000` and `9999`, so the first and last weeks have only the days in those years, and Left and Right do nothing past them. On a `viewappt` page, they do nothing.
 Shift+Up and Shift+Down | Scroll the details beside the list.
 Tab | Moves to the view tabs.
 Any letter, digit or space | Goes back to the command box and types it there, after what you typed before.
@@ -647,6 +647,7 @@ Certain edits can cause LaiNurse to behave in unexpected ways (e.g., if a value 
 6. **The result display has a fixed height.** A long message does not fit. The remedy is to scroll it, with Shift+Up and Shift+Down in the command box.
 7. **Grey has two meanings.** Both an archived patient in the patient list and an appointment that has passed are greyed out.
 8. **LaiNurse keeps one backup.** Every save replaces `data/lainurse.backup.json`. The remedy, to keep an older copy, is to copy the file elsewhere yourself.
+9. **The computer's date has limits.** If it is outside the years `0000` to `9999`, LaiNurse can show `Fatal error during initializing` and close when it starts. The remedy is to correct the date on your computer.
 
 --------------------------------------------------------------------------------------------------------------------
 

@@ -14,6 +14,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import javafx.application.Platform;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ListView;
 import javafx.scene.input.KeyCode;
@@ -81,6 +83,40 @@ public class AppointmentListPanelTest {
             press(list, KeyCode.HOME);
             assertEquals(first, list.getSelectionModel().getSelectedIndex());
         });
+    }
+
+    @Test
+    public void weekArrows_firstAndLastWeek_hideArrowWithNoWeekBeyond() throws Exception {
+        onFxThread(() -> {
+            LaiNurse data = new LaiNurse();
+            data.addPatient(new PatientBuilder().withId("S1234567A")
+                    .withAppointments("0000-01-01", "9999-12-31").build());
+            ModelManager model = new ModelManager(data, new UserPrefs());
+            AppointmentListPanel panel = new AppointmentListPanel(model.getAppointmentList(),
+                    selected -> { }, () -> { });
+            Parent root = panel.getRoot();
+            ListView<?> list = (ListView<?>) root.lookup(".list-view");
+            Node previous = root.lookup("#previousWeekButton");
+            Node next = root.lookup("#nextWeekButton");
+            assertArrowsShown(previous, true, next, true);
+
+            panel.showAppointment(model.getAppointmentList().get(0));
+            assertArrowsShown(previous, false, next, true);
+            press(list, KeyCode.RIGHT);
+            assertArrowsShown(previous, true, next, true);
+
+            panel.showAppointment(model.getAppointmentList().get(1));
+            assertArrowsShown(previous, true, next, false);
+            press(list, KeyCode.LEFT);
+            assertArrowsShown(previous, true, next, true);
+        });
+    }
+
+    private static void assertArrowsShown(Node previous, boolean isPreviousShown, Node next, boolean isNextShown) {
+        assertEquals(isPreviousShown, previous.isVisible());
+        assertEquals(isPreviousShown, previous.isManaged());
+        assertEquals(isNextShown, next.isVisible());
+        assertEquals(isNextShown, next.isManaged());
     }
 
     /**

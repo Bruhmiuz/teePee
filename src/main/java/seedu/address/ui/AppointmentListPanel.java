@@ -373,9 +373,9 @@ public class AppointmentListPanel extends UiPart<Region> {
         rows.setAll(page.getRows());
         appointmentListView.scrollTo(0);
 
-        // The arrows change the week, so they show only in the weekly view
-        setShown(previousWeekButton, range == null);
-        setShown(nextWeekButton, range == null);
+        // The arrows change the week, so they show only in the weekly view, and only if there is a week to go to
+        setShown(previousWeekButton, range == null && !week.previous().equals(week));
+        setShown(nextWeekButton, range == null && !week.next().equals(week));
         weekRelative.getStyleClass().remove(THIS_WEEK_STYLE_CLASS);
         if (range == null) {
             weekDates.setText(week.describeDates());

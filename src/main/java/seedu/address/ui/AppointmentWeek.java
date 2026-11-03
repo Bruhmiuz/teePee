@@ -56,6 +56,9 @@ public final class AppointmentWeek {
 
     /**
      * Returns the days of this week, in order: from Monday to Sunday, except in the first and last weeks.
+     *
+     * @throws IllegalArgumentException if this week is wholly before {@link DateUtil#EARLIEST_DATE} or after
+     *     {@link DateUtil#LATEST_DATE}, which only a computer's clock outside those dates can cause.
      */
     public List<LocalDate> getDays() {
         return getStart().datesUntil(getEnd().plusDays(1)).toList();

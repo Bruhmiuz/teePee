@@ -14,7 +14,7 @@
     <padding>
       <Insets top="6" right="12" bottom="6" left="8" />
     </padding>
-    <!-- The buttons never take the focus. With the focus in the list, Left and Right do the same. They show only in the weekly view. -->
+    <!-- The buttons never take the focus. With the focus in the list, Left and Right do the same. They show only in the weekly view, and only if there is a week to go to. -->
     <Button fx:id="previousWeekButton" styleClass="nav-arrow-button" focusTraversable="false"
             accessibleText="Previous week" onAction="#handlePreviousWeek">
       <graphic>
