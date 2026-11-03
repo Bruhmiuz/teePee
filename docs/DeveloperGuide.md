@@ -227,19 +227,11 @@ The sequence diagram below illustrates the interactions within the `Logic` compo
 `delete` and `clearappt` are confirmed in the same way, as described in [Clearing selectively](#clearing-selectively).
 Other commands run at once, in the first call to `execute`.
 
-The appointment commands run at once, and otherwise follow the same shape. The diagram below shows the `addappt` command, which uses
-`Model#findPatientById()` to find the patient among all patients and adds the appointment to their schedule.
-
-<img src="images/AddAppointmentSequenceDiagram.png" width="800" />
-
-**Mess score: 8/10.** The text says that it finds the patient through `Model`. The diagram has never met `Model`.
+The appointment commands run at once, and otherwise follow the same shape: `addappt` finds the patient through
+`Model#findPatientById()` among all patients and adds the appointment to their schedule.
 
 The `deleteappt` command also follows this shape, up to the lookup: it finds the matching appointment with
 `AppointmentLookup#find()` and removes it from the patient's schedule.
-
-<img src="images/DeleteAppointmentSequenceDiagram.png" width="800" />
-
-**Mess score: 8/10.** It deletes an appointment without ever touching the thing that holds it.
 
 How the `Logic` component works:
 
