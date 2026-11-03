@@ -557,7 +557,7 @@ other undone visits at the resulting time when the edited appointment is undone,
 The activity diagram below shows the checks that `editappt` makes, in order. Every error leaves the patient and the
 data file unchanged.
 
-<img src="images/EditAppointmentActivityDiagram.png" width="450" />
+<img src="images/EditAppointmentActivityDiagram.png" width="550" />
 
 `addappt ID --date DATE_OR_DATETIME [--details DETAILS]` takes the patient ID first, then the date with `--date`
 and optional details with `--details`, in either order. Its parser reuses `ArgumentTokenizer` and

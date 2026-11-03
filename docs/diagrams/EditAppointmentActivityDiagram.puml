@@ -6,46 +6,32 @@ start
 :User enters editappt ID NUMBER with options
 [~--date NEW] [~--details DETAILS] [~--add-details DETAILS];
 
-if () then ([ID or NUMBER is missing or invalid,
-or an option is repeated])
-    :Report the command format, the
-    repeated option or the invalid number;
+if () then ([arguments are invalid, or
+no option is given])
+    :Report the invalid format, number or value,
+    the repeated or conflicting options,
+    or that an option is needed;
     stop
 endif
-if () then ([a value is invalid, or ~--details
-and ~--add-details are both given])
-    :Report the invalid date or details,
-    or that the two options conflict;
+if () then ([no patient has ID, or
+patient has no NUMBER])
+    :Report the missing patient
+    or appointment number;
     stop
 endif
-if () then ([no option is given])
-    :Report that ~--date, ~--details
-    or ~--add-details is needed;
-    stop
-endif
-if () then ([no patient has ID])
-    :Report the missing patient;
-    stop
-endif
-if () then ([patient has no NUMBER])
-    :Report the missing appointment number;
-    stop
-endif
-:Build the edited appointment from the options given,
-keeping its completion status and the values not given;
+:Replace the appointment with the edited one, keeping
+its completion status and the values not given;
 if () then ([the date or time changes])
     :Place it after the others at its new date and
     time, which can renumber the patient's appointments;
 else ([else])
     :Keep its number;
 endif
-:Update the patient with the new schedule;
 if () then ([two undone visits clash])
     :Append a warning naming the other
     patients and appointment numbers;
 endif
-:Save the data file;
-:Show the Appointments view and
-select the edited appointment;
+:Save the data file, show the Appointments
+view and select the edited appointment;
 stop
 @enduml
