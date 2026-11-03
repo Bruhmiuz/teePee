@@ -241,14 +241,6 @@ The `deleteappt` command also follows this shape, up to the lookup: it finds the
 
 **Mess score: 8/10.** It deletes an appointment without ever touching the thing that holds it.
 
-The `viewappt` command follows the same shape: it builds an `AppointmentBetweenDatesPredicate` from the date
-range to count the matching patients without changing the patient list (`--id` narrows the appointment page to
-one patient), then returns a `CommandResult` carrying the range for the appointment view.
-
-<img src="images/ViewAppointmentSequenceDiagram.png" width="800" />
-
-**Mess score: 7/10.** Wide enough to need its own monitor, and it leaves before the UI arrives.
-
 How the `Logic` component works:
 
 1. When `Logic` is called upon to execute a command, the command is passed to a `LaiNurseParser` object, which in
