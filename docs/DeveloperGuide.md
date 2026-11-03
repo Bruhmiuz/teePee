@@ -2054,8 +2054,8 @@ testers are expected to do more *exploratory* testing.
        Shift+Down, then Shift+Up<br>
        Expected: The details scroll down, then back up. The selection in the list does not move.
 
-    1. Test case: enter `edit S1234567A --notes` with notes long enough to fill more than four lines of the result
-       display, then press Shift+Down and Shift+Up<br>
+    1. Test case: enter `edit S1234567A --notes NOTES`, where `NOTES` is text long enough to fill more than four lines
+       of the result display, then press Shift+Down and Shift+Up<br>
        Expected: The result display scrolls down, then back up. The focus stays in the command box.
 
     1. Test case: type `set mark`, then press Tab twice<br>
