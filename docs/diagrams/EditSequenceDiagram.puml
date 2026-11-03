@@ -57,10 +57,10 @@ deactivate LaiNurseParser
 LogicManager -> EditCommand : execute(m)
 activate EditCommand
 
-EditCommand -> Model : getLaiNurse()
+EditCommand -> Model : findPatientById(S1234567A)
 activate Model
 
-Model --> EditCommand : laiNurse
+Model --> EditCommand : p
 deactivate Model
 
 EditCommand -> EditCommand : createEditedPatient(p, d)
@@ -75,6 +75,18 @@ EditCommand -> Model : updateFilteredPatientList(all)
 activate Model
 
 Model --> EditCommand
+deactivate Model
+
+EditCommand -> Model : showInPatientList(editedPatient)
+activate Model
+
+Model --> EditCommand
+deactivate Model
+
+EditCommand -> Model : getLaiNurse()
+activate Model
+
+Model --> EditCommand : laiNurse
 deactivate Model
 
 EditCommand --> LogicManager : r

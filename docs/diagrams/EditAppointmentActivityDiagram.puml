@@ -3,39 +3,49 @@ skin rose
 skinparam ActivityFontSize 15
 skinparam ArrowFontSize 12
 start
-:User enters editappt ID NUMBER
-[~--date NEW] [~--details DETAILS];
+:User enters editappt ID NUMBER with options
+[~--date NEW] [~--details DETAILS] [~--add-details DETAILS];
 
-'Since the beta syntax does not support placing the condition outside the
-'diamond we place it as the true branch instead.
-
-if () then ([input is valid, with --date
-or --details or both])
-    if () then ([a patient has ID])
-        if () then ([patient has appointment NUMBER])
-            :Build the edited appointment from NEW and
-            DETAILS, keeping its number, completion status
-            and values not given;
-            :Replace the old appointment
-            with the edited one;
-            if () then ([two undone visits clash])
-                :Append a warning naming the
-                other patients and appointment numbers;
-            endif
-            :Save the data file;
-            :Show the Appointments view and
-            select the edited appointment by identity;
-            stop
-        else ([else])
-            :Show missing appointment number error;
-            stop
-        endif
-    else ([else])
-        :Show the error;
-        stop
-    endif
-else ([else])
-    :Show the error;
+if () then ([ID or NUMBER is missing or invalid,
+or an option is repeated])
+    :Report the command format, the
+    repeated option or the invalid number;
     stop
 endif
+if () then ([a value is invalid, or ~--details
+and ~--add-details are both given])
+    :Report the invalid date or details,
+    or that the two options conflict;
+    stop
+endif
+if () then ([no option is given])
+    :Report that ~--date, ~--details
+    or ~--add-details is needed;
+    stop
+endif
+if () then ([no patient has ID])
+    :Report the missing patient;
+    stop
+endif
+if () then ([patient has no NUMBER])
+    :Report the missing appointment number;
+    stop
+endif
+:Build the edited appointment from the options given,
+keeping its completion status and the values not given;
+if () then ([the date or time changes])
+    :Place it after the others at its new date and
+    time, which can renumber the patient's appointments;
+else ([else])
+    :Keep its number;
+endif
+:Update the patient with the new schedule;
+if () then ([two undone visits clash])
+    :Append a warning naming the other
+    patients and appointment numbers;
+endif
+:Save the data file;
+:Show the Appointments view and
+select the edited appointment;
+stop
 @enduml
