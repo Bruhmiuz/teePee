@@ -43,8 +43,6 @@ Tutorial_ at se-edu/guides](https://se-education.org/guides/tutorials/plantUml.h
 diagrams.
 </div>
 
-Some diagrams in this guide carry a mess score out of 10, where higher is worse, and a remark.
-
 ### Architecture
 
 <img src="images/ArchitectureDiagram.png" width="280" />
@@ -368,8 +366,6 @@ in the scope of the patient list, and `--all` or `--archived` sets that scope fi
 
 <img src="images/EditSequenceDiagram.png" width="800" />
 
-**Mess score: 3/10.** One of the few sequence diagrams here with a new idea, so it gets off lightly.
-
 `EditCommandParser` reads the ID from the preamble and stores each change in an `EditPatientDescriptor`. A field that
 is not given stays `null` in the descriptor, so `EditCommand#createEditedPatient()` keeps the patient's value for it.
 Each value is checked by the same `ParserUtil` method as in `add`, so a blank name, phone or address is rejected.
@@ -561,9 +557,7 @@ other undone visits at the resulting time when the edited appointment is undone,
 The activity diagram below shows the checks that `editappt` makes, in order. Every error leaves the patient and the
 data file unchanged.
 
-<img src="images/EditAppointmentActivityDiagram.png" width="750" />
-
-**Mess score: 6/10.** The Mark diagram's twin with worse posture, and two boxes that just say "Show the error".
+<img src="images/EditAppointmentActivityDiagram.png" width="550" />
 
 `addappt ID --date DATE_OR_DATETIME [--details DETAILS]` takes the patient ID first, then the date with `--date`
 and optional details with `--details`, in either order. Its parser reuses `ArgumentTokenizer` and
@@ -2060,8 +2054,8 @@ testers are expected to do more *exploratory* testing.
        Shift+Down, then Shift+Up<br>
        Expected: The details scroll down, then back up. The selection in the list does not move.
 
-    1. Test case: enter `edit S1234567A --notes` with notes long enough to fill more than four lines of the result
-       display, then press Shift+Down and Shift+Up<br>
+    1. Test case: enter `edit S1234567A --notes NOTES`, where `NOTES` is text long enough to fill more than four lines
+       of the result display, then press Shift+Down and Shift+Up<br>
        Expected: The result display scrolls down, then back up. The focus stays in the command box.
 
     1. Test case: type `set mark`, then press Tab twice<br>
