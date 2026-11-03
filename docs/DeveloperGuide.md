@@ -331,8 +331,6 @@ The sequence diagram below shows `find --name Alex --address Serangoon`.
 
 <img src="images/FindSequenceDiagram.png" width="800" />
 
-**Mess score: 9/10.** A whole diagram to set one filter, and it never shows the filter being set.
-
 `FindCommandParser` recognizes the six patient-detail options defined in `CliSyntax`: ID, name, phone number, address,
 medical history and notes. It reuses `ArgumentTokenizer.normalizeOptionSeparators`, as `add` and `edit` do,
 then uses `ArgumentTokenizer` and `ArgumentMultimap` to extract values and reject
@@ -622,8 +620,6 @@ patients. Done visits remain visible and keep their date-based grouping, counts,
 Both commands allow any date; editing preserves completion until an explicit status command changes it.
 
 <img src="images/MarkUnmarkAppointmentActivityDiagram.png" width="450" />
-
-**Mess score: 2/10.** Reads top to bottom and names every failure. Suspiciously competent.
 
 ### Viewing appointments by date
 

@@ -9,6 +9,10 @@ participant ":FindCommandParser" as FindCommandParser LOGIC_COLOR
 participant "command:FindCommand" as FindCommand LOGIC_COLOR
 end box
 
+box Model MODEL_COLOR_T1
+participant "model:Model" as Model MODEL_COLOR
+end box
+
 [-> LogicManager : execute("find ~--name Alex ~--address Serangoon")
 activate LogicManager
 
@@ -40,6 +44,19 @@ deactivate LaiNurseParser
 
 LogicManager -> FindCommand : execute(model)
 activate FindCommand
+
+FindCommand -> Model : updateFilteredPatientList(predicate, comparator)
+activate Model
+
+Model --> FindCommand
+deactivate Model
+
+FindCommand -> Model : getFilteredPatientList()
+activate Model
+
+Model --> FindCommand : patients
+deactivate Model
+
 
 FindCommand --> LogicManager : new CommandResult(...)\n.withNavigation(Navigation.toView(View.PATIENTS))
 deactivate FindCommand
